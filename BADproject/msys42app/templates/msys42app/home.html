@@ -1,0 +1,9 @@
+{% extends 'msys42app/base.html' %} 
+{% load static %}
+
+{% block content %}
+<h1> This is the home </h1>
+<a class="btn btn-primary" href="{% url 'create_child_profile' %}">Create Child Profile</a>
+
+
+{% endblock %}

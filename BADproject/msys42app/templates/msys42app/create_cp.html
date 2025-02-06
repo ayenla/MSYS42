@@ -1,0 +1,100 @@
+{% extends 'msys42app/base.html' %} 
+{% load static %}
+
+{% block content %}
+<div class="container-fluid" style="height: 100vh">
+    <div class="card" style="border: 50;">
+        <h4 style="display: flex; align-items: center; justify-content: center; "> Create Child Profile</h4>
+        <div class="row">
+            <div class="col-12">
+                
+                    <div class="row no-gutters">
+                        <div class="col-md-12">
+                            <div class="card-body">
+                                <form method = "POST" action=""> {% csrf_token %}
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label for="code"> SPC Code </label>
+                                            <input type="text" class="form-control mb-3" id="code" name="code">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="name">Name</label>
+                                            <input type="text" class="form-control mb-3" id="name" name="name">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="sex">Sex</label>
+                                            <select class="form-control mb-3" id="sex" name="sex">
+                                                <option value="female"> Female </option>
+                                                <option value="male"> Male </option>
+                                                <option value="other"> Other </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label for="birth"> Date of Birth </label>
+                                            <input type="date" class="form-control mb-3" id="birth" name="birth">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <label for="address"> Communication Address </label>
+                                            <input type="text" class="form-control mb-3" id="address" name="address">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label for="philhealth"> Family Philhealth Number</label>
+                                            <input type="number" class="form-control mb-3" id="philhealth" name="philhealth">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="fourps"> Family 4ps Number</label>
+                                            <input type="number" class="form-control mb-3" id="fourps" name="fourps">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label for="guardian_name"> Guardian's Name </label>
+                                            <input type="text" class="form-control mb-3" id="guardian_name" name="guardian_name">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="relationship"> Guardian's Relationship to SPC </label>
+                                            <input type="text" class="form-control mb-3" id="relationship" name="relationship">
+                                        </div>
+                                        <div class="col-4">
+                                            <label for="guardian_sex">Guardian's Sex</label>
+                                            <select class="form-control mb-3" id="guardian_sex" name="guardian_sex">
+                                                <option value="female"> Female </option>
+                                                <option value="male"> Male </option>
+                                                <option value="other"> Other </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <label for="number"> Contact Number </label>
+                                            <input type="tel" class="form-control mb-3" id="number" name="number">
+                                        </div>
+                                    </div>
+
+                                <!--Clicking on a confirm button will save the new water bottle into the WaterBottle model.-->
+                                <button type="submit" class="btn btn-primary"> Confirm </button>
+
+
+                                <!--Clicking on a cancel button will navigate the user back to the suppliers template -->
+                                <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+
+                                </form>
+
+                            
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+   
+{% endblock %}
