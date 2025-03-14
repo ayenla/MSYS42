@@ -1,0 +1,66 @@
+{% extends 'msys42app/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid" style="padding-top: 100px; padding-bottom: 20px;">
+    <div class="d-flex align-items-center">
+        
+        <form method="GET" action="" class="d-flex">
+            <input type="text" name="q" class="form-control" placeholder="Search..." style="width: 300px;">
+        </form>
+
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16" style="height: 35px; cursor: pointer; padding-left: 5px; padding-right: 5px;">
+            <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
+        </svg>
+
+        <a class="btn btn-success " href="{% url 'create_child_profile' %}" style="width: 200px; border-radius: 10px; margin-left: 20px;">Create Child Profile</a>
+    </div>
+</div>
+
+
+<div class="container-fluid">
+    <table class="table table-bordered table-striped text-left">
+        <thead class="table-dark">
+            <tr>
+                <th>SPC Code</th>
+                <th>Last Name</th>
+                <th>First Name</th>
+                <th>Middle Name</th>
+                <th>Sex</th>
+                <th>Age</th>
+                <th>Guardian</th>
+                <th>Communication Address</th>
+                <th>Contact No.</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for child in children %}
+            <tr>
+                <td>{{ child.code }}</td>
+                <td>{{ child.lastname }}</td>
+                <td>{{ child.firstname }}</td>
+                <td>{{ child.middlename }}</td>
+                <td>{{ child.sex }}</td>
+                <td>{{ child.age }}</td>
+                <td>{{ child.guardian_lastname }} {{ child.guardian_firstname }}</td>
+                <td>{{ child.address }}</td>
+                <td>
+                    {% for number in child.phone_numbers.all %}
+                        {{ number.number }}{% if not forloop.last %}, {% endif %}
+
+                    {% endfor %}
+                </td>
+                <td>
+                    <a class="btn btn-primary btn-sm" href="{% url 'view_child_profile' pk=child.pk%}">View</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" class="text-center">No child profiles available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

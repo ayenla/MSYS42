@@ -1,0 +1,30 @@
+body {
+    background-color: #f5f5f5;
+}
+
+.navbar {
+    background-color: white;
+    box-shadow: 0px 10px 1000px rgba(0, 0, 0, 0.1);
+    position: sticky;
+}
+
+.card {
+    background-color: white;
+    height: auto;
+    width: 100%;
+    max-width: 800px;
+    margin-top: 50px;
+    border-radius: 20px;
+    padding: 20px;
+    
+}
+
+.required {
+    color: red;
+    font-weight: bold;
+    margin-left: 3px;
+}
+
+table {
+    background-color: black;
+}

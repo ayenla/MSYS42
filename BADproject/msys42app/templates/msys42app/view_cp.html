@@ -1,0 +1,97 @@
+{% extends 'msys42app/base.html' %}
+{% load static %}
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0 ;padding: 0; width: 100%; position: sticky;">
+    <ul style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; ">
+        <li class="nav-item">
+            <a class="nav-link active" href="#" style="color: rgb(0, 0, 0); font-weight: 780; font-size: large; position: relative; padding-bottom: 0px;">
+                Overview
+                <span style="display: block; width: 81px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical History</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Physician’s Exam</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid" style="min-height: 100vh; display: flex; justify-content: center; align-items: top;">
+    <div class="card p-5" style="border-radius: 20px; width: 100%; max-width: 1500px;">
+        <h1 class="text-center mb-4">Profile Overview</h1>
+        <hr>
+        <div class="d-flex justify-content-between">
+            
+            <div class="card p-5 me-3" style="border-radius: 20px; width: 60%; max-width: 1000px;">
+                <h2> Personal Information </h2>
+                <h3> Child Information </h3>
+                <div class="info">
+                    <strong>SPC Code:</strong> {{child.code}}<br>
+                    <strong>Name:</strong> {{child.firstname}} {{child.middlename}} {{child.lastname}}<br>
+                    <strong>Sex:</strong> {{child.sex}}<br>
+                    <strong>Date of Birth:</strong> {{child.birth}}<br>
+                    <strong>Age:</strong> {{child.age}}<br>
+                    <strong>Blood Group:</strong> {{child.blood_group}}<br>
+                    <strong>Communication Address:</strong> {{child.address}}<br>
+                    <strong>Family's Philhealth Number:</strong> {{child.philhealth_number}}<br>
+                    <strong>4P's Number:</strong> {{child.fourps_number}}<br>
+                </div>
+                <br>
+                <h3> Guardian Information </h3>
+                <div class="info">
+                    <strong>Guardian Name:</strong> {{child.guardian_firstname}} {{child.guardian_middlename}} {{child.guardian_lastname}}<br>
+                    <strong>Relationship to SPC:</strong> {{child.guardian_relationship}}<br>
+                    <strong>Sex:</strong> {{child.guardian_sex}}<br>
+                    <strong>Contact Number:</strong> {{number.number}}<br>
+                </div>
+            </div>
+            
+            <div class="container-fluid d-flex flex-column align-items-center" style="width: 30%;">
+                <div class="card p-5" id="health_buttons" style="border-radius: 20px; align-items: center; gap: 10px; height: fit-content;">
+                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Medical History</button>
+                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Annual Medical Checks</button>
+                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Physician's Exam</button>
+                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Family Medical Record</button>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'edit_child_profile' pk=child.pk %}" 
+                       style="border-radius: 10px; border-color: #23B034; background-color: #23B034; 
+                              color: white; padding: 10px 50px; font-size: large; width: 300px; 
+                              text-align: center; display: inline-block; text-decoration: none;">
+                        Edit Profile
+                    </a>
+                </div>
+                
+            </div>
+        </div>    
+        <div class="card p-5 me-3" style="border-radius: 20px; width: 60%; max-width: 1000px;">
+            <h2> Education </h2>
+            <div class="educ_info">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Grade Level</th> 
+                        </tr>
+                    </thead>
+            </div>
+        </div>    
+    </div>
+</div>
+
+{% endblock %}
