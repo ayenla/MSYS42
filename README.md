@@ -1,3 +1,18 @@
+As of March 24, 2025 2:24 AM - Robin
+‼️STUFF THAT STILL NEEDS TO BE FIXED/ADDED‼️
+• Input Fields for Create Medical History are short
+• Update/Test form validations
+• Formatting of checkboxes (make 3 columned if possible)
+• Clear Button Under Each Section
+
+————————————————————————————————————————————————————————————
+• All dedicated/main features such as viewing and editing/adding has been added
+• FEATURE NOT ADDED: Clear Button under each section
+
+
+
+
+
 As of Mar 14, 2025  12:21 PM
 ‼️STUFF THAT STILL NEEDS TO BE FIXED‼️
 • Models for Education

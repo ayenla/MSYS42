@@ -7,19 +7,19 @@
 <nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0 ;padding: 0; width: 100%; position: sticky;">
     <ul style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; ">
         <li class="nav-item">
-            <a class="nav-link active" href="#" style="color: rgb(0, 0, 0); font-weight: 780; font-size: large; position: relative; padding-bottom: 0px;">
+            <a class="nav-link active" href="{% url 'view_child_profile' pk=child.id %}" style="color: rgb(0, 0, 0); font-weight: 780; font-size: large; position: relative; padding-bottom: 0px;">
                 Overview
                 <span style="display: block; width: 81px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical History</a>
+            <a class="nav-link" href="{% url 'view_medical_history' child.id %}" style="color: gray; font-weight: 750; font-size: large;"> Medical History </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Physician’s Exam</a>
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
@@ -63,7 +63,10 @@
             
             <div class="container-fluid d-flex flex-column align-items-center" style="width: 30%;">
                 <div class="card p-5" id="health_buttons" style="border-radius: 20px; align-items: center; gap: 10px; height: fit-content;">
-                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Medical History</button>
+                    <a href="{% url 'view_medical_history' child.id %}"  class="button"  style="border-radius: 10px; border-color: #1456A1; 
+                    background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px; text-align: center; display: inline-block; text-decoration: none;">
+                    Medical History
+                    </a>
                 <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Annual Medical Checks</button>
                 <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Physician's Exam</button>
                 <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Family Medical Record</button>

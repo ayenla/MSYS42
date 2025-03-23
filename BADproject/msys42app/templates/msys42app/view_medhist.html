@@ -1,0 +1,122 @@
+{% extends 'msys42app/base.html' %}
+{% load static %}
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0 ;padding: 0; width: 100%; position: sticky;">
+    <ul style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; ">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}" style="color: gray; font-weight: 780; font-size: large;">
+                Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'view_medical_history' child.id %}" style="color: rgb(0, 0, 0); font-weight: 750; font-size: large;"> 
+                Medical History 
+                <span style="display: block; width: 135px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 800px;">
+        <h2 class="mb-4 text-center">Medical History</h2>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="mb-3" style="padding-top: 0;">Medical Status</h4>
+                <div class="mt-3">
+                    <p class="mb-2"><strong>Current Status:</strong></p>
+                    <p class="ml-3">{{ medical_history.medical_status|default:"Not specified" }}</p>
+                </div>
+                <div class="mt-3">
+                    <p class="mb-2"><strong>History:</strong></p>
+                    <p class="ml-3">{{ medical_history.medical_status_history|default:"No history available" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="mb-3" style="padding-top: 0;">Disability Status</h4>
+                <div class="mt-3">
+                    <p class="mb-2"><strong>Current Status:</strong></p>
+                    <p class="ml-3">{{ medical_history.disability_status|default:"Not specified" }}</p>
+                </div>
+                <div class="mt-3">
+                    <p class="mb-2"><strong>History:</strong></p>
+                    <p class="ml-3">{{ medical_history.disability_status_history|default:"No history available" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="mb-3" style="padding-top: 0;">Allergies/Conditions</h4>
+                <div class="mt-3">
+                    <p class="mb-2"><strong>Allergy/Condition Type:</strong></p>
+                    {% if medical_history.allergies_conditions.exists %}
+                    <ul class="list-unstyled ml-3">
+                        {% for allergy in medical_history.allergies_conditions.all %}
+                            <li><i class="bi bi-dot"></i> {{ allergy.name }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="ml-3">No recorded allergies/conditions.</p>
+                    {% endif %}
+                </div>
+                <div class="mt-3">
+                    <p class="mb-2"><strong>History:</strong></p>
+                    <p class="ml-3">{{ medical_history.allergies_history|default:"No allergy history" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="mb-3" style="padding-top: 0;">Immunizations</h4>
+                {% if immunizations %}
+                <table class="table table-striped mt-3" style="border: 1px solid black; border-radius: 10px; overflow: hidden;">
+                    <thead style="background-color: #1B1B1B; color: white;">
+                        <tr>
+                            <th style="border: none; border-right: 1px solid #dee2e6; width: 20%;">Date</th>
+                            <th style="border: none;">Immunization Given</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for immunization in immunizations %}
+                        <tr>
+                            <td style="border: none; border-right: 1px solid #dee2e6;">{{ immunization.date|date:"Y-m-d" }}</td>
+                            <td style="border: none;">{{ immunization.immunization_given }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="ml-3 mt-3">No immunization records found.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="text-center mt-2">
+            <a href="{% url 'create_medical_history' child.id %}" class="btn btn-primary" style="background-color: #1fa12f; border-color: #1fa12f; color: white; border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem;">
+                {% if medical_history.medical_status %}Edit{% else %}Edit{% endif %} Medical History
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

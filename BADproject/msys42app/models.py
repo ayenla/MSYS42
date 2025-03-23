@@ -29,3 +29,45 @@ class ContactNumber(models.Model):
 
     def __str__(self):
         return f"{self.pk}: {self.child.firstname} {self.child.lastname} - {self.number}"
+    
+# MEDICAL HISTORY SECTION
+
+ALLERGY_CHOICES = [
+    ("asthma", "Asthma"),
+    ("behavioral_problem", "Behavioral Problem"),
+    ("heart_disease", "Heart Disease"),
+    ("hypertension", "Hypertension"),
+    ("malaria", "Malaria"),
+    ("cancer", "Cancer"),
+    ("chronic_cough", "Chronic Cough/Wheezing"),
+    ("arthritis", "IRA Arthritic"),
+    ("seizures", "Seizures"),
+    ("jaundice", "Jaundice"),
+    ("diabetes", "Diabetes"),
+    ("hearing_problem", "Hearing Problem"),
+    ("sickle_cell_anemia", "Sickle Cell Anemia"),
+    ("skin_problem", "Skin Problem"),
+    ("vision_problem", "Vision Problem"),
+]
+
+class MedicalHistory(models.Model):
+    child = models.OneToOneField(Child, on_delete=models.CASCADE)
+    medical_status = models.CharField(max_length=255)
+    medical_status_history = models.TextField()
+    disability_status = models.CharField(max_length=255)
+    disability_status_history = models.TextField()
+    allergies_conditions = models.ManyToManyField('AllergyCondition', blank=True)
+    allergies_history = models.TextField()
+
+class AllergyCondition(models.Model):
+    name = models.CharField(max_length=100, unique=True) 
+    
+    def __str__(self):
+        return self.name
+
+class Immunization(models.Model):
+    medical_history = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='immunizations')
+    date = models.DateField()
+    immunization_given = models.CharField(max_length=255)
+
+# END OF MEDICAL HISTORY
