@@ -1,0 +1,280 @@
+{% extends 'msys42app/base.html' %} 
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0 ;padding: 0; width: 100%; position: sticky;">
+    <ul style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; ">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}" style="color: gray; font-weight: 780; font-size: large; position: relative; padding-bottom: 0px;">
+                Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'view_medical_history' child.id %}" style="color: rgb(0, 0, 0); font-weight: 750; font-size: large;"> Medical History 
+                <span style="display: block; width: 135px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid" style="min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px;">
+    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 800px; margin: 0 auto;">
+        <h2 class="text-center">Edit Medical History</h2>
+
+        <form method="post" enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+
+            <!-- Medical History Fields -->
+            <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
+                <h4>Medical Status</h4>
+                <div class="mb-4">
+                    <div class="mb-2">
+                        <label style="font-weight: bold;">Medical Status:</label>
+                    </div>
+                    <div class="w-100">
+                        {{ form.medical_status }}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="mb-2">
+                        <label style="font-weight: bold;">History:</label>
+                    </div>
+                    <div class="w-100">
+                        {{ form.medical_status_history }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
+                <h4>Disability Status</h4>
+                <div class="mb-4">
+                    <div class="mb-2">
+                        <label style="font-weight: bold;">Disability Status:</label>
+                    </div>
+                    <div class="w-100">
+                        {{ form.disability_status }}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="mb-2">
+                        <label style="font-weight: bold;">History:</label>
+                    </div>
+                    <div class="w-100">
+                        {{ form.disability_status_history }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Allergies/Conditions -->
+            <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
+                <h4>Allergies/Conditions</h4>
+                <div class="mb-4">
+                    <div class="mb-2">
+                        <label style="font-weight: bold;">Allergies/Condition Type:</label>
+                    </div>
+                    <div class="w-100">
+                        {{ form.allergies_conditions }}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="mb-2">
+                        <label style="font-weight: bold;">History:</label>
+                    </div>
+                    <div class="w-100">
+                        {{ form.allergies_history }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Immunizations Table -->
+            <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
+                <h4>Immunizations</h4>
+                <table class="table table-striped" style="border: 1px solid black; border-radius: 10px; overflow: hidden;">
+                    <thead style="background-color: #1B1B1B; color: white;">
+                        <tr>
+                            <th style="border: none; border-right: 1px solid #dee2e6; width: 20%;">Date</th>
+                            <th style="border: none; border-right: 1px solid #dee2e6; width: 65%;">Immunization Given</th>
+                            <th style="border: none; width: 15%;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="immunization-table-body">
+                        {{ immunization_formset.management_form }}
+                        {% for form in immunization_formset %}
+                            <tr class="immunization-entry">
+                                <td style="border: none; border-right: 1px solid #dee2e6;">
+                                    {{ form.id }}
+                                    {{ form.date }}
+                                </td>
+                                <td style="border: none; border-right: 1px solid #dee2e6;">{{ form.immunization_given }}</td>
+                                <td style="border: none;">
+                                    {{ form.DELETE.as_hidden }}
+                                    <button type="button" class="btn btn-danger btn-sm delete-immunization">Delete</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="button" id="add-immunization" class="btn btn-outline-primary mt-2">Add Immunization</button>
+            </div>
+
+            <!-- Save Button -->
+            <div class="text-center mt-2">
+                <button type="submit" class="btn btn-success" style="background-color: #1fa12f; border-color: #1fa12f; color: white; border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem; margin-right: 10px;">
+                    Save
+                </button>
+                <a href="{% url 'view_medical_history' child.id %}" class="btn btn-danger" style="border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Update the TOTAL_FORMS count when adding new forms
+    function updateFormCount() {
+        const totalForms = document.getElementById('id_immunization-TOTAL_FORMS');
+        const forms = document.querySelectorAll('.immunization-entry');
+        totalForms.value = forms.length;
+    }
+
+    // Add form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        let hasError = false;
+        let errorMessage = '';
+        
+        // Check each immunization row
+        const rows = document.querySelectorAll('.immunization-entry');
+        rows.forEach((row, index) => {
+            const dateInput = row.querySelector('input[type="date"]');
+            const immunizationInput = row.querySelector('input[type="text"]');
+            const deleteCheckbox = row.querySelector('input[type="checkbox"]');
+            
+            // Skip validation if row is marked for deletion
+            if (deleteCheckbox && deleteCheckbox.checked) {
+                return;
+            }
+            
+            // Check if both fields are empty
+            if (!dateInput.value && !immunizationInput.value) {
+                hasError = true;
+                errorMessage = `Please fill in date and immunization details for row ${index + 1} in the Immunization Section Table.`;
+            }
+            // Check if only date is filled
+            else if (dateInput.value && !immunizationInput.value) {
+                hasError = true;
+                errorMessage = `Please fill in immunization details for row ${index + 1} in the Immunization Section Table.`;
+            }
+            // Check if only immunization is filled
+            else if (!dateInput.value && immunizationInput.value) {
+                hasError = true;
+                errorMessage = `Please fill in date for row ${index + 1} in the Immunization Section Table.`;
+            }
+        });
+        
+        if (hasError) {
+            alert(errorMessage);
+            return;
+        }
+        
+        // If validation passes, submit the form
+        this.submit();
+    });
+
+    // Update existing immunization inputs to take full width
+    document.addEventListener('DOMContentLoaded', function() {
+        const immunizationInputs = document.querySelectorAll('.immunization-entry input[type="text"], .immunization-entry input[type="date"]');
+        immunizationInputs.forEach(input => {
+            input.className = 'form-control w-100';
+        });
+    });
+
+    document.getElementById("add-immunization").addEventListener("click", function() {
+        let formIdx = document.querySelectorAll(".immunization-entry").length;
+        let newForm = "{{ immunization_formset.empty_form|escapejs }}".replace(/__prefix__/g, formIdx);
+    
+        // Create a new table row
+        let tr = document.createElement("tr");
+        tr.classList.add("immunization-entry");
+    
+        // Extract the fields from the new form HTML
+        let tempDiv = document.createElement("div");
+        tempDiv.innerHTML = newForm;
+        let inputs = tempDiv.querySelectorAll("input");
+    
+        // Ensure correct input fields are used
+        let tdDate = document.createElement("td");
+        let tdImmunization = document.createElement("td");
+        let tdAction = document.createElement("td");
+    
+        if (inputs.length > 1) {
+            // Add hidden DELETE field
+            const deleteInput = document.createElement('input');
+            deleteInput.type = 'checkbox';
+            deleteInput.name = `immunization-${formIdx}-DELETE`;
+            deleteInput.id = `immunization-${formIdx}-DELETE`;
+            deleteInput.style.display = 'none';
+            
+            // Set up date input
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.name = `immunization-${formIdx}-date`;
+            dateInput.id = `immunization-${formIdx}-date`;
+            dateInput.className = 'form-control';
+            tdDate.appendChild(dateInput);
+            
+            // Set up immunization input
+            const immunizationInput = document.createElement('input');
+            immunizationInput.type = 'text';
+            immunizationInput.name = `immunization-${formIdx}-immunization_given`;
+            immunizationInput.id = `immunization-${formIdx}-immunization_given`;
+            immunizationInput.className = 'form-control';
+            tdImmunization.appendChild(immunizationInput);
+            
+            tdAction.appendChild(deleteInput);
+        }
+    
+        // Add delete button
+        tdAction.innerHTML += '<button type="button" class="btn btn-danger btn-sm delete-immunization">Delete</button>';
+    
+        tr.appendChild(tdDate);
+        tr.appendChild(tdImmunization);
+        tr.appendChild(tdAction);
+    
+        document.getElementById("immunization-table-body").appendChild(tr);
+        updateFormCount();
+    });
+    
+    // Event delegation to handle delete button clicks
+    document.getElementById("immunization-table-body").addEventListener("click", function(event) {
+        if (event.target.classList.contains("delete-immunization")) {
+            const row = event.target.closest("tr");
+            const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = true;
+            }
+            row.style.display = 'none';
+        }
+    });
+</script>
+
+{% endblock %}
