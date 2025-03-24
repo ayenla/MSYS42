@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import models
-from .models import MedicalHistory, Immunization, AllergyCondition, Child
 from django import forms
 from .models import *
-from datetime import date
+from .forms import *
+from datetime import date, datetime
+
 from .forms import MedicalHistoryForm, ImmunizationForm
 from django.forms import inlineformset_factory
-
 def home(request):
     children = Child.objects.all()
     numbers = ContactNumber.objects.all()
@@ -177,3 +177,53 @@ def view_medical_history(request, child_id):
         'child': child
     })
 # END OF MEDICAL HISTORY
+
+#Start of Physician's Exams
+def home_physicians_exam(request, pk):
+    child = get_object_or_404(Child, pk=pk)
+    exams = PhysiciansExam.objects.filter(child=child)
+    return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
+
+def view_physicians_exam(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    exam = get_object_or_404(PhysiciansExam, pk=id)
+    return render(request, 'msys42app/view_phyexam.html', {'child': child, 'exam':exam })
+
+def create_physicians_exam(request, pk):
+    child = get_object_or_404(Child, pk=pk)
+    exams = PhysiciansExam.objects.filter(child=child)
+    years = list(range(datetime.now().year, 1899, -1))  # Generate a list of years
+
+    if request.method == "POST":
+        year = request.POST.get('year')
+        grade = request.POST.get('grade')
+        height = request.POST.get('height')
+        weight = request.POST.get('weight')
+        bp = request.POST.get('bp')
+        vision_right = request.POST.get('vision_right')
+        vision_left = request.POST.get('vision_left')
+        hearing_right = request.POST.get('hearing_right')
+        hearing_left = request.POST.get('hearing_left')
+        eyes = request.POST.get('eyes')
+        ears = request.POST.get('ears')
+        nose = request.POST.get('nose')
+        throat = request.POST.get('throat')
+        teeth = request.POST.get('teeth')
+        heart = request.POST.get('heart')
+        lungs = request.POST.get('lungs')
+        abdomen = request.POST.get('abdomen')
+        nervous_system = request.POST.get('nervous_system')
+        skin = request.POST.get('skin')
+        nutrition = request.POST.get('nutrition')
+
+        exam = PhysiciansExam.objects.create(
+             child=child, year=year, grade=grade, height=height, weight=weight, bp=bp,
+             vision_right=vision_right, vision_left=vision_left, hearing_right=hearing_right,
+             hearing_left=hearing_left, eyes=eyes, ears=ears, nose=nose, throat=throat,
+             teeth=teeth, heart=heart, lungs=lungs, abdomen=abdomen, nervous_system=nervous_system,
+             skin=skin, nutrition=nutrition
+         )
+        exam.save()
+        return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
+
+    return render(request, "msys42app/create_phyexam.html", {"child": child, "years": years, "exams":exams})
