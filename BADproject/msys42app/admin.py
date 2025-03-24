@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Child, ContactNumber
+from .models import *
 #UN: tanseis
 #PW: msys42
 admin.site.register(Child)
