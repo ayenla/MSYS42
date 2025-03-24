@@ -12,6 +12,11 @@ urlpatterns = [
 
     # Medical History Paths
     path('medical-history/add/<int:child_id>/', views.add_medical_history, name='create_medical_history'),
-    path('medical-history/view/<int:child_id>/', views.view_medical_history, name='view_medical_history')
+    path('medical-history/view/<int:child_id>/', views.view_medical_history, name='view_medical_history'), 
+
+    #Physician's Exam
+    path('physician-exam/home/<int:pk>/', views.home_physicians_exam, name='home_physicians_exam'),
+    path('physician-exam/add/<int:pk>/', views.create_physicians_exam, name='create_physicians_exam'),
+    path('physician-exam/view/<int:pk>/<int:id>/', views.view_physicians_exam, name='view_physicians_exam'),
 
 ]
