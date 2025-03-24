@@ -1,3 +1,27 @@
+As of March 24, 2025 7:38 PM - Iya
+• [TLDR] create and view physician's exam are working but needs more refining
+
+‼️STUFF THAT STILL NEEDS TO BE FIXED/ADDED‼️
+• [CREATE PHYSICIANS EXAM] Input Fields for 'OTHERS' are not yet properly implemented (no field yet, no add/plus button yet)
+• [CREATE PHYSICIANS EXAM] Select Year field lists all years from 1900 to current year. Years with existing physicians exams are not yet excluded.
+• [HOME PHYSICIANS EXAM] Listing of all physician's exams are not styled yet (they're not in card form as seen in the figma. they are currently in a weird table form)
+• [HOME PHYSICIANS EXAM] Not sure how to do the blurred view background for the year
+• [VIEW PHYSICIANS EXAM] Edit button doesn't work yet
+• [VIEW PHYSICIANS EXAM] Year is not properly formatted
+• [NAVBAR] Fix the format
+————————————————————————————————————————————————————————————
+✨THINGS THAT DO WORK ✨
+• [NAVBAR] Handles buttons for medical history and physician's exam
+• [HOME PHYSICIANS EXAM] Lists the physician's exam for the selected child
+• [HOME PHYSICIANS EXAM] Working Create Physicians Exam button
+• [HOME PHYSICIANS EXAM] Working View Physician's Exam button
+• [CREATE PHYSICIANS EXAM] Working Dropdowns for the fields
+• [CREATE PHYSICIANS EXAM] Working save button
+• [VIEW PHYSICIANS EXAM] You can view the saved physician's exam
+• [ADMIN] You can view the saved physician's exam
+
+
+————————————————————————————————————————————————————————————
 As of March 24, 2025 2:24 AM - Robin
 ‼️STUFF THAT STILL NEEDS TO BE FIXED/ADDED‼️
 • Input Fields for Create Medical History are short
@@ -8,7 +32,6 @@ As of March 24, 2025 2:24 AM - Robin
 ————————————————————————————————————————————————————————————
 • All dedicated/main features such as viewing and editing/adding has been added
 • FEATURE NOT ADDED: Clear Button under each section
-
 
 
 
