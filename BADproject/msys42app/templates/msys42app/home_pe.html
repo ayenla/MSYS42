@@ -1,0 +1,69 @@
+{% extends 'msys42app/base.html' %} 
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0 ;padding: 0; width: 100%; position: sticky;">
+    <ul style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; ">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}" style="color: gray; font-weight: 780; font-size: large; position: relative; padding-bottom: 0px;">
+                Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_medical_history' child.id %}" style="color: gray; font-weight: 750; font-size: large;"> Medical History </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
+        </li>
+        <a class="nav-link active" href="{% url 'home_physicians_exam' child.id %}" style="color: rgb(0, 0, 0); font-weight: 780; font-size: large; position: relative; padding-bottom: 0px;">
+            Physician's Exam
+            <span style="display: block; width: 81px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
+        </a>
+        <li class="nav-item">
+            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid" style="min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px;">
+    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 800px; margin: 0 auto;">
+        <h2 class="text-center" style="font-weight: 1000;"> Annual Physician's Exam </h2>
+        <a class="btn btn-success " href="{% url 'create_physicians_exam' child.id %}" style="width: 200px; border-radius: 10px; margin-left: 20px; align-self: center; margin-top: 20px;">Add Physician's Exam</a>
+        <div class="d-flex flex-wrap justify-content-center gap-3" style="margin-top: 50px;">
+            {% for exam in exams %}
+            <thead class="table-dark">
+                
+                <tr>
+                    <th> YEAR </th>
+                    <th> </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        {{exam.year}}
+                    </td>
+                    <td>
+                        <a class="btn btn-primary btn-sm" href="{% url 'view_physicians_exam' pk=child.pk id=exam.pk %}">View</a> 
+                    </td>
+                </tr>
+                
+                
+            </tbody>
+            {% endfor %}
+        
+        </div>
+
+        
+    </div>
+</div>
+
+{% endblock %}
