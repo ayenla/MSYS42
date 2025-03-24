@@ -1,5 +1,5 @@
 from django import forms
-from .models import MedicalHistory, Immunization, AllergyCondition
+from .models import *
 
 
 ALLERGY_CHOICES = [
@@ -88,3 +88,34 @@ class ImmunizationForm(forms.ModelForm):
                 'style': 'height: 50px; font-size: 1rem; padding: 10px;'
             })
         }
+year_choices = [(year, year) for year in range(2000, datetime.datetime.now().year + 1)]
+conditions = [("N", "N"), ("A", "A"), ("C", "C"), ("R", "R")]
+
+class PhysiciansExamForm(forms.ModelForm):
+    child = forms.ModelChoiceField(queryset=Child.objects.all(), required=True)
+    year = forms.ChoiceField(choices=year_choices, required=True)
+    grade = forms.ChoiceField(choices=conditions, required=True)
+    height = forms.ChoiceField(choices=conditions, required=True)
+    weight = forms.ChoiceField(choices=conditions, required=True)
+    bp = forms.ChoiceField(choices=conditions, required=True)
+    vision_right = forms.ChoiceField(choices=conditions, required=True)
+    vision_left = forms.ChoiceField(choices=conditions, required=True)
+    hearing_right = forms.ChoiceField(choices=conditions, required=True)
+    hearing_left = forms.ChoiceField(choices=conditions, required=True)
+    eyes = forms.ChoiceField(choices=conditions, required=True)
+    ears = forms.ChoiceField(choices=conditions, required=True)
+    nose = forms.ChoiceField(choices=conditions, required=True)
+    throat = forms.ChoiceField(choices=conditions, required=True)
+    teeth = forms.ChoiceField(choices=conditions, required=True)
+    heart = forms.ChoiceField(choices=conditions, required=True)
+    lungs = forms.ChoiceField(choices=conditions, required=True)
+    abdomen = forms.ChoiceField(choices=conditions, required=True)
+    nervous_system = forms.ChoiceField(choices=conditions, required=True)
+    skin = forms.ChoiceField(choices=conditions, required=True)
+    nutrition = forms.ChoiceField(choices=conditions, required=True)
+    other = forms.ChoiceField(choices=conditions, required=True)
+    other_label = forms.CharField(max_length=20)
+
+    class Meta:
+        model = PhysiciansExam
+        fields = "__all__"
