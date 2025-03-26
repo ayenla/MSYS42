@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from django.urls import path
 from . import views
@@ -18,5 +17,9 @@ urlpatterns = [
     path('physician-exam/home/<int:pk>/', views.home_physicians_exam, name='home_physicians_exam'),
     path('physician-exam/add/<int:pk>/', views.create_physicians_exam, name='create_physicians_exam'),
     path('physician-exam/view/<int:pk>/<int:id>/', views.view_physicians_exam, name='view_physicians_exam'),
+
+    path('child/<int:child_id>/annual-medical-check/', views.annual_medical_check_list, name='annual_medical_check_list'),
+    path('child/<int:child_id>/annual-medical-check/create/', views.create_annual_medical_check, name='create_annual_medical_check'),
+    path('child/<int:child_id>/annual-medical-check/<int:year>/', views.view_annual_medical_check, name='view_annual_medical_check'),
 
 ]
