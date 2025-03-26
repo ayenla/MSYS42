@@ -102,3 +102,30 @@ class PhysiciansExam(models.Model):
     other_label = models.CharField(max_length=20, default="other")
 
 #END PHYSICIAN'S EXAM
+
+class AnnualMedicalCheck(models.Model):
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='annual_medical_checks')
+    date = models.DateField()
+    height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # in cm
+    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # in kg
+    bmi = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    hemoglobin = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    condition = models.TextField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True)
+
+    def calculate_bmi(self):
+        if self.height and self.weight and self.height > 0 and self.weight > 0:
+            # BMI = weight (kg) / (height (m))²
+            height_in_meters = self.height / 100
+            return round(self.weight / (height_in_meters * height_in_meters), 2)
+        return None
+
+    def save(self, *args, **kwargs):
+        self.bmi = self.calculate_bmi()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Medical Check for {self.child.firstname} {self.child.lastname} on {self.date}"
+
+    class Meta:
+        ordering = ['-date']  # Order by date in descending order (newest first)

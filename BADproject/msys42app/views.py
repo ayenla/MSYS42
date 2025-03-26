@@ -227,3 +227,40 @@ def create_physicians_exam(request, pk):
         return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
 
     return render(request, "msys42app/create_phyexam.html", {"child": child, "years": years, "exams":exams})
+
+def annual_medical_check_list(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    medical_checks = AnnualMedicalCheck.objects.filter(child=child)
+    return render(request, 'msys42app/annual_medical_check_list.html', {
+        'child': child,
+        'medical_checks': medical_checks
+    })
+
+def create_annual_medical_check(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    if request.method == 'POST':
+        form = AnnualMedicalCheckForm(request.POST)
+        if form.is_valid():
+            medical_check = form.save(commit=False)
+            medical_check.child = child
+            medical_check.save()
+            return redirect('annual_medical_check_list', child_id=child_id)
+    else:
+        form = AnnualMedicalCheckForm()
+    return render(request, 'msys42app/create_annual_medical_check.html', {
+        'form': form,
+        'child': child
+    })
+
+def view_annual_medical_check(request, child_id, year):
+    child = get_object_or_404(Child, id=child_id)
+    medical_checks = AnnualMedicalCheck.objects.filter(
+        child=child,
+        date__year=year
+    ).order_by('date')
+    
+    return render(request, 'msys42app/view_annual_medical_check.html', {
+        'child': child,
+        'year': year,
+        'medical_checks': medical_checks
+    })

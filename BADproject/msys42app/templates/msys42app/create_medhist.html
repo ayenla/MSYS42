@@ -36,17 +36,17 @@
 {% block content %}
 <div class="container-fluid" style="min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px;">
     <div class="card p-4 shadow-sm" style="width: 100%; max-width: 800px; margin: 0 auto;">
-        <h2 class="text-center">Edit Medical History</h2>
+        <h2 class="text-center" style="font-weight: 1000;">Edit Medical History</h2>
 
         <form method="post" enctype="multipart/form-data" class="mt-3">
             {% csrf_token %}
 
             <!-- Medical History Fields -->
             <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
-                <h4>Medical Status</h4>
+                <h4 class="mb-3" style="padding-top: 0; font-weight: 1000;">Medical Status</h4>
                 <div class="mb-4">
                     <div class="mb-2">
-                        <label style="font-weight: bold;">Medical Status:</label>
+                        <label style="font-weight: bold;">Current Status:</label>
                     </div>
                     <div class="w-100">
                         {{ form.medical_status }}
@@ -63,10 +63,10 @@
             </div>
 
             <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
-                <h4>Disability Status</h4>
+                <h4 class="mb-3" style="padding-top: 0; font-weight: 1000;">Disability Status</h4>
                 <div class="mb-4">
                     <div class="mb-2">
-                        <label style="font-weight: bold;">Disability Status:</label>
+                        <label style="font-weight: bold;">Current Status:</label>
                     </div>
                     <div class="w-100">
                         {{ form.disability_status }}
@@ -84,7 +84,7 @@
 
             <!-- Allergies/Conditions -->
             <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
-                <h4>Allergies/Conditions</h4>
+                <h4 class="mb-3" style="padding-top: 0; font-weight: 1000;">Allergies/Conditions</h4>
                 <div class="mb-4">
                     <div class="mb-2">
                         <label style="font-weight: bold;">Allergies/Condition Type:</label>
@@ -105,7 +105,7 @@
 
             <!-- Immunizations Table -->
             <div class="card p-3 mb-3 shadow-sm" style="width: 100%;">
-                <h4>Immunizations</h4>
+                <h4 class="mb-3" style="padding-top: 0; font-weight: 1000;">Immunizations</h4>
                 <table class="table table-striped" style="border: 1px solid black; border-radius: 10px; overflow: hidden;">
                     <thead style="background-color: #1B1B1B; color: white;">
                         <tr>

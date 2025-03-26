@@ -120,3 +120,40 @@ class PhysiciansExamForm(forms.ModelForm):
     class Meta:
         model = PhysiciansExam
         fields = "__all__"
+
+class AnnualMedicalCheckForm(forms.ModelForm):
+    class Meta:
+        model = AnnualMedicalCheck
+        fields = ['date', 'height', 'weight', 'hemoglobin', 'condition', 'notes']
+        widgets = {
+            'date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control w-100',
+                'style': 'height: 50px; font-size: 1rem; padding: 10px;'
+            }),
+            'height': forms.NumberInput(attrs={
+                'class': 'form-control w-100',
+                'style': 'height: 50px; font-size: 1rem; padding: 10px;',
+                'step': '0.01'
+            }),
+            'weight': forms.NumberInput(attrs={
+                'class': 'form-control w-100',
+                'style': 'height: 50px; font-size: 1rem; padding: 10px;',
+                'step': '0.01'
+            }),
+            'hemoglobin': forms.NumberInput(attrs={
+                'class': 'form-control w-100',
+                'style': 'height: 50px; font-size: 1rem; padding: 10px;',
+                'step': '0.01'
+            }),
+            'condition': forms.Textarea(attrs={
+                'class': 'form-control w-100',
+                'rows': 4,
+                'style': 'min-height: 100px; font-size: 1rem; padding: 10px; resize: vertical;'
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-control w-100',
+                'rows': 4,
+                'style': 'min-height: 100px; font-size: 1rem; padding: 10px; resize: vertical;'
+            }),
+        }

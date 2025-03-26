@@ -16,10 +16,10 @@
             <a class="nav-link" href="{% url 'view_medical_history' child.id %}" style="color: gray; font-weight: 750; font-size: large;"> Medical History </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
+            <a class="nav-link" href="{% url 'annual_medical_check_list' child.id %}" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
@@ -67,9 +67,12 @@
                     background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px; text-align: center; display: inline-block; text-decoration: none;">
                     Medical History
                     </a>
-                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Annual Medical Checks</button>
-                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Physician's Exam</button>
-                <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Family Medical Record</button>
+                    <a href="{% url 'annual_medical_check_list' child.id %}" class="button" style="border-radius: 10px; border-color: #1456A1; 
+                    background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px; text-align: center; display: inline-block; text-decoration: none;">
+                    Annual Medical Check
+                    </a>
+                    <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Physician's Exam</button>
+                    <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Family Medical Record</button>
                 </div>
                 <div class="mt-3">
                     <a href="{% url 'edit_child_profile' pk=child.pk %}" 

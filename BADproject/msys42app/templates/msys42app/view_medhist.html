@@ -18,10 +18,10 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
+            <a class="nav-link" href="{% url 'annual_medical_check_list' child.id %}" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
@@ -34,7 +34,7 @@
 {% block content %}
 <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 100vh;">
     <div class="card p-4 shadow-sm" style="width: 100%; max-width: 800px;">
-        <h2 class="mb-4 text-center">Medical History</h2>
+        <h2 class="mb-4 text-center" style="font-weight: 1000;">Medical History</h2>
 
         <div class="card mb-3">
             <div class="card-body">
@@ -113,6 +113,9 @@
         </div>
 
         <div class="text-center mt-2">
+            <a href="{% url 'view_child_profile' pk=child.id %}" class="btn btn-secondary me-2" style="border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem;">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
             <a href="{% url 'create_medical_history' child.id %}" class="btn btn-primary" style="background-color: #1fa12f; border-color: #1fa12f; color: white; border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem;">
                 {% if medical_history.medical_status %}Edit{% else %}Edit{% endif %} Medical History
             </a>

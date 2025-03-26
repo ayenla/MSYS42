@@ -1,3 +1,13 @@
+————————————————————————————————————————————————————————————
+As of March 24, 2025 2:24 AM - Robin
+‼️STUFF ADDED‼️
+• Programmed ADD/VIEW of Annual Medical Checks (general look)
+• added back to list button when viewing a specific annual med check record
+• Updated Navbar hyperlinking
+
+———————————————————————————————————————————————————————————
+
+
 As of March 24, 2025 7:38 PM - Iya
 • [TLDR] create and view physician's exam are working but needs more refining
 
