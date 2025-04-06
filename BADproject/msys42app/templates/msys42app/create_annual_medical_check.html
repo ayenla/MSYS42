@@ -38,14 +38,45 @@
     <div class="card shadow-sm" style="max-width: 800px; margin: 0 auto;">
         <div class="card-body">
             <h2 class="card-title mb-4" style="font-weight: 1000;" >Add Annual Medical Check</h2>
-            <form method="post">
+            
+            {% if messages %}
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                    <li>{{ message }}</li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <p class="mb-0">{{ field.label }}: {{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'create_annual_medical_check' child.id %}">
                 {% csrf_token %}
                 
                 <div class="mb-4">
-                    <label for="{{ form.date.id_for_label }}" class="form-label">Date:</label>
+                    <label for="{{ form.date.id_for_label }}" class="form-label">Date: <span class="text-danger">*</span></label>
                     <div class="w-100">
                         {{ form.date }}
                     </div>
+                    {% if form.date.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.date.errors }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="mb-4">

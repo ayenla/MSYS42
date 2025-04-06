@@ -2,21 +2,59 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid" style="padding-top: 100px; padding-bottom: 20px;">
+<div class="container-fluid pt-100 pb-20">
     <div class="d-flex align-items-center">
-        
-        <form method="GET" action="" class="d-flex">
-            <input type="text" name="q" class="form-control" placeholder="Search..." style="width: 300px;">
-        </form>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by code or name..." value="{{ search_query }}">
+            <div id="clearSearch" class="clear-search-btn {% if not search_query %}d-none{% endif %}">
+                <!-- X icon for clearing search -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                </svg>
+            </div>
+        </div>
 
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16" style="height: 35px; cursor: pointer; padding-left: 5px; padding-right: 5px;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders slider-icon" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
         </svg>
 
-        <a class="btn btn-success " href="{% url 'create_child_profile' %}" style="width: 200px; border-radius: 10px; margin-left: 20px;">Create Child Profile</a>
+        <a class="btn btn-success create-btn" href="{% url 'create_child_profile' %}">Create Child Profile</a>
     </div>
 </div>
 
+<style>
+    .pt-100 {
+        padding-top: 100px;
+    }
+    .pb-20 {
+        padding-bottom: 20px;
+    }
+    .search-container {
+        position: relative;
+    }
+    .search-input {
+        width: 300px;
+    }
+    .clear-search-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+    }
+    .slider-icon {
+        height: 35px;
+        cursor: pointer;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .create-btn {
+        width: 200px;
+        border-radius: 10px;
+        margin-left: 20px;
+    }
+</style>
 
 <div class="container-fluid">
     <table class="table table-bordered table-striped text-left">
@@ -34,7 +72,7 @@
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="childrenTableBody">
             {% for child in children %}
             <tr>
                 <td>{{ child.code }}</td>
@@ -48,7 +86,6 @@
                 <td>
                     {% for number in child.phone_numbers.all %}
                         {{ number.number }}{% if not forloop.last %}, {% endif %}
-
                     {% endfor %}
                 </td>
                 <td>
@@ -56,11 +93,67 @@
                 </td>
             </tr>
             {% empty %}
-            <tr>
-                <td colspan="10" class="text-center">No child profiles available.</td>
+            <tr id="noResultsRow">
+                <td colspan="10" class="text-center">
+                    {% if search_query %}
+                        No child profiles match for "{{ search_query }}"
+                    {% else %}
+                        No child profiles available.
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const clearSearch = document.getElementById('clearSearch');
+        
+        // Show/hide clear button based on input content
+        searchInput.addEventListener('input', function() {
+            if (this.value) {
+                clearSearch.classList.remove('d-none');
+            } else {
+                clearSearch.classList.add('d-none');
+            }
+            
+            // Perform instant search
+            performSearch(this.value);
+        });
+        
+        // Clear search when X is clicked
+        clearSearch.addEventListener('click', function() {
+            searchInput.value = '';
+            clearSearch.classList.add('d-none');
+            performSearch('');
+        });
+        
+        // Function to perform AJAX search
+        function performSearch(query) {
+            // Create AJAX request
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `?q=${encodeURIComponent(query)}`, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Extract the table body from the response
+                    const responseHtml = xhr.responseText;
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(responseHtml, 'text/html');
+                    const newTableBody = doc.getElementById('childrenTableBody');
+                    
+                    if (newTableBody) {
+                        document.getElementById('childrenTableBody').innerHTML = newTableBody.innerHTML;
+                    }
+                }
+            };
+            
+            xhr.send();
+        }
+    });
+</script>
 {% endblock %}

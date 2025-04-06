@@ -18,8 +18,10 @@ urlpatterns = [
     path('physician-exam/add/<int:pk>/', views.create_physicians_exam, name='create_physicians_exam'),
     path('physician-exam/view/<int:pk>/<int:id>/', views.view_physicians_exam, name='view_physicians_exam'),
 
+    #Annual Medical Check
     path('child/<int:child_id>/annual-medical-check/', views.annual_medical_check_list, name='annual_medical_check_list'),
     path('child/<int:child_id>/annual-medical-check/create/', views.create_annual_medical_check, name='create_annual_medical_check'),
     path('child/<int:child_id>/annual-medical-check/<int:year>/', views.view_annual_medical_check, name='view_annual_medical_check'),
-
+    path('child/<int:child_id>/annual-medical-check/<int:check_id>/edit/', views.edit_annual_medical_check, name='edit_annual_medical_check'),
+    path('child/<int:child_id>/annual-medical-check/<int:check_id>/delete/', views.delete_annual_medical_check, name='delete_annual_medical_check'),
 ]

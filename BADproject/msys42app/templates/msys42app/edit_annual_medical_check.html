@@ -1,0 +1,291 @@
+{% extends 'msys42app/base.html' %}
+{% load static %}
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0; padding: 0; width: 100%; position: sticky;">
+    <ul class="child-nav" style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0;">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}">
+                Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_medical_history' child.id %}">
+                Medical History
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'annual_medical_check_list' child.id %}">
+                Medical Checks
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}">Physician's Exam</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 20px;">
+    <div class="card shadow-sm" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-body">
+            <h2 class="card-title mb-4" style="font-weight: 1000;">Edit Annual Medical Check</h2>
+            
+            {% if messages %}
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                    <li>{{ message }}</li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <p class="mb-0">{{ field.label }}: {{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'edit_annual_medical_check' child_id=child.id check_id=medical_check.id %}" id="medicalCheckForm">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="{{ form.date.id_for_label }}" class="form-label">Date: <span class="text-danger">*</span></label>
+                    <div class="w-100">
+                        {{ form.date }}
+                    </div>
+                    {% if form.date.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.date.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.height.id_for_label }}" class="form-label">Height (cm):</label>
+                    <div class="w-100">
+                        {{ form.height }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.weight.id_for_label }}" class="form-label">Weight (kg):</label>
+                    <div class="w-100">
+                        {{ form.weight }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.hemoglobin.id_for_label }}" class="form-label">Hemoglobin (g/dL):</label>
+                    <div class="w-100">
+                        {{ form.hemoglobin }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.condition.id_for_label }}" class="form-label">Condition:</label>
+                    <div class="w-100">
+                        {{ form.condition }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">Notes:</label>
+                    <div class="w-100">
+                        {{ form.notes }}
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <a href="{% url 'view_annual_medical_check' child_id=child.id year=medical_check.date.year %}" class="btn btn-secondary me-2" style="width: 150px;">
+                        <i class="fas fa-arrow-left"></i> Cancel
+                    </a>
+                    <button type="button" id="saveChangesBtn" class="btn btn-primary" style="background-color: #1fa12f; border-color: #1fa12f; width: 150px;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Horizontal Line -->
+            <hr class="my-2" style="width: 50%; margin-left: auto; margin-right: auto;">
+            
+            <!-- Delete Button -->
+            <div class="text-center">
+                <button type="button" id="deleteRecordBtn" class="btn btn-danger" style="width: 150px;">
+                    <i class="fas fa-trash"></i> Delete Record
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        You are about to save the changes made to this Annual Medical Check Entry.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" id="confirmSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteConfirmationModalLabel">Delete Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        You are about to delete this Annual Medical Check Entry.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a href="{% url 'delete_annual_medical_check' child_id=child.id check_id=medical_check.id %}" class="btn btn-danger" id="confirmDelete">Delete</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    .w-100 {
+        width: 100%;
+    }
+    .w-100 input, .w-100 textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize modal functionality
+        initBootstrapComponents();
+        
+        // Handle the Save Changes button
+        document.getElementById('saveChangesBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            showConfirmationModal();
+        });
+        
+        // Handle the Confirm Save button
+        document.getElementById('confirmSave').addEventListener('click', function() {
+            // Submit the form
+            document.getElementById('medicalCheckForm').submit();
+        });
+        
+        // Handle the Delete Record button
+        document.getElementById('deleteRecordBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            showDeleteConfirmationModal();
+        });
+    });
+    
+    // Initialize Bootstrap components
+    function initBootstrapComponents() {
+        // Make sure we have access to Bootstrap
+        if (typeof bootstrap !== 'undefined') {
+            // Bootstrap is already available
+            console.log('Bootstrap is available');
+        } else {
+            // Load Bootstrap if it's not available
+            console.log('Bootstrap not found, attempting to load');
+            
+            // Create a script element to load Bootstrap
+            var bootstrapScript = document.createElement('script');
+            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js';
+            bootstrapScript.integrity = 'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4';
+            bootstrapScript.crossOrigin = 'anonymous';
+            document.head.appendChild(bootstrapScript);
+        }
+    }
+    
+    // Show the confirmation modal
+    function showConfirmationModal() {
+        const modalElement = document.getElementById('confirmationModal');
+        
+        // Create and show modal with Bootstrap if available
+        if (typeof bootstrap !== 'undefined') {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            // Fallback if Bootstrap isn't available yet
+            setTimeout(function() {
+                if (typeof bootstrap !== 'undefined') {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                } else {
+                    // Manual fallback
+                    modalElement.style.display = 'block';
+                    modalElement.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            }, 500); // Wait for Bootstrap to load
+        }
+    }
+    
+    // Show the delete confirmation modal
+    function showDeleteConfirmationModal() {
+        const modalElement = document.getElementById('deleteConfirmationModal');
+        
+        // Create and show modal with Bootstrap if available
+        if (typeof bootstrap !== 'undefined') {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            // Fallback if Bootstrap isn't available yet
+            setTimeout(function() {
+                if (typeof bootstrap !== 'undefined') {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                } else {
+                    // Manual fallback
+                    modalElement.style.display = 'block';
+                    modalElement.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            }, 500); // Wait for Bootstrap to load
+        }
+    }
+</script>
+{% endblock %} 
