@@ -8,4 +8,5 @@ admin.site.register(PhysiciansExam)
 admin.site.register(Immunization)
 admin.site.register(AllergyCondition)
 admin.site.register(MedicalHistory)
-
+admin.site.register(FamilyMember)
+admin.site.register(FamilyMedicalRecord)

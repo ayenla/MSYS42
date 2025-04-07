@@ -105,6 +105,71 @@ def create_child_profile(request):
 
     return render(request, 'msys42app/create_cp.html')
 
+#Family Medical Records
+def view_family_medicals(request, pk): 
+    child = get_object_or_404(Child, pk=pk)
+    members = FamilyMember.objects.filter(child=child)
+    
+    if request.method == "POST":
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        middlename = request.POST.get('middlename')
+        relationship = request.POST.get('relationship')
+        sex = request.POST.get('sex')
+    
+        member = FamilyMember.objects.create(
+            child=child, fm_firstname=firstname, fm_lastname=lastname, 
+            fm_middlename=middlename, fm_relationship=relationship,
+            fm_sex=sex
+        )
+        member.save() 
+        return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
+    
+    return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
+
+def view_family_medical_record(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    member = get_object_or_404(FamilyMember, pk=id)
+    records = FamilyMedicalRecord.objects.filter(member=member)
+
+    return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
+
+def edit_family_medical_record(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    member = get_object_or_404(FamilyMember, pk=id)
+    records = FamilyMedicalRecord.objects.filter(member=member)
+    
+    if request.method == "POST":
+        # Assuming multiple new records are submitted
+        dates = request.POST.getlist('records[][date]')
+        ages = request.POST.getlist('records[][age]')
+        heights = request.POST.getlist('records[][height]')
+        weights = request.POST.getlist('records[][weight]')
+        bmis = request.POST.getlist('records[][bmi]')
+        bps = request.POST.getlist('records[][bp]')
+        temps = request.POST.getlist('records[][temperature]')
+        statuses = request.POST.getlist('records[][medical_status]')
+        meds = request.POST.getlist('records[][medication]')
+        remarks = request.POST.getlist('records[][remarks]')
+
+        for i in range(len(dates)):
+            FamilyMedicalRecord.objects.create(
+                member=member,
+                date=dates[i],
+                age=ages[i],
+                height=heights[i],
+                weight=weights[i],
+                bp=bps[i],
+                temp=temps[i],
+                med_stat=statuses[i],
+                medication=meds[i],
+                remarks=remarks[i]
+            )
+        return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
+    
+
+    return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
+
 # START OF MEDICAL HISTORY
 # Create formset for Immunization
 ImmunizationFormSet = inlineformset_factory(
@@ -116,6 +181,7 @@ ImmunizationFormSet = inlineformset_factory(
     validate_min=False,
     validate_max=False
 )
+
 
 def add_medical_history(request, child_id):
     child = get_object_or_404(Child, id=child_id)
@@ -256,6 +322,8 @@ def create_physicians_exam(request, pk):
         nervous_system = request.POST.get('nervous_system')
         skin = request.POST.get('skin')
         nutrition = request.POST.get('nutrition')
+        skin = request.POST.get('skin')
+        nutrition = request.POST.get('nutrition')
         other_label = request.POST.get('other_label')
         other = request.POST.get('other')
 
@@ -270,6 +338,7 @@ def create_physicians_exam(request, pk):
         return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
 
     return render(request, "msys42app/create_phyexam.html", {"child": child, "years": available_years, "exams":exams})
+
 
 def annual_medical_check_list(request, child_id):
     child = get_object_or_404(Child, id=child_id)

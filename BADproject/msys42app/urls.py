@@ -9,6 +9,11 @@ urlpatterns = [
     path('view/<int:pk>/', views.view_child_profile, name='view_child_profile'),
     path('edit/<int:pk>/', views.edit_child_profile, name='edit_child_profile'),
 
+    #Family Medical Records
+    path('family-medical-records/<int:pk>/', views.view_family_medicals, name='view_family_medicals'),
+    path('family-medical-records/<int:pk>/view/<int:id>/', views.view_family_medical_record, name='view_family_medical_record'),
+    path('family-medical-records/<int:pk>/edit/<int:id>/', views.edit_family_medical_record, name='edit_family_medical_record'),
+
     # Medical History Paths
     path('medical-history/add/<int:child_id>/', views.add_medical_history, name='create_medical_history'),
     path('medical-history/view/<int:child_id>/', views.view_medical_history, name='view_medical_history'), 

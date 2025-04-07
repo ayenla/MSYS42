@@ -56,6 +56,51 @@ table {
     width: 100%; /* Makes it take up the entire column width */
     max-width: 400px; /* Adjust this as needed */
 }
+ 
+/* The popup form - hidden by default */
+.form-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px solid #5cb85c;
+    border-radius: 50px;
+    z-index: 9;
+    width: 400px;
+  }
+  
+  /* Add styles to the form container */
+  .form-container {
+    max-width: 400px;
+    padding: 10px;
+    background-color: white;
+    border-radius: 50px;
+    width: 100%;
+    margin: 0 auto;    
+  }
+    
+  .form-container label {
+    display: block;
+    margin-top: 5px;
+    margin-bottom: 0px;
+    text-align: left;
+    margin-left: 20px;
+  }
 
-
-
+  .form-container input[type="text"] {
+    width: 80%;
+    padding: 4px;
+    font-size: 12px;
+    border-color: black;
+    margin-left: 20px;
+    
+  }
+  .form-container select {
+    width: 80%;
+    padding: 4px;
+    font-size: 12px;
+    border-color: black;
+    margin-left: 20px;
+  }
+  
