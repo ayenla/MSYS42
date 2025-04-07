@@ -256,13 +256,15 @@ def create_physicians_exam(request, pk):
         nervous_system = request.POST.get('nervous_system')
         skin = request.POST.get('skin')
         nutrition = request.POST.get('nutrition')
+        other_label = request.POST.get('other_label')
+        other = request.POST.get('other')
 
         exam = PhysiciansExam.objects.create(
              child=child, year=year, grade=grade, height=height, weight=weight, bp=bp,
              vision_right=vision_right, vision_left=vision_left, hearing_right=hearing_right,
              hearing_left=hearing_left, eyes=eyes, ears=ears, nose=nose, throat=throat,
              teeth=teeth, heart=heart, lungs=lungs, abdomen=abdomen, nervous_system=nervous_system,
-             skin=skin, nutrition=nutrition
+             skin=skin, nutrition=nutrition, other_label=other_label, other=other
          )
         exam.save()
         return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
