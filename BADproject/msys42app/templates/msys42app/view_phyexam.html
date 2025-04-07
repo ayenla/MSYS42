@@ -128,10 +128,16 @@
                     <td>Nutrition</td>
                     <td>{{ exam.nutrition }}</td>
                 </tr>
+                {% if exam.other_label != "other" and exam.other != "NE" %}
+                <tr>
+                    <td>{{ exam.other_label }}</td>
+                    <td>{{ exam.other }}</td>
+                </tr>
+                {% endif %}
             </table>
         </div>
 
-        <!-- Save Button -->
+        
         <button  class="btn btn-success"> Edit </button>
     
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>        
