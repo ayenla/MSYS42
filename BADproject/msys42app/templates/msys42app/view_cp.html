@@ -70,8 +70,14 @@
                     background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px; text-align: center; display: inline-block; text-decoration: none;">
                     Annual Medical Check
                     </a>
-                    <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Physician's Exam</button>
-                    <button class="button" style="border-radius: 10px; border-color: #1456A1; background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px;">Family Medical Record</button>
+                    <a href="{% url 'home_physicians_exam' child.id %}" class="button" style="border-radius: 10px; border-color: #1456A1; 
+                    background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px; text-align: center; display: inline-block; text-decoration: none;">
+                    Physician's Exam
+                    </a>
+                    <a href="#" class="button" style="border-radius: 10px; border-color: #1456A1; 
+                    background-color: #1456A1; color: white; padding: 10px; font-size: large; width: 300px; text-align: center; display: inline-block; text-decoration: none;">
+                    Family Medical Record
+                    </a>
                 </div>
                 <div class="mt-3">
                     <a href="{% url 'edit_child_profile' pk=child.pk %}" 
