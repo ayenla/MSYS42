@@ -1,3 +1,22 @@
+————————————————————————————————————————————————————————————
+As of April 7, 2025 8:00 PM - Iya
+[TLDR]
+• FIXED PHYSICIAN'S EXAM [Completed]
+• Started Family Medical Records
+
+[IMPORTANT]
+• Added other field for PE- only 1 "other" field is allowed (not sure if this is right or if i should let them add as many other fields as needed)
+• Created View Family Medical Records (View Family Members)
+• Created Add Family Member Pop up(Functional- UI needs work) 
+• Created View Family Medical Record
+• Created Edit Family Medical Record (not functional- will result in an error if u try to save)
+
+
+[MISCELLANEOUS]
+• Fixed home page for physician's exams
+• Fixed buttons for physician's exam and family medical records in view_cp
+• Fixed Year List in PE to remove years with existing exams
+• Added Labels for PE
 
 ————————————————————————————————————————————————————————————
 As of April 7, 2025 2:24 AM - Robin
