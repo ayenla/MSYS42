@@ -231,7 +231,9 @@ def view_physicians_exam(request, pk, id):
 def create_physicians_exam(request, pk):
     child = get_object_or_404(Child, pk=pk)
     exams = PhysiciansExam.objects.filter(child=child)
-    years = list(range(datetime.now().year, 1899, -1))  # Generate a list of years
+    all_years = list(range(datetime.now().year, 1899, -1))
+    used_years = exams.values_list('year', flat=True)
+    available_years = [y for y in all_years if y not in used_years]
 
     if request.method == "POST":
         year = request.POST.get('year')
@@ -265,7 +267,7 @@ def create_physicians_exam(request, pk):
         exam.save()
         return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
 
-    return render(request, "msys42app/create_phyexam.html", {"child": child, "years": years, "exams":exams})
+    return render(request, "msys42app/create_phyexam.html", {"child": child, "years": available_years, "exams":exams})
 
 def annual_medical_check_list(request, child_id):
     child = get_object_or_404(Child, id=child_id)
