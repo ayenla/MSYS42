@@ -34,37 +34,46 @@
 
 
 {% block content %}
-<div class="container-fluid" style="min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px;">
-    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 800px; margin: 0 auto;">
-        <h2 class="text-center" style="font-weight: 1000;"> Annual Physician's Exam </h2>
-        <a class="btn btn-success " href="{% url 'create_physicians_exam' child.id %}" style="width: 200px; border-radius: 10px; margin-left: 20px; align-self: center; margin-top: 20px;">Add Physician's Exam</a>
-        <div class="d-flex flex-wrap justify-content-center gap-3" style="margin-top: 50px;">
-            {% for exam in exams %}
-            <thead class="table-dark">
-                
-                <tr>
-                    <th> YEAR </th>
-                    <th> </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>
-                        {{exam.year}}
-                    </td>
-                    <td>
-                        <a class="btn btn-primary btn-sm" href="{% url 'view_physicians_exam' pk=child.pk id=exam.pk %}">View</a> 
-                    </td>
-                </tr>
-                
-                
-            </tbody>
-            {% endfor %}
-        
-        </div>
+<div class="container-fluid" style="padding: 20px;">
+    <div class="card shadow-sm" style="max-width: 1200px; margin: 0 auto;">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <h2 class="mb-3" style="font-weight: 1000;">Physician's Exams</h2>
+                <a href="{% url 'create_physicians_exam' child.id %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add Physician's Exam
+                </a>
+            </div>
 
-        
+            {% if exams %}
+                <div class="row justify-content-center">
+                    {% for exam in exams %}
+                        <div class="col-md-3 mb-4">
+                            <div class="card h-100 shadow-sm" style="max-width: 330px; margin: 0 auto; border-radius: 10px;">
+                                <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                                    <h2 class="card-title mb-2 fw-bold">{{ exam.year }}</h2>
+                                    <a href="{% url 'view_physicians_exam' pk=child.pk id=exam.pk %}" class="btn btn-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h3>No Physician's Exams Present Yet</h3>
+                    <p class="text-muted">Click the "Add Physician's Exam" button to create your first Physician's Exam.</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
-{% endblock %}
+<style>
+    .row {
+        margin: 0 -15px;
+    }
+    .col-md-3 {
+        padding: 15px;
+    }
+</style>{% endblock %}
