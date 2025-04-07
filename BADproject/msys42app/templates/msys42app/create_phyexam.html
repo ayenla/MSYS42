@@ -25,7 +25,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#">Family Medical Records</a>
+            <a class="nav-link" href="{% url 'view_family_medicals' child.id%}">Family Medical Records</a>
         </li>
     </ul>
     <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
@@ -293,13 +293,14 @@
                             </select>
                         </td>
                     </tr>
-                   <tfoot id="add-row-footer">
+                    <tfoot id="add-row-footer">
                         <tr id="add-button-row">
                             <td colspan="2" style="text-align: center;">
                                 <button type="button" class="btn btn-success" onclick="addRow()">&#43; Add Field</button>
                             </td>
                         </tr>
                     </tfoot>
+            
                 </table>
             </div>
     
@@ -345,4 +346,5 @@
         `;
     }
 </script>
+
 {% endblock %}

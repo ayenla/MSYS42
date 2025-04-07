@@ -31,6 +31,33 @@ class ContactNumber(models.Model):
     def __str__(self):
         return f"{self.pk}: {self.child.firstname} {self.child.lastname} - {self.number}"
     
+class FamilyMember(models.Model):
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    fm_lastname = models.CharField(max_length=25, null=False, blank=False)
+    fm_firstname = models.CharField(max_length=25, null=False, blank=False)
+    fm_middlename = models.CharField(max_length=25, null=True, blank=False)
+    fm_relationship = models.CharField(max_length=25, null=False, blank=False)
+    fm_sex = models.CharField(max_length=6, choices=[('Male', 'Male'), ('Female', 'Female')], null=False, blank=False)
+    
+    def __str__(self):
+        return f"{self.child}: {self.fm_relationship} {self.fm_firstname} {self.fm_lastname}"
+    
+class FamilyMedicalRecord(models.Model):
+    member = models.ForeignKey(FamilyMember, on_delete=models.CASCADE)
+    date = models.DateField(null=False, blank=False) 
+    age = models.PositiveSmallIntegerField()  
+    height = models.DecimalField(max_digits=4, decimal_places=2) 
+    weight = models.DecimalField(max_digits=4, decimal_places=2)
+    bp = models.CharField(max_length=5, validators=[RegexValidator(regex=r'^\d{2,3}/\d{2,3}$')]) 
+    temp = models.DecimalField(max_digits=3, decimal_places=1)
+    med_stat = models.CharField(max_length=50)
+    medication = models.CharField(max_length=100)
+    remarks = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.member.fm_firstname} {self.member.fm_lastname},:  {self.date}"
+
+    
 # MEDICAL HISTORY SECTION
 
 ALLERGY_CHOICES = [
@@ -102,6 +129,9 @@ class PhysiciansExam(models.Model):
     nutrition = models.CharField(max_length=2, choices=conditions, default= "NE")
     other = models.CharField(max_length=2, choices=conditions, default= "NE")
     other_label = models.CharField(max_length=20, default="other")
+
+    def __str__(self):
+        return f"{self.child}: {self.year} {self.child.lastname} - {self.number}"
 
 #END PHYSICIAN'S EXAM
 
