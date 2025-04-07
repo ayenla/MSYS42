@@ -1,0 +1,93 @@
+{% extends 'msys42app/base.html' %}
+{% load static %}
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0; padding: 0; width: 100%; position: sticky;">
+    <ul class="child-nav" style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0;">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}">
+                Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_medical_history' child.id %}">
+                Medical History
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'annual_medical_check_list' child.id %}">
+                Medical Checks
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}">Physician's Exam</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_family_medicals' child.id%}">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 20px;">
+    <div class="card shadow-sm" style="max-width: 800px; margin: 0 auto;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Annual Medical Check - {{ year }}</h2>
+                <a href="{% url 'annual_medical_check_list' child.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to List
+                </a>
+            </div>
+
+            {% if medical_checks %}
+                {% for check in medical_checks %}
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h5 class="card-title">Date: {{ check.date|date:"M d, Y" }}</h5>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <strong>Height:</strong> {% if check.height %}{{ check.height }} cm{% else %}Not recorded{% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Weight:</strong> {% if check.weight %}{{ check.weight }} kg{% else %}Not recorded{% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>BMI:</strong> {% if check.bmi %}{{ check.bmi|floatformat:2 }}{% else %}Not calculated{% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Notes:</strong> {% if check.notes %}{{ check.notes }}{% else %}Not recorded{% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <strong>Hemoglobin:</strong> {% if check.hemoglobin %}{{ check.hemoglobin }} g/dL{% else %}Not recorded{% endif %}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Condition:</strong> {% if check.condition %}{{ check.condition }}{% else %}Not recorded{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="{% url 'edit_annual_medical_check' child.id medical_checks.0.id %}" class="btn btn-success">
+                        <i class="fas fa-edit"></i> Edit Record
+                    </a>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h3>No Medical Checks Found for {{ year }}</h3>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

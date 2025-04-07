@@ -1,0 +1,80 @@
+{% extends 'msys42app/base.html' %}
+{% load static %}
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0; padding: 0; width: 100%; position: sticky;">
+    <ul class="child-nav" style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0;">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}">
+                Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_medical_history' child.id %}">
+                Medical History
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'annual_medical_check_list' child.id %}">
+                Medical Checks
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}">Physician's Exam</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_family_medicals' child.id%}">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 20px;">
+    <div class="card shadow-sm" style="max-width: 1200px; margin: 0 auto;">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <h2 class="mb-3" style="font-weight: 1000;">Annual Medical Check</h2>
+                <a href="{% url 'create_annual_medical_check' child.id %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add Medical Check
+                </a>
+            </div>
+
+            {% if medical_checks %}
+                <div class="row justify-content-center">
+                    {% regroup medical_checks by date|date:"Y" as year_list %}
+                    {% for year in year_list %}
+                        <div class="col-md-3 mb-4">
+                            <div class="card h-100 shadow-sm" style="max-width: 330px; margin: 0 auto; border-radius: 10px;">
+                                <div class="card-body d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                                    <h2 class="card-title mb-2 fw-bold">{{ year.grouper }}</h2>
+                                    <a href="{% url 'view_annual_medical_check' child.id year.grouper %}" class="btn btn-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h3>No Annual Medical Checks Present Yet</h3>
+                    <p class="text-muted">Click the "Add Medical Check" button to create your first medical check.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .row {
+        margin: 0 -15px;
+    }
+    .col-md-3 {
+        padding: 15px;
+    }
+</style>
+{% endblock %} 
