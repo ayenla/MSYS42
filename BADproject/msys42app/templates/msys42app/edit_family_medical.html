@@ -1,0 +1,135 @@
+{% extends 'msys42app/base.html' %} 
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+
+{% block navbar %}
+<hr class="w-100 my-1">
+
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0; padding: 0; width: 100%; position: sticky;">
+    <ul class="child-nav" style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0;">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}">
+                Overview
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'view_medical_history' child.id %}">Medical History</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'annual_medical_check_list' child.id %}">Medical Checks</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}">
+                Physician's Exam
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'view_family_medicals' child.id%}">Family Medical Records</a>
+        </li>
+    </ul>
+    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+</nav>
+{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid" style="padding: 20px;">
+    <div class="card shadow-sm" style="max-width: 1200px; margin: 0 auto;">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <h2 class="mb-3" style="font-weight: 1000;"> Edit Medical Record</h2>
+
+            </div>
+                <div class="info">
+                    <div class="column">
+                    <strong>Name:</strong> {{member.fm_firstname}} {{member.fm_middlename}} {{member.fm_lastname}}<br>
+                    <strong>Sex:</strong> {{member.fm_sex}}<br>
+                    <strong>Relationship with {{child.firstname}}:</strong> {{member.fm_relationship}}<br>
+                    </div>
+                    <div class="column">
+                        <h2> EDIT BUTTON HERE </h2>
+                </div>
+
+                <div class="text-center mb-4">
+                    <hr>
+                    
+                    <form method="POST" action="{% url 'edit_family_medical_record' child.id member.pk %}">
+                        {% csrf_token %}
+                        <table class="table table-bordered table-striped text-left">
+                      
+                            <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Age</th>
+                                <th>Height</th>
+                                <th>Weight</th>
+                                <th>BMI</th>
+                                <th>BP</th>
+                                <th>Temp.</th>
+                                <th>Medical Status</th>
+                                <th>Medication</th>
+                                <th>Remarks</th>
+                            </tr>
+                            </thead>
+                            <tbody style="background-color: white;">
+                                {% for record in records %}
+                                <tr>
+                                    <td>{{ record.date }}</td>
+                                    <td>{{ record.age }}</td>
+                                    <td>{{ record.height }}</td>
+                                    <td>{{ record.weight }}</td>
+                                    <td>{{ record.bmi }}</td>
+                                    <td>{{ record.bp }}</td>
+                                    <td>{{ record.temperature }}</td>
+                                    <td>{{ record.medical_status }}</td>
+                                    <td>{{ record.medication }}</td>
+                                    <td>{{ record.remarks }}</td>
+                                </tr>
+                                {% endfor %}
+                            
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                <td colspan="10" class="text-center">
+                                    <button type="button" class="btn btn-success" onclick="addMedicalRow()"> + </button>
+                                </td>
+                                </tr>
+                            </tfoot>
+                            
+                        </table>
+                        <div class="text-center mt-3">
+                          <button type="submit" class="btn btn-success">Save</button>
+                          <button type="cancel" class="btn btn-danger">Cancel</button>
+                        </div>
+                    </form>
+                      
+                      
+                </div>
+        </div>
+    </div>
+</div>
+<script>
+    function addMedicalRow() {
+      const tableBody = document.querySelector("tbody");
+      const newRow = document.createElement("tr");
+  
+      newRow.innerHTML = `
+        <td><input type="date" name="records[][date]" class="form-control" /></td>
+        <td><input type="number" name="records[][age]" class="form-control" /></td>
+        <td><input type="number" name="records[][height]" step="0.01" class="form-control" /></td>
+        <td><input type="number" name="records[][weight]" step="0.01" class="form-control" /></td>
+        <td><input type="number" name="records[][bmi]" step="0.01" class="form-control" /></td>
+        <td><input type="text" name="records[][bp]" class="form-control" /></td>
+        <td><input type="number" name="records[][temperature]" step="0.1" class="form-control" /></td>
+        <td><input type="text" name="records[][medical_status]" class="form-control" /></td>
+        <td><input type="text" name="records[][medication]" class="form-control" /></td>
+        <td><input type="text" name="records[][remarks]" class="form-control" /></td>
+        `;
+
+  
+      tableBody.appendChild(newRow);
+    }
+  </script>
+  
+{% endblock %}

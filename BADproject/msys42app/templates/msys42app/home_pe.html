@@ -25,7 +25,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#">Family Medical Records</a>
+            <a class="nav-link" href="{% url 'view_family_medicals' child.id%}">Family Medical Records</a>
         </li>
     </ul>
     <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
@@ -76,4 +76,6 @@
     .col-md-3 {
         padding: 15px;
     }
-</style>{% endblock %}
+</style>
+
+{% endblock %}
