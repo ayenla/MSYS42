@@ -4,29 +4,28 @@
 {% block navbar %}
 <hr class="w-100 my-1">
 
-<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0 ;padding: 0; width: 100%; position: sticky;">
-    <ul style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; ">
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0; padding: 0; width: 100%; position: sticky;">
+    <ul class="child-nav" style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0;">
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}" style="color: gray; font-weight: 780; font-size: large;">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}">
                 Overview
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'view_medical_history' child.id %}" style="color: gray; font-weight: 750; font-size: large;">
+            <a class="nav-link" href="{% url 'view_medical_history' child.id %}">
                 Medical History
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" href="{% url 'annual_medical_check_list' child.id %}" style="color: rgb(0, 0, 0); font-weight: 750; font-size: large;">
+            <a class="nav-link active" href="{% url 'annual_medical_check_list' child.id %}">
                 Medical Checks
-                <span style="display: block; width: 135px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}">Physician's Exam</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
+            <a class="nav-link" href="#">Family Medical Records</a>
         </li>
     </ul>
     <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>

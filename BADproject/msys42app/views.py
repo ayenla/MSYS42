@@ -5,13 +5,35 @@ from django import forms
 from .models import *
 from .forms import *
 from datetime import date, datetime
+from django.db.models import Q
 
 from .forms import MedicalHistoryForm, ImmunizationForm
 from django.forms import inlineformset_factory
 def home(request):
-    children = Child.objects.all()
+    query = request.GET.get('q', '')
+    
+    if query:
+        # Search for child by code or name (case-insensitive, partial match)
+        children = Child.objects.filter(
+            Q(code__icontains=query) |
+            Q(lastname__icontains=query) |
+            Q(firstname__icontains=query) |
+            Q(middlename__icontains=query)
+        )
+    else:
+        children = Child.objects.all()
+    
     numbers = ContactNumber.objects.all()
-    return render(request, 'msys42app/home.html', {'children': children, 'contacts':numbers })
+    
+    # Check if it's an AJAX request
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    return render(request, 'msys42app/home.html', {
+        'children': children, 
+        'contacts': numbers,
+        'search_query': query,
+        'is_ajax': is_ajax
+    })
 
 def view_child_profile(request, pk):
     child = get_object_or_404(Child, pk=pk)
@@ -108,13 +130,29 @@ def add_medical_history(request, child_id):
                 # Save the main form
                 medical_history = form.save(commit=False)
                 medical_history.child = child
+                
+                # Handle other_condition field
+                other_condition = form.cleaned_data.get('other_condition', '')
+                selected_allergies = form.cleaned_data.get('allergies_conditions', [])
+                if 'other' in selected_allergies and other_condition:
+                    medical_history.other_condition = other_condition
+                elif 'other' not in selected_allergies:
+                    medical_history.other_condition = ''
+                
                 medical_history.save()
 
                 # Handle allergies
                 medical_history.allergies_conditions.clear()  # Clear existing allergies
-                selected_allergies = form.cleaned_data.get('allergies_conditions', [])
+                
+                # First add all allergies except "other"
                 for allergy_code in selected_allergies:
-                    allergy, _ = AllergyCondition.objects.get_or_create(name=dict(ALLERGY_CHOICES)[allergy_code])
+                    if allergy_code != 'other':
+                        allergy, _ = AllergyCondition.objects.get_or_create(name=dict(ALLERGY_CHOICES)[allergy_code])
+                        medical_history.allergies_conditions.add(allergy)
+                
+                # Then add "other" if it exists (so it's at the end)
+                if 'other' in selected_allergies:
+                    allergy, _ = AllergyCondition.objects.get_or_create(name="Others")
                     medical_history.allergies_conditions.add(allergy)
                 
                 # Save immunizations
@@ -130,14 +168,14 @@ def add_medical_history(request, child_id):
                         immunization.medical_history = medical_history
                         immunization.save()
                 
-                messages.success(request, "Medical history successfully updated!")
                 return redirect('view_medical_history', child_id=child.id)
             except Exception as e:
-                messages.error(request, f"Error saving data: {str(e)}")
                 print(f"Error saving data: {str(e)}")
+                messages.error(request, f"Error saving data: {str(e)}")
         else:
-            messages.error(request, "There was an error updating medical history. Please check the form.")
-            print("Form errors:", form.errors)
+            print("Form validation errors:", form.errors)
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {', '.join(errors)}")
             print("Formset errors:", immunization_formset.errors)
 
     else:  # GET request
@@ -154,7 +192,8 @@ def add_medical_history(request, child_id):
             'disability_status': medical_history.disability_status,
             'disability_status_history': medical_history.disability_status_history,
             'allergies_history': medical_history.allergies_history,
-            'allergies_conditions': existing_allergies
+            'allergies_conditions': existing_allergies,
+            'other_condition': medical_history.other_condition
         }
         form = MedicalHistoryForm(instance=medical_history, initial=initial_data)
         immunization_formset = ImmunizationFormSet(instance=medical_history, prefix='immunization')
@@ -241,10 +280,18 @@ def create_annual_medical_check(request, child_id):
     if request.method == 'POST':
         form = AnnualMedicalCheckForm(request.POST)
         if form.is_valid():
-            medical_check = form.save(commit=False)
-            medical_check.child = child
-            medical_check.save()
-            return redirect('annual_medical_check_list', child_id=child_id)
+            try:
+                medical_check = form.save(commit=False)
+                medical_check.child = child
+                medical_check.save()
+                return redirect('annual_medical_check_list', child_id=child_id)
+            except Exception as e:
+                print(f"Error saving medical check: {str(e)}")
+                messages.error(request, f"Error saving medical check: {str(e)}")
+        else:
+            print("Form validation errors:", form.errors)
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {', '.join(errors)}")
     else:
         form = AnnualMedicalCheckForm()
     return render(request, 'msys42app/create_annual_medical_check.html', {
@@ -264,3 +311,41 @@ def view_annual_medical_check(request, child_id, year):
         'year': year,
         'medical_checks': medical_checks
     })
+
+def edit_annual_medical_check(request, child_id, check_id):
+    child = get_object_or_404(Child, id=child_id)
+    medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
+    
+    if request.method == 'POST':
+        form = AnnualMedicalCheckForm(request.POST, instance=medical_check)
+        if form.is_valid():
+            try:
+                form.save()
+                return redirect('view_annual_medical_check', child_id=child_id, year=medical_check.date.year)
+            except Exception as e:
+                print(f"Error updating medical check: {str(e)}")
+                messages.error(request, f"Error updating medical check: {str(e)}")
+        else:
+            print("Form validation errors:", form.errors)
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {', '.join(errors)}")
+    else:
+        form = AnnualMedicalCheckForm(instance=medical_check)
+    
+    return render(request, 'msys42app/edit_annual_medical_check.html', {
+        'form': form,
+        'child': child,
+        'medical_check': medical_check
+    })
+
+def delete_annual_medical_check(request, child_id, check_id):
+    child = get_object_or_404(Child, id=child_id)
+    medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
+    
+    try:
+        medical_check.delete()
+    except Exception as e:
+        print(f"Error deleting medical check: {str(e)}")
+        messages.error(request, f"Error deleting medical check: {str(e)}")
+        
+    return redirect('annual_medical_check_list', child_id=child_id)

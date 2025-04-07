@@ -4,27 +4,26 @@
 {% block navbar %}
 <hr class="w-100 my-1">
 
-<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0 ;padding: 0; width: 100%; position: sticky;">
-    <ul style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0; ">
+<nav style="display: flex; justify-content: space-between; align-items: flex-end; padding-left: 0; padding: 0; width: 100%; position: sticky;">
+    <ul class="child-nav" style="display: flex; gap: 20px; list-style: none; padding: 0; margin: 0;">
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}" style="color: gray; font-weight: 780; font-size: large;">
+            <a class="nav-link" href="{% url 'view_child_profile' pk=child.id %}">
                 Overview
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" href="{% url 'view_medical_history' child.id %}" style="color: rgb(0, 0, 0); font-weight: 750; font-size: large;"> 
+            <a class="nav-link active" href="{% url 'view_medical_history' child.id %}"> 
                 Medical History 
-                <span style="display: block; width: 135px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'annual_medical_check_list' child.id %}" style="color: gray; font-weight: 750; font-size: large;">Medical Checks</a>
+            <a class="nav-link" href="{% url 'annual_medical_check_list' child.id %}">Medical Checks</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}" style="color: gray; font-weight: 750; font-size: large;">Physician's Exam</a>
+            <a class="nav-link" href="{% url 'home_physicians_exam' child.id %}">Physician's Exam</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#" style="color: gray; font-weight: 750; font-size: large;">Family Medical Records</a>
+            <a class="nav-link" href="#">Family Medical Records</a>
         </li>
     </ul>
     <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
@@ -32,65 +31,79 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 800px;">
-        <h2 class="mb-4 text-center" style="font-weight: 1000;">Medical History</h2>
+<div class="container-fluid" style="min-height: 80vh; display: flex; justify-content: center; align-items: flex-start; padding-top: 10px; padding-bottom: 10px; padding-left: 20px; padding-right: 20px;">
+    <div class="card p-3 shadow-sm" style="width: 100%; max-width: 800px; margin-top: 40px;">
+        <h2 class="mb-0 text-center" style="font-weight: 1000; padding-top: 14px; padding-bottom: 18px;">Medical History</h2>
 
-        <div class="card mb-3">
+        <div class="card mb-2">
             <div class="card-body">
-                <h4 class="mb-3" style="padding-top: 0;">Medical Status</h4>
-                <div class="mt-3">
-                    <p class="mb-2"><strong>Current Status:</strong></p>
-                    <p class="ml-3">{{ medical_history.medical_status|default:"Not specified" }}</p>
+                <h4 class="mb-2" style="padding-top: 0; font-weight: 1000;">Medical Status</h4>
+                <div class="mt-2">
+                    <p class="mb-1"><strong>Medical Status:</strong></p>
+                    <p class="ml-3 mb-2">{{ medical_history.medical_status|default:"Not specified" }}</p>
                 </div>
-                <div class="mt-3">
-                    <p class="mb-2"><strong>History:</strong></p>
+                <div class="mt-2">
+                    <p class="mb-1"><strong>History:</strong></p>
                     <p class="ml-3">{{ medical_history.medical_status_history|default:"No history available" }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-3">
+        <div class="card mb-2">
             <div class="card-body">
-                <h4 class="mb-3" style="padding-top: 0;">Disability Status</h4>
-                <div class="mt-3">
-                    <p class="mb-2"><strong>Current Status:</strong></p>
-                    <p class="ml-3">{{ medical_history.disability_status|default:"Not specified" }}</p>
+                <h4 class="mb-2" style="padding-top: 0; font-weight: 1000;">Disability Status</h4>
+                <div class="mt-2">
+                    <p class="mb-1"><strong>Disability Status:</strong></p>
+                    <p class="ml-3 mb-2">{{ medical_history.disability_status|default:"Not specified" }}</p>
                 </div>
-                <div class="mt-3">
-                    <p class="mb-2"><strong>History:</strong></p>
+                <div class="mt-2">
+                    <p class="mb-1"><strong>History:</strong></p>
                     <p class="ml-3">{{ medical_history.disability_status_history|default:"No history available" }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-3">
+        <div class="card mb-2">
             <div class="card-body">
-                <h4 class="mb-3" style="padding-top: 0;">Allergies/Conditions</h4>
-                <div class="mt-3">
-                    <p class="mb-2"><strong>Allergy/Condition Type:</strong></p>
+                <h4 class="mb-2" style="padding-top: 0; font-weight: 1000;">Allergies/Conditions</h4>
+                <div class="mt-2">
+                    <p class="mb-1"><strong>Allergy/Condition Type:</strong></p>
                     {% if medical_history.allergies_conditions.exists %}
-                    <ul class="list-unstyled ml-3">
-                        {% for allergy in medical_history.allergies_conditions.all %}
-                            <li><i class="bi bi-dot"></i> {{ allergy.name }}</li>
-                        {% endfor %}
+                    <ul class="list-unstyled ml-3 mb-2">
+                        {% with sorted_allergies=medical_history.allergies_conditions.all|dictsort:"name" %}
+                            {% for allergy in sorted_allergies %}
+                                {% if allergy.name != "Others" %}
+                                    <li><i class="bi bi-dot"></i> {{ allergy.name }}</li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- Display "Others" at the end if it exists -->
+                            {% for allergy in sorted_allergies %}
+                                {% if allergy.name == "Others" %}
+                                    <li><i class="bi bi-dot"></i> {{ allergy.name }}</li>
+                                    {% if medical_history.other_condition %}
+                                        <li style="margin-left: 20px; font-style: italic;"><i class="bi bi-arrow-return-right"></i> {{ medical_history.other_condition }}</li>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endwith %}
                     </ul>
                     {% else %}
-                    <p class="ml-3">No recorded allergies/conditions.</p>
+                    <p class="ml-3 mb-2">No recorded allergies/conditions.</p>
                     {% endif %}
                 </div>
-                <div class="mt-3">
-                    <p class="mb-2"><strong>History:</strong></p>
+                <div class="mt-2">
+                    <p class="mb-1"><strong>History:</strong></p>
                     <p class="ml-3">{{ medical_history.allergies_history|default:"No allergy history" }}</p>
                 </div>
             </div>
         </div>
 
-        <div class="card mb-3">
+        <div class="card mb-2">
             <div class="card-body">
-                <h4 class="mb-3" style="padding-top: 0;">Immunizations</h4>
+                <h4 class="mb-2" style="padding-top: 0; font-weight: 1000;">Immunizations</h4>
                 {% if immunizations %}
-                <table class="table table-striped mt-3" style="border: 1px solid black; border-radius: 10px; overflow: hidden;">
+                <table class="table table-striped mt-2" style="border: 1px solid black; border-radius: 10px; overflow: hidden;">
                     <thead style="background-color: #1B1B1B; color: white;">
                         <tr>
                             <th style="border: none; border-right: 1px solid #dee2e6; width: 20%;">Date</th>
@@ -107,12 +120,12 @@
                     </tbody>
                 </table>
                 {% else %}
-                <p class="ml-3 mt-3">No immunization records found.</p>
+                <p class="ml-3 mt-2">No immunization records found.</p>
                 {% endif %}
             </div>
         </div>
 
-        <div class="text-center mt-2">
+        <div class="text-center mt-4" style="padding-top: 15px;">
             <a href="{% url 'view_child_profile' pk=child.id %}" class="btn btn-secondary me-2" style="border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem;">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
@@ -122,4 +135,65 @@
         </div>
     </div>
 </div>
+
+<style>
+    /* Reduced card spacing */
+    .card {
+        margin-bottom: -25px !important;
+    }
+    
+    /* Reduced internal card padding */
+    .card-body {
+        padding-top: 0.7rem !important;
+        padding-bottom: 0.7rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    
+    /* Tighter spacing for headings */
+    h4 {
+        font-weight: 1000 !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Tighter spacing for content elements */
+    .mt-2 {
+        margin-top: 0.4rem !important;
+    }
+    
+    /* Eliminate excess bottom margin on last elements */
+    .card-body > div:last-child > p:last-child {
+        margin-bottom: 0 !important;
+    }
+    
+    /* Proper spacing for the button container */
+    .text-center.mt-4 {
+        margin-top: 30px !important;
+    }
+    
+    /* Make the main container tighter to the top */
+    .container-fluid {
+        padding-top: 0 !important;
+    }
+    
+    /* Reduced padding in the main card */
+    .card.p-3 {
+        padding: 0.75rem !important;
+    }
+    
+    /* Adjust navbar bottom margin */
+    nav + .container-fluid {
+        margin-top: -10px;
+    }
+    
+    /* Reduce space between header and first card */
+    h2.mb-0 + .card {
+        margin-top: 5px !important;
+    }
+    
+    /* Tighten main card padding */
+    .card.shadow-sm {
+        padding-top: 0.5rem !important;
+    }
+</style>
 {% endblock %}

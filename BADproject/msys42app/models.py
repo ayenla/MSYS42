@@ -34,21 +34,22 @@ class ContactNumber(models.Model):
 # MEDICAL HISTORY SECTION
 
 ALLERGY_CHOICES = [
+    ("arthritis", "IRA Arthritic"),
     ("asthma", "Asthma"),
     ("behavioral_problem", "Behavioral Problem"),
-    ("heart_disease", "Heart Disease"),
-    ("hypertension", "Hypertension"),
-    ("malaria", "Malaria"),
     ("cancer", "Cancer"),
     ("chronic_cough", "Chronic Cough/Wheezing"),
-    ("arthritis", "IRA Arthritic"),
-    ("seizures", "Seizures"),
-    ("jaundice", "Jaundice"),
     ("diabetes", "Diabetes"),
     ("hearing_problem", "Hearing Problem"),
+    ("heart_disease", "Heart Disease"),
+    ("hypertension", "Hypertension"),
+    ("jaundice", "Jaundice"),
+    ("malaria", "Malaria"),
+    ("seizures", "Seizures"),
     ("sickle_cell_anemia", "Sickle Cell Anemia"),
     ("skin_problem", "Skin Problem"),
     ("vision_problem", "Vision Problem"),
+    ("other", "Others"),
 ]
 
 class MedicalHistory(models.Model):
@@ -59,6 +60,7 @@ class MedicalHistory(models.Model):
     disability_status_history = models.TextField()
     allergies_conditions = models.ManyToManyField('AllergyCondition', blank=True)
     allergies_history = models.TextField()
+    other_condition = models.CharField(max_length=255, blank=True, null=True)
 
 class AllergyCondition(models.Model):
     name = models.CharField(max_length=100, unique=True) 
@@ -106,8 +108,8 @@ class PhysiciansExam(models.Model):
 class AnnualMedicalCheck(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='annual_medical_checks')
     date = models.DateField()
-    height = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # in cm
-    weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # in kg
+    height = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in cm
+    weight = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in kg
     bmi = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     hemoglobin = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     condition = models.TextField(null=True, blank=True)

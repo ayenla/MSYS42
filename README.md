@@ -1,3 +1,23 @@
+
+————————————————————————————————————————————————————————————
+As of April 7, 2025 2:24 AM - Robin
+‼️STUFF ADDED‼️
+[TLDR]
+• Annual Medical History CRUD [Completed]
+• Medical History CRUD [Completed]
+• Search Child Profile[Completed]
+[IMPORTANT]
+• Fixed layoutting issues for Medical History sections 
+• Added Clear Buttons to Medical History Section
+• Added EDIT/DELETE functionality for Annual Medical Check section 
+• Added SEARCH BAR functionality to home page
+[MISCELLANEOUS]
+• Added animation to navbar "Home" button
+• Added animation to navbar section buttons
+• Added "Others" checkbox to Allergies/Conditions portion in Medical History
+
+———————————————————————————————————————————————————————————
+
 ————————————————————————————————————————————————————————————
 As of March 24, 2025 2:24 AM - Robin
 ‼️STUFF ADDED‼️
