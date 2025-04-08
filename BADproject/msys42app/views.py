@@ -152,19 +152,24 @@ def edit_family_medical_record(request, pk, id):
         meds = request.POST.getlist('records[][medication]')
         remarks = request.POST.getlist('records[][remarks]')
 
+        print(temps)
+        print(statuses)
+
         for i in range(len(dates)):
-            FamilyMedicalRecord.objects.create(
+            record = FamilyMedicalRecord.objects.create(
                 member=member,
                 date=dates[i],
                 age=ages[i],
                 height=heights[i],
                 weight=weights[i],
+                bmi=bmis[i],
                 bp=bps[i],
                 temp=temps[i],
                 med_stat=statuses[i],
                 medication=meds[i],
                 remarks=remarks[i]
             )
+            print(record)
         return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
     
 
