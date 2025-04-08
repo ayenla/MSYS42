@@ -1,4 +1,12 @@
 ————————————————————————————————————————————————————————————
+As of April 8, 2025 5:00 PM - Iya
+[TLDR]
+• FIXED PHYSICIAN'S EXAM [Completed]
+• FIXED CREATE AND VIEW FAMILY MEDICAL RECORDS [Completed]
+• FIXED CREATE AND VIEW FAMILY MEMBERS [Completed]
+
+
+————————————————————————————————————————————————————————————
 As of April 7, 2025 8:00 PM - Iya
 [TLDR]
 • FIXED PHYSICIAN'S EXAM [Completed]
