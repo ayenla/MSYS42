@@ -56,14 +56,14 @@
                     
                     <form method="POST" action="{% url 'edit_family_medical_record' child.id member.pk %}">
                         {% csrf_token %}
-                        <table class="table table-bordered table-striped text-left">
+                        <table class="table table-bordered table-striped text-left" style="column-width: auto;">
                       
                             <thead class="table-dark">
                             <tr>
-                                <th>Date</th>
+                                <th>Date<span class="required" style="color: red;">*</span></th>
                                 <th>Age</th>
-                                <th>Height</th>
-                                <th>Weight</th>
+                                <th>Height (cm)</th>
+                                <th>Weight (kg)</th>
                                 <th>BMI</th>
                                 <th>BP</th>
                                 <th>Temp.</th>
@@ -72,7 +72,8 @@
                                 <th>Remarks</th>
                             </tr>
                             </thead>
-                            <tbody style="background-color: white;">
+                            
+                            <tbody style="background-color: white; font-size: smaller;">
                                 {% for record in records %}
                                 <tr>
                                     <td>{{ record.date }}</td>
@@ -81,8 +82,8 @@
                                     <td>{{ record.weight }}</td>
                                     <td>{{ record.bmi }}</td>
                                     <td>{{ record.bp }}</td>
-                                    <td>{{ record.temperature }}</td>
-                                    <td>{{ record.medical_status }}</td>
+                                    <td>{{ record.temp }}</td>
+                                    <td>{{ record.med_stat }}</td>
                                     <td>{{ record.medication }}</td>
                                     <td>{{ record.remarks }}</td>
                                 </tr>
@@ -111,25 +112,57 @@
 </div>
 <script>
     function addMedicalRow() {
-      const tableBody = document.querySelector("tbody");
-      const newRow = document.createElement("tr");
-  
-      newRow.innerHTML = `
-        <td><input type="date" name="records[][date]" class="form-control" /></td>
-        <td><input type="number" name="records[][age]" class="form-control" /></td>
-        <td><input type="number" name="records[][height]" step="0.01" class="form-control" /></td>
-        <td><input type="number" name="records[][weight]" step="0.01" class="form-control" /></td>
-        <td><input type="number" name="records[][bmi]" step="0.01" class="form-control" /></td>
-        <td><input type="text" name="records[][bp]" class="form-control" /></td>
-        <td><input type="number" name="records[][temperature]" step="0.1" class="form-control" /></td>
-        <td><input type="text" name="records[][medical_status]" class="form-control" /></td>
-        <td><input type="text" name="records[][medication]" class="form-control" /></td>
-        <td><input type="text" name="records[][remarks]" class="form-control" /></td>
-        `;
+  const tableBody = document.querySelector("tbody");
+  const newRow = document.createElement("tr");
 
-  
-      tableBody.appendChild(newRow);
+  const today = new Date().toISOString().split('T')[0];
+
+  newRow.innerHTML = `
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="date" name="records[][date]" class="form-control" max="${today}" style="font-size: small;"/></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="number" name="records[][age]" class="form-control" min="0" max="999" style="font-size: small;" /></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="number" name="records[][height]" step="0.1" min="0" max="999.9" class="form-control height-input" style="font-size: small;" /></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="number" name="records[][weight]" step="0.1" min="0" max="999.9" class="form-control weight-input" style="font-size: small;" /></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="number" name="records[][bmi]" step="0.01" max="999.9" class="form-control bmi-output" style="font-size: small;" readonly /></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="text" name="records[][bp]" class="form-control" maxlength="7" placeholder="***/**" style="font-size: small;" /></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="number" name="records[][temperature]" step="0.1" min="0" max="99.9" class="form-control" style="font-size: small;" /></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><input type="text" name="records[][medical_status]" class="form-control" style="font-size: small;" /></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><textarea name="records[][medication]" class="form-control" maxlength="100" style="font-size: small; resize: vertical;"></textarea></div></td>
+  <td><div style="width: 100%; word-wrap: break-word;"><textarea name="records[][remarks]" class="form-control" maxlength="100" style="font-size: small; resize: vertical;"></textarea></div></td>
+`;
+
+
+  tableBody.appendChild(newRow);
+
+  // Add event listeners for BMI calculation
+  const heightInput = newRow.querySelector(".height-input");
+  const weightInput = newRow.querySelector(".weight-input");
+  const bmiOutput = newRow.querySelector(".bmi-output");
+
+  const calculateBMI = () => {
+    const height = parseFloat(heightInput.value);
+    const weight = parseFloat(weightInput.value);
+    if (height > 0 && weight > 0) {
+      const heightInMeters = height / 100;
+      const bmi = weight / (heightInMeters * heightInMeters);
+      bmiOutput.value = bmi.toFixed(1);
+    } else {
+      bmiOutput.value = '';
     }
+  };
+
+  heightInput.addEventListener('input', calculateBMI);
+  weightInput.addEventListener('input', calculateBMI);
+}
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelectorAll('input[type="date"]').forEach(input => {
+      input.max = today;
+    });
+  });
+
+
   </script>
   
 {% endblock %}
