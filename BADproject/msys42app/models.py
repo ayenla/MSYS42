@@ -45,15 +45,15 @@ class FamilyMember(models.Model):
 class FamilyMedicalRecord(models.Model):
     member = models.ForeignKey(FamilyMember, on_delete=models.CASCADE)
     date = models.DateField(null=False, blank=False) 
-    age = models.PositiveSmallIntegerField()  
-    height = models.DecimalField(max_digits=4, decimal_places=1) 
-    weight = models.DecimalField(max_digits=4, decimal_places=1)
+    age = models.PositiveSmallIntegerField(null=True, blank=True)  
+    height = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True) 
+    weight = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
     bmi = models.DecimalField(max_digits=4, decimal_places=1, null=True)
-    bp = models.CharField(max_length=5) 
-    temp = models.DecimalField(max_digits=3, decimal_places=1)
-    med_stat = models.CharField(max_length=50)
-    medication = models.CharField(max_length=100)
-    remarks = models.CharField(max_length=100)
+    bp = models.CharField(max_length=5, null=True, blank=True) 
+    temp = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
+    med_stat = models.CharField(max_length=50, null=True, blank=True)
+    medication = models.CharField(max_length=100, null=True, blank=True)
+    remarks = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"{self.member.fm_firstname} {self.member.fm_lastname},:  {self.date}"
