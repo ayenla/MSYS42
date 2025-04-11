@@ -12,10 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
-import environ
+from dotenv import load_dotenv
 
-env = environ.Env()
-environ.Env.read_env()
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -82,12 +81,12 @@ WSGI_APPLICATION = 'BADproject.wsgi.application'
 # EDIT 4/11/2025, 04:22: MySQL integration
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': env('DB_NAME'),  # This is the name of the MySQL database
-        'USER': env('DB_USER'),  # Username for MySQL
-        'PASSWORD': env('DB_PASSWORD'),  # Password for the MySQL user
-        'HOST': env('DB_HOST', default='localhost'),  # Or the MySQL host if it's remote
-        'PORT': env('DB_PORT', default='3306'),  # Default MySQL port
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT')
     }
 }
 
