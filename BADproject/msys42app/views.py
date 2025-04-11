@@ -6,6 +6,7 @@ from .models import *
 from .forms import *
 from datetime import date, datetime
 from django.db.models import Q
+from decimal import Decimal
 
 from .forms import MedicalHistoryForm, ImmunizationForm
 from django.forms import inlineformset_factory
@@ -134,6 +135,17 @@ def view_family_medical_record(request, pk, id):
 
     return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
 
+from decimal import Decimal, InvalidOperation
+
+def safe_decimal(val):
+    try:
+        if val in (None, ''):
+            return None
+        return Decimal(str(val))
+    except (InvalidOperation, ValueError, TypeError):
+        return None  # or raise an error if you'd rather catch it
+
+
 def edit_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -160,11 +172,11 @@ def edit_family_medical_record(request, pk, id):
                 member=member,
                 date=dates[i],
                 age=ages[i],
-                height=heights[i],
-                weight=weights[i],
-                bmi=bmis[i],
+                height=safe_decimal(heights[i]),
+                weight=safe_decimal(weights[i]),
+                bmi=safe_decimal(bmis[i]),
                 bp=bps[i],
-                temp=temps[i],
+                temp=safe_decimal(temps[i]),
                 med_stat=statuses[i],
                 medication=meds[i],
                 remarks=remarks[i]
