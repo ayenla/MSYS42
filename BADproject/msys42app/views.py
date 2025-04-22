@@ -188,6 +188,7 @@ def view_family_medicals(request, pk):
             fm_sex=sex
         )
         member.save() 
+        messages.success(request, "Entry added successfully.")
         return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
     
     return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
@@ -198,17 +199,6 @@ def view_family_medical_record(request, pk, id):
     records = FamilyMedicalRecord.objects.filter(member=member)
 
     return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
-
-from decimal import Decimal, InvalidOperation
-
-def safe_decimal(val):
-    try:
-        if val in (None, ''):
-            return None
-        return Decimal(str(val))
-    except (InvalidOperation, ValueError, TypeError):
-        return None  # or raise an error if you'd rather catch it
-
 
 def edit_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
@@ -228,24 +218,45 @@ def edit_family_medical_record(request, pk, id):
         meds = request.POST.getlist('records[][medication]')
         remarks = request.POST.getlist('records[][remarks]')
 
-        print(temps)
-        print(statuses)
-
         for i in range(len(dates)):
-            record = FamilyMedicalRecord.objects.create(
+            try: 
+                record = FamilyMedicalRecord.objects.create(
                 member=member,
                 date=dates[i],
                 age=ages[i],
-                height=safe_decimal(heights[i]),
-                weight=safe_decimal(weights[i]),
-                bmi=safe_decimal(bmis[i]),
+                height=heights[i],
+                weight=weights[i],
+                bmi=bmis[i],
                 bp=bps[i],
-                temp=safe_decimal(temps[i]),
+                temp=temps[i],
                 med_stat=statuses[i],
                 medication=meds[i],
                 remarks=remarks[i]
-            )
-            print(record)
+                )
+
+            except ValueError:
+                age = parse_input(ages[i],"int")
+                height = parse_input(heights[i],"float")
+                weight = parse_input(weights[i],"float")
+                height = parse_input(heights[i],"int")
+                bmi = parse_input(bmis[i],"float")
+                temp = parse_input(temps[i],"int")        
+
+                record = FamilyMedicalRecord.objects.create(
+                member=member,
+                date=dates[i],
+                age=age,
+                height=height,
+                weight=weight,
+                bmi=bmi,
+                bp=bps[i],
+                temp=temp,
+                med_stat=statuses[i],
+                medication=meds[i],
+                remarks=remarks[i]
+                )
+                
+            
         return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
     
 
