@@ -41,20 +41,20 @@
                 <div class="col-md-3">
                     <label for="sex">Sex <span class="required" style="color: red;">*</span></label>
                     <select class="form-control" id="sex" name="sex" value="{{ child.sex }}" required>
-                        <option value="">Select</option>
+                        <option value="{{ child.sex }}"> {{ child.sex }} </option>
                         <option value="Female">Female</option>
                         <option value="Male">Male</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label for="birth">Date of Birth <span class="required" style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="birth" name="birth" value="{{ child.birth }}" required>
+                    <input type="date" class="form-control" id="birth" name="birth" value="{{ child.birth|date:'Y-m-d' }}" required>
                 </div>
                 
                 <div class="col-md-3">
                     <label for="blood_group">Blood Group</label>
                     <select class="form-control" id="blood_group" name="blood_group" value="{{ child.blood_group }}">
-                        <option value="">Select</option>
+                        <option value="{{ child.blood_group }}"> {{ child.blood_group }} </option>
                         <option value="A+">A+</option>
                         <option value="A-">A-</option>
                         <option value="B+">B+</option>
@@ -100,29 +100,38 @@
                 <div class="col-md-4">
                     <label for="guardian_sex">Guardian's Sex <span class="required" style="color: red;">*</span></label>
                     <select class="form-control" id="guardian_sex" name="guardian_sex" value="{{ child.guardian_sex }}" required>
-                        <option value="">Select</option>
+                        <option value="{{ child.guardian_sex }}"> {{ child.guardian_sex }} </option>
                         <option value="Female">Female</option>
                         <option value="Male">Male</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label for="relationship">Guardian's Relationship to SPC <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.relationship }}" required>
+                    <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
                 </div>
             </div>
 
             <div class="mb-3" style="width: 300px; align-self: left;">
                 <label for="contact_number[]">Contact Number <span class="required" style="color: red;">*</span></label>
                 <div id="contact-numbers">
+                    {% for contact in contacts %}
                     <div class="d-flex mb-2">
-                        <input type="tel" id="contact_number[]" pattern="09[0-9]{9}" class="form-control" name="contact_number[]" placeholder="09*********" value="{{ phone }}" maxlength="11" required>
-                        <button type="button" class="btn btn-success ms-2" id="addContact" style="margin-left: 5px;">+</button>
+                        <input type="tel" name="contact_number[]" class="form-control" pattern="09[0-9]{9}" placeholder="09*********" value="{{ contact.number }}" maxlength="11" required>
+                        {% if forloop.first %}
+                        <button type="button" class="btn btn-success ms-2" id="addContact">+</button>
+                        {% else %}
+                        <button type="button" class="btn btn-danger ms-2 removeContact">-</button>
+                        {% endif %}
                     </div>
+                    {% endfor %}
                 </div>
             </div>
+             
+            
+
 
             <div class="text-left">
-                <button type="submit" class="btn btn-success">Create Profile</button>
+                <button type="submit" class="btn btn-success"> Save </button>
                 <a href="{% url 'view_child_profile' pk=child.pk%}" class="btn btn-secondary" onclick="return confirmCancel();">Cancel</a>
             </div>
         </form>
@@ -145,9 +154,8 @@
 
         let removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.classList.add('btn', 'btn-danger', 'ms-2');
-        removeBtn.textContent = '-'
-        removeBtn.style="margin-left:10px";
+        removeBtn.classList.add('btn', 'btn-danger', 'ms-2', 'removeContact');
+        removeBtn.textContent = '-';
 
         removeBtn.addEventListener('click', function () {
             contactDiv.remove();
@@ -177,20 +185,28 @@
         return !hasDuplicates;
     }
 
-    document.getElementById('addContact').addEventListener('click', ContactButton);
-    document.getElementById('contact-numbers').addEventListener('input', checkDuplicateContacts);
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('addContact').addEventListener('click', ContactButton);
 
-    document.querySelector("form").addEventListener("submit", function (event) {
-        if (!checkDuplicateContacts()) {
-            event.preventDefault();
-            alert("Duplicate contact number found");
-        }
+        document.getElementById('contact-numbers').addEventListener('click', function (event) {
+            if (event.target.classList.contains('removeContact')) {
+                event.target.closest('.d-flex').remove();
+            }
+        });
+
+        document.getElementById('contact-numbers').addEventListener('input', checkDuplicateContacts);
+
+        document.querySelector("form").addEventListener("submit", function (event) {
+            if (!checkDuplicateContacts()) {
+                event.preventDefault();
+                alert("Duplicate contact number found");
+            }
+        });
     });
 
     function confirmCancel() {
         return confirm("Cancel entry? The information will be lost.");
     }
-
-    
 </script>
+
 {% endblock %}
