@@ -199,6 +199,30 @@ def view_family_medical_record(request, pk, id):
     records = FamilyMedicalRecord.objects.filter(member=member)
 
     return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
+def edit_family_info(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    member = get_object_or_404(FamilyMember, pk=id)
+    records = FamilyMedicalRecord.objects.filter(member=member)
+
+    if request.method == "POST":
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        middlename = request.POST.get('middlename')
+        relationship = request.POST.get('relationship')
+        sex = request.POST.get('sex')
+
+        member.fm_firstname = firstname
+        member.fm_lastname = lastname
+        member.fm_middlename = middlename
+        member.fm_relationship = relationship
+        member.fm_sex = sex
+        member.child = child
+        member.save()
+
+        print(f"{firstname} {lastname} {middlename} {relationship} {sex}")
+        return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+    
+    return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
 
 def edit_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
