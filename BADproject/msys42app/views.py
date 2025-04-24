@@ -193,6 +193,24 @@ def view_family_medicals(request, pk):
     
     return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
 
+def delete_family_member(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    member = get_object_or_404(FamilyMember, pk=id)
+
+    family_count = FamilyMember.objects.filter(child=child).count()
+
+    if family_count <= 1:
+        messages.error(request, "Cannot delete. A child must have at least one family member.")
+        return redirect('edit_family_medical_record', pk=pk, id=id)  
+
+    
+    FamilyMedicalRecord.objects.filter(member=member).delete()
+
+    member.delete()
+
+    messages.success(request, "Family member and their records were successfully deleted.")
+    return redirect('view_family_medicals', pk=pk) 
+
 def view_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
