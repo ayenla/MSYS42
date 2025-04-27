@@ -128,8 +128,8 @@ class PhysiciansExam(models.Model):
     nervous_system = models.CharField(max_length=2, choices=conditions, default= "NE")
     skin = models.CharField(max_length=2, choices=conditions, default= "NE")
     nutrition = models.CharField(max_length=2, choices=conditions, default= "NE")
-    other = models.CharField(max_length=2, choices=conditions, default= "NE")
-    other_label = models.CharField(max_length=20, default="other")
+    other = models.CharField(max_length=2, choices=conditions, default= "NE", null=True, blank=True)
+    other_label = models.CharField(max_length=20, default="other", null=True, blank=True)
 
     def __str__(self):
         return f"{self.child}: {self.year} {self.child.lastname} - {self.number}"
@@ -142,7 +142,7 @@ class AnnualMedicalCheck(models.Model):
     height = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in cm
     weight = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in kg
     bmi = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    hemoglobin = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    hemoglobin = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
     condition = models.TextField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
 

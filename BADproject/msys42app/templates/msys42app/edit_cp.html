@@ -135,6 +135,37 @@
                 <a href="{% url 'view_child_profile' pk=child.pk%}" class="btn btn-secondary" onclick="return confirmCancel();">Cancel</a>
             </div>
         </form>
+        
+        <!-- Horizontal Line -->
+        <hr class="my-4" style="width: 50%; margin-left: 0;">
+        
+        <!-- Delete Button -->
+        <div class="text-left">
+            <button type="button" id="deleteProfileBtn" class="btn btn-danger">Delete Child Profile</button>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Delete child profile? This cannot be undone.
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteButton">Cancel</button>
+                <form id="deleteForm" method="POST" action="{% url 'edit_child_profile' pk=child.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_profile" value="true">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
 </div>
 
@@ -207,6 +238,26 @@
     function confirmCancel() {
         return confirm("Cancel entry? The information will be lost.");
     }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the delete confirmation modal
+        let deleteConfirmationModal;
+        
+        // Set up the click handler for the delete profile button
+        document.getElementById('deleteProfileBtn').addEventListener('click', function() {
+            if (!deleteConfirmationModal) {
+                deleteConfirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+            }
+            deleteConfirmationModal.show();
+        });
+        
+        // Set up the click handler for the cancel delete button
+        document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+            if (deleteConfirmationModal) {
+                deleteConfirmationModal.hide();
+            }
+        });
+    });
 </script>
 
 {% endblock %}

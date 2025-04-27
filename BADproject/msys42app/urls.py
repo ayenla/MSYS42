@@ -24,6 +24,8 @@ urlpatterns = [
     path('physician-exam/home/<int:pk>/', views.home_physicians_exam, name='home_physicians_exam'),
     path('physician-exam/add/<int:pk>/', views.create_physicians_exam, name='create_physicians_exam'),
     path('physician-exam/view/<int:pk>/<int:id>/', views.view_physicians_exam, name='view_physicians_exam'),
+    path('physician-exam/edit/<int:pk>/<int:id>/', views.edit_physicians_exam, name='edit_physicians_exam'),
+    path('physician-exam/delete/<int:pk>/<int:id>/', views.delete_physicians_exam, name='delete_physicians_exam'),
 
     #Annual Medical Check
     path('child/<int:child_id>/annual-medical-check/', views.annual_medical_check_list, name='annual_medical_check_list'),
