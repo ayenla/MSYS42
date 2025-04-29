@@ -47,6 +47,35 @@ def edit_child_profile(request,pk):
     fam_member = get_object_or_404(FamilyMember, child=child, fm_firstname=child.guardian_firstname,fm_lastname=child.guardian_lastname)
 
     if request.method == 'POST':
+        # Check if this is a delete request
+        if 'delete_profile' in request.POST:
+            # Delete related records first to maintain database integrity
+            ContactNumber.objects.filter(child=child).delete()
+            
+            # Delete family members and their medical records
+            family_members = FamilyMember.objects.filter(child=child)
+            for member in family_members:
+                FamilyMedicalRecord.objects.filter(member=member).delete()
+            family_members.delete()
+            
+            # Delete any other related records
+            PhysiciansExam.objects.filter(child=child).delete()
+            AnnualMedicalCheck.objects.filter(child=child).delete()
+            
+            # If there's a medical history, delete it
+            try:
+                medical_history = MedicalHistory.objects.get(child=child)
+                Immunization.objects.filter(medical_history=medical_history).delete()
+                medical_history.delete()
+            except MedicalHistory.DoesNotExist:
+                pass
+                
+            # Finally delete the child
+            child.delete()
+            
+            return redirect('home')
+        
+        # Otherwise, proceed with the regular edit functionality
         code = request.POST.get('code')
         lastname = request.POST.get('lastname')
         firstname = request.POST.get('firstname')
@@ -166,7 +195,7 @@ def create_child_profile(request):
         )
         member.save() 
 
-        return redirect('view_child_profile', pk=childnum)
+        return redirect('view_child_profile', pk=childnum.pk)
 
     return render(request, 'msys42app/create_cp.html')
 
@@ -420,7 +449,7 @@ def view_medical_history(request, child_id):
 #Start of Physician's Exams
 def home_physicians_exam(request, pk):
     child = get_object_or_404(Child, pk=pk)
-    exams = PhysiciansExam.objects.filter(child=child)
+    exams = PhysiciansExam.objects.filter(child=child).order_by('-year')
     return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
 
 def view_physicians_exam(request, pk, id):
@@ -456,20 +485,49 @@ def create_physicians_exam(request, pk):
         nervous_system = request.POST.get('nervous_system')
         skin = request.POST.get('skin')
         nutrition = request.POST.get('nutrition')
-        skin = request.POST.get('skin')
-        nutrition = request.POST.get('nutrition')
-        other_label = request.POST.get('other_label')
-        other = request.POST.get('other')
+        other_label = request.POST.get('other_label', '')
+        other = request.POST.get('other', 'NE')
+        clear_other = request.POST.get('clear_other', 'false')
 
-        exam = PhysiciansExam.objects.create(
-             child=child, year=year, grade=grade, height=height, weight=weight, bp=bp,
-             vision_right=vision_right, vision_left=vision_left, hearing_right=hearing_right,
-             hearing_left=hearing_left, eyes=eyes, ears=ears, nose=nose, throat=throat,
-             teeth=teeth, heart=heart, lungs=lungs, abdomen=abdomen, nervous_system=nervous_system,
-             skin=skin, nutrition=nutrition, other_label=other_label, other=other
-         )
-        exam.save()
-        return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
+        # Only set other and other_label if they are provided
+        exam_data = {
+            'child': child,
+            'year': year,
+            'grade': grade,
+            'height': height,
+            'weight': weight,
+            'bp': bp,
+            'vision_right': vision_right,
+            'vision_left': vision_left,
+            'hearing_right': hearing_right,
+            'hearing_left': hearing_left,
+            'eyes': eyes,
+            'ears': ears,
+            'nose': nose,
+            'throat': throat,
+            'teeth': teeth,
+            'heart': heart,
+            'lungs': lungs,
+            'abdomen': abdomen,
+            'nervous_system': nervous_system,
+            'skin': skin,
+            'nutrition': nutrition,
+            'other_label': None,
+            'other': None
+        }
+
+        # Set other fields if provided and not empty
+        if clear_other != 'true' and other_label and other_label.strip():
+            exam_data['other_label'] = other_label
+            exam_data['other'] = other
+
+        # Create the main exam record
+        exam = PhysiciansExam.objects.create(**exam_data)
+        
+        # Process any additional fields (this would require model changes to support)
+        # For now, we'll just handle the main "other" field
+        
+        return redirect('home_physicians_exam', pk=child.pk)
 
     return render(request, "msys42app/create_phyexam.html", {"child": child, "years": available_years, "exams":exams})
 
@@ -484,8 +542,13 @@ def annual_medical_check_list(request, child_id):
 
 def create_annual_medical_check(request, child_id):
     child = get_object_or_404(Child, id=child_id)
+    
+    # Get existing years for this child
+    existing_years = list(AnnualMedicalCheck.objects.filter(child=child)
+                         .values_list('date__year', flat=True))
+    
     if request.method == 'POST':
-        form = AnnualMedicalCheckForm(request.POST)
+        form = AnnualMedicalCheckForm(request.POST, child=child)
         if form.is_valid():
             try:
                 medical_check = form.save(commit=False)
@@ -500,10 +563,12 @@ def create_annual_medical_check(request, child_id):
             for field, errors in form.errors.items():
                 messages.error(request, f"{field}: {', '.join(errors)}")
     else:
-        form = AnnualMedicalCheckForm()
+        form = AnnualMedicalCheckForm(child=child)
+    
     return render(request, 'msys42app/create_annual_medical_check.html', {
         'form': form,
-        'child': child
+        'child': child,
+        'existing_years': existing_years
     })
 
 def view_annual_medical_check(request, child_id, year):
@@ -556,3 +621,108 @@ def delete_annual_medical_check(request, child_id, check_id):
         messages.error(request, f"Error deleting medical check: {str(e)}")
         
     return redirect('annual_medical_check_list', child_id=child_id)
+
+def edit_physicians_exam(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    exam = get_object_or_404(PhysiciansExam, pk=id)
+    exams = PhysiciansExam.objects.filter(child=child).exclude(pk=id)
+    
+    # Get all years from 1900 to current year
+    current_year = datetime.now().year
+    all_years = list(range(current_year, 1899, -1))
+    # Get years already used by other exams for this child
+    used_years = exams.values_list('year', flat=True)
+    # Available years are those not already used plus the current exam's year
+    available_years = [y for y in all_years if y not in used_years or y == exam.year]
+
+    if request.method == "POST":
+        year = request.POST.get('year')
+        
+        # Validate that the year is not already used by another exam
+        year_exists = PhysiciansExam.objects.filter(child=child, year=year).exclude(pk=id).exists()
+        if year_exists:
+            messages.error(request, f"A physician's exam for year {year} already exists for this child.")
+            return render(request, 'msys42app/edit_phyexam.html', {
+                'child': child, 
+                'exam': exam, 
+                'available_years': available_years,
+                'error': f"A physician's exam for year {year} already exists for this child."
+            })
+        
+        # Validate that the year is not in the future
+        if int(year) > current_year:
+            messages.error(request, "Year cannot be in the future.")
+            return render(request, 'msys42app/edit_phyexam.html', {
+                'child': child, 
+                'exam': exam, 
+                'available_years': available_years,
+                'error': "Year cannot be in the future."
+            })
+            
+        grade = request.POST.get('grade')
+        height = request.POST.get('height')
+        weight = request.POST.get('weight')
+        bp = request.POST.get('bp')
+        vision_right = request.POST.get('vision_right')
+        vision_left = request.POST.get('vision_left')
+        hearing_right = request.POST.get('hearing_right')
+        hearing_left = request.POST.get('hearing_left')
+        eyes = request.POST.get('eyes')
+        ears = request.POST.get('ears')
+        nose = request.POST.get('nose')
+        throat = request.POST.get('throat')
+        teeth = request.POST.get('teeth')
+        heart = request.POST.get('heart')
+        lungs = request.POST.get('lungs')
+        abdomen = request.POST.get('abdomen')
+        nervous_system = request.POST.get('nervous_system')
+        skin = request.POST.get('skin')
+        nutrition = request.POST.get('nutrition')
+        other_label = request.POST.get('other_label', '')
+        other = request.POST.get('other', 'NE')
+        clear_other = request.POST.get('clear_other', 'false')
+
+        exam.year = year
+        exam.grade = grade
+        exam.height = height
+        exam.weight = weight
+        exam.bp = bp
+        exam.vision_right = vision_right
+        exam.vision_left = vision_left
+        exam.hearing_right = hearing_right
+        exam.hearing_left = hearing_left
+        exam.eyes = eyes
+        exam.ears = ears
+        exam.nose = nose
+        exam.throat = throat
+        exam.teeth = teeth
+        exam.heart = heart
+        exam.lungs = lungs
+        exam.abdomen = abdomen
+        exam.nervous_system = nervous_system
+        exam.skin = skin
+        exam.nutrition = nutrition
+
+        # Set other fields to None by default if explicitly cleared
+        if clear_other == 'true':
+            exam.other_label = None
+            exam.other = None
+        # Only update other fields if they are provided and not empty
+        elif other_label and other_label.strip():
+            exam.other_label = other_label
+            exam.other = other
+
+        exam.save()
+        return redirect('view_physicians_exam', pk=child.pk, id=exam.pk)
+
+    return render(request, 'msys42app/edit_phyexam.html', {'child': child, 'exam': exam, 'available_years': available_years})
+
+def delete_physicians_exam(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    exam = get_object_or_404(PhysiciansExam, pk=id)
+    
+    if request.method == 'POST':
+        exam.delete()
+        return redirect('home_physicians_exam', pk=child.pk)
+    
+    return render(request, 'msys42app/delete_phyexam.html', {'child': child, 'exam': exam})

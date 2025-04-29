@@ -67,7 +67,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <strong>Hemoglobin:</strong> {% if check.hemoglobin %}{{ check.hemoglobin }} g/dL{% else %}Not recorded{% endif %}
+                                        <strong>Hemoglobin:</strong> {% if check.hemoglobin %}{{ check.hemoglobin|floatformat:1 }} g/dL{% else %}Not recorded{% endif %}
                                     </div>
                                     <div class="mb-3">
                                         <strong>Condition:</strong> {% if check.condition %}{{ check.condition }}{% else %}Not recorded{% endif %}
