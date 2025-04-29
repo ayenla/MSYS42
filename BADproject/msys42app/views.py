@@ -1,15 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db import models
-from django import forms
 from .models import *
 from .forms import *
 from datetime import date, datetime
 from django.db.models import Q
-from decimal import Decimal
 
-from .forms import MedicalHistoryForm, ImmunizationForm
 from django.forms import inlineformset_factory
+
+def parse_input(value, data_type):
+    """
+    Parse input value to the specified data type.
+    Returns None if parsing fails.
+    """
+    if not value or value.strip() == '':
+        return None
+        
+    try:
+        if data_type == "int":
+            return int(value)
+        elif data_type == "float":
+            return float(value)
+        else:
+            return value
+    except (ValueError, TypeError):
+        return None
+
 def home(request):
     query = request.GET.get('q', '')
     
