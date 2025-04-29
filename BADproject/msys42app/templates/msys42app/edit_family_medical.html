@@ -35,152 +35,176 @@
 
 {% block content %}
 <div class="container-fluid" style="padding: 20px;">
-    <div class="card shadow-sm" style="max-width: 1200px; margin: 0 auto;">
-        <div class="card-body">
+    <div class="card shadow-sm" style="max-width: 1600px; margin: 0 auto;">
+        <div class="card-body" style="padding: 2rem;">
             <div class="text-center mb-4">
-                <h2 class="mb-3" style="font-weight: 1000;"> Edit Medical Record</h2>
-
+                <h2 class="mb-3" style="font-weight: 1000;">Edit Medical Record</h2>
             </div>
-                <div class="info">
-                    <div class="d-flex ">
-                        <div class="column">
-                            <strong>Name:</strong> {{member.fm_firstname}} {{member.fm_middlename}} {{member.fm_lastname}}<br>
-                            <strong>Sex:</strong> {{member.fm_sex}}<br>
-                            <strong>Relationship with {{child.firstname}}:</strong> {{member.fm_relationship}}<br>
-                        </div>
-                        <div class="column d-flex justify-content-center align-items-center" style="min-width: 50px;">
-                            <button type="button" class="bi bi-pencil-square" style="font-size: 1.5rem; cursor: pointer; border-width: 0; background-color: transparent;" data-toggle="modal" data-target="#exampleModalCenter"></button>
-                        </div>
-                        
-                    </div>       
+            <div class="info mb-4">
+                <div class="d-flex ">
+                    <div class="column">
+                        <strong>Name:</strong> {{member.fm_firstname}} {{member.fm_middlename}} {{member.fm_lastname}}<br>
+                        <strong>Sex:</strong> {{member.fm_sex}}<br>
+                        <strong>Relationship with {{child.firstname}}:</strong> {{member.fm_relationship}}<br>
+                    </div>
+                    <div class="column d-flex justify-content-center align-items-center" style="min-width: 50px;">
+                        <button type="button" class="bi bi-pencil-square" style="font-size: 1.5rem; cursor: pointer; border-width: 0; background-color: transparent;" data-toggle="modal" data-target="#exampleModalCenter"></button>
+                    </div>
+                    
+                </div>       
                                         
-                    <!-- Modal to Edit Family Member Info-->
-                    <form method="POST" action="{% url 'edit_family_info' child.id member.pk %}" class="form-container">
-                        {% csrf_token %}
-                        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLongTitle">Edit Information</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                        
-                                    <label> First Name<span class="required" style="color: red;">*</span> </label>
-                                    <input type="text" name="firstname" value="{{ member.fm_firstname }}" required>
-                                    <label> Middle Name </label>
-                                    <input class="form-control" type="text" id="middlename" name="middlename" value="{{member.fm_middlename}}">
-                                    <label> Last Name<span class="required" style="color: red;">*</span> </label>
-                                    <input class="form-control" type="text" id="lastname" name="lastname" value="{{member.fm_lastname}}" required>                      
-                                    <label>Sex<span class="required" style="color: red;">*</span> </label>
-                                    <select class="form-control" id="sex" name="sex" required>
-                                        {% if member.fm_sex == "Female" %}
-                                            <option value="Female" selected>Female</option>
-                                            <option value="Male">Male</option>
-                                        {% elif member.fm_sex == "Male" %}
-                                            <option value="Male" selected>Male</option>
-                                            <option value="Female">Female</option>
-                                        {% else %}
-                                            <option value="" selected disabled>Select</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Male">Male</option>
-                                        {% endif %}
-                                    </select>
+                <!-- Modal to Edit Family Member Info-->
+                <form method="POST" action="{% url 'edit_family_info' child.id member.pk %}" class="form-container">
+                    {% csrf_token %}
+                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLongTitle">Edit Information</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
                                     
-                                    <label>Relation with Child<span class="required" style="color: red;">*</span></label>
-                                    <input class="form-control" type="text" id="relationship" name="relationship" value="{{member.fm_relationship}}" required>
+                                <label> First Name<span class="required" style="color: red;">*</span> </label>
+                                <input type="text" name="firstname" value="{{ member.fm_firstname }}" required>
+                                <label> Middle Name </label>
+                                <input class="form-control" type="text" id="middlename" name="middlename" value="{{member.fm_middlename}}">
+                                <label> Last Name<span class="required" style="color: red;">*</span> </label>
+                                <input class="form-control" type="text" id="lastname" name="lastname" value="{{member.fm_lastname}}" required>                      
+                                <label>Sex<span class="required" style="color: red;">*</span> </label>
+                                <select class="form-control" id="sex" name="sex" required>
+                                    {% if member.fm_sex == "Female" %}
+                                        <option value="Female" selected>Female</option>
+                                        <option value="Male">Male</option>
+                                    {% elif member.fm_sex == "Male" %}
+                                        <option value="Male" selected>Male</option>
+                                        <option value="Female">Female</option>
+                                    {% else %}
+                                        <option value="" selected disabled>Select</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Male">Male</option>
+                                    {% endif %}
+                                </select>
+                                
+                                <label>Relation with Child<span class="required" style="color: red;">*</span></label>
+                                <input class="form-control" type="text" id="relationship" name="relationship" value="{{member.fm_relationship}}" required>
 
-                                </div>
-                                <div class="modal-footer d-flex justify-content-between">
-                                    <div>
-                                        <a href="{% url 'delete_family_member' pk=child.pk id=member.pk %}" 
-                                           class="btn btn-dark" 
-                                           onclick="return confirm('Are you sure you want to delete this family member?');">
-                                           Delete Member
-                                        </a>
-                                    </div>
-                                    
-                                    <div>
-                                        <button type="submit" class="btn btn-success">Save</button>
-                                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-                                    </div>
+                            </div>
+                            <div class="modal-footer d-flex justify-content-between">
+                                <div>
+                                    <a href="{% url 'delete_family_member' pk=child.pk id=member.pk %}" 
+                                       class="btn btn-dark" 
+                                       onclick="return confirm('Are you sure you want to delete this family member?');">
+                                       Delete Member
+                                    </a>
                                 </div>
                                 
+                                <div>
+                                    <button type="submit" class="btn btn-success">Save</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                                </div>
                             </div>
-                            </div>
+                                
                         </div>
-                    </form>
-                </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-                <div class="text-center mb-4">
-                                    
-                    <form method="POST" action="{% url 'edit_family_medical_record' child.id member.pk %}">
-                        {% csrf_token %}
-                        <input type="hidden" id="deleted-ids" name="deleted_ids">
+            <div class="text-center">
+                <form method="POST" action="{% url 'edit_family_medical_record' child.id member.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="deleted-ids" name="deleted_ids">
 
-                        <table class="table table-bordered table-striped rounded" style="column-width: auto; margin-top: 10px;">
-                      
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped rounded" style="margin-top: 10px;">
                             <thead class="table-dark">
-                            <tr>
-                                <th>Date<span class="required" style="color: red;">*</span></th>
-                                <th>Age</th>
-                                <th>Height (cm)</th>
-                                <th>Weight (kg)</th>
-                                <th>BMI</th>
-                                <th>BP</th>
-                                <th>Temp.</th>
-                                <th>Medical Status</th>
-                                <th>Medication</th>
-                                <th>Remarks</th>
-                                <th>Delete</th>
-                            </tr>
+                                <tr>
+                                    <th style="min-width: 120px;">Date<span class="required" style="color: red;">*</span></th>
+                                    <th style="min-width: 100px;">Age</th>
+                                    <th style="min-width: 100px;">Height (cm)</th>
+                                    <th style="min-width: 100px;">Weight (kg)</th>
+                                    <th style="min-width: 120px;">BMI</th>
+                                    <th style="min-width: 100px;">BP</th>
+                                    <th style="min-width: 100px;">Temp.</th>
+                                    <th style="min-width: 150px;">Medical Status</th>
+                                    <th style="min-width: 200px;">Medication</th>
+                                    <th style="min-width: 200px;">Remarks</th>
+                                    <th style="min-width: 80px;">Delete</th>
+                                </tr>
                             </thead>
                             
                             <tbody style="background-color: white; font-size: smaller;">
                                 {% for record in records %}
                                 <tr>
                                     <input type="hidden" name="record_id_{{ forloop.counter0 }}" value="{{ record.id }}">
-
-                                    <td><input type="date" name="records[][date]" class="form-control" value="{{ record.date | date:'Y-m-d'}}"></td>
-                                    <td><input type="text" name="records[][age]" class="form-control" value="{{ record.age|default_if_none:'' }}"></td>
-                                    <td><input type="text" name="records[][height]" class="form-control" value="{{ record.height|default_if_none:'' }}"></td>
-                                    <td><input type="text" name="records[][weight]" class="form-control" value="{{ record.weight|default_if_none:'' }}"></td>
-                                    <td><input type="number" name="records[][bmi]" step="0.01" max="999.9" class="form-control bmi-output" style="font-size: small;" readonly></td>
-                                    <td><input type="text" name="records[][bp]" class="form-control" value="{{ record.bp }}"></td>
-                                    <td><input type="text" name="records[][temperature]" class="form-control" value="{{ record.temp|default_if_none:'' }}"></td>
-                                    <td><input type="text" name="records[][medical_status]" class="form-control" value="{{ record.med_stat }}"></td>
-                                    <td><input type="text" name="records[][medication]" class="form-control" value="{{ record.medication }}"></td>
-                                    <td><textarea name="records[][remarks]" class="form-control">{{ record.remarks }}</textarea></td>
+                                    <td><input type="date" name="records[][date]" class="form-control" value="{{ record.date | date:'Y-m-d'}}" style="min-width: 120px;"></td>
+                                    <td><input type="text" name="records[][age]" class="form-control" value="{{ record.age|default_if_none:'' }}" style="min-width: 100px;"></td>
+                                    <td><input type="text" name="records[][height]" class="form-control" value="{{ record.height|default_if_none:'' }}" style="min-width: 100px;"></td>
+                                    <td><input type="text" name="records[][weight]" class="form-control" value="{{ record.weight|default_if_none:'' }}" style="min-width: 100px;"></td>
+                                    <td><input type="number" name="records[][bmi]" step="0.01" max="999.9" class="form-control bmi-output" style="min-width: 120px; text-align: right;" readonly></td>
+                                    <td><input type="text" name="records[][bp]" class="form-control" value="{{ record.bp }}" style="min-width: 100px;"></td>
+                                    <td><input type="text" name="records[][temperature]" class="form-control" value="{{ record.temp|default_if_none:'' }}" style="min-width: 100px;"></td>
+                                    <td><input type="text" name="records[][medical_status]" class="form-control" value="{{ record.med_stat }}" style="min-width: 150px;"></td>
+                                    <td><textarea name="records[][medication]" class="form-control" style="min-width: 200px; resize: vertical;">{{ record.medication }}</textarea></td>
+                                    <td><textarea name="records[][remarks]" class="form-control" style="min-width: 200px; resize: vertical;">{{ record.remarks }}</textarea></td>
                                     <td>
                                         <button type="button" class="btn btn-danger btn-sm" onclick="deleteMedicalRow(this)">Delete</button>
                                     </td>
-                                    
                                 </tr>
                                 {% endfor %}
                             </tbody>
                             
                             <tfoot>
                                 <tr>
-                                <td colspan="11" class="text-center">
-                                    <button type="button" class="btn btn-success" onclick="addMedicalRow()"> + </button>
-                                </td>
+                                    <td colspan="11" class="text-center">
+                                        <button type="button" class="btn btn-success" onclick="addMedicalRow()">Add New Record</button>
+                                    </td>
                                 </tr>
                             </tfoot>
-                            
                         </table>
-                        <div class="text-center mt-3">
-                          <button type="submit" class="btn btn-success">Save</button>
-                          <button type="cancel" class="btn btn-danger">Cancel</button>
-                        </div>
-                    </form>
-                      
-                      
-                </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success me-2" style="min-width: 100px;">Save</button>
+                        <a href="{% url 'view_family_medical_record' child.id member.pk %}" class="btn btn-danger" style="min-width: 100px;">Cancel</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+        margin-bottom: 1rem;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+    }
+    
+    textarea.form-control {
+        min-height: 60px;
+    }
+    
+    .btn {
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .bmi-output {
+        background-color: #f8f9fa;
+        font-weight: 500;
+    }
+</style>
+
 <script>
   
     function addMedicalRow() {
