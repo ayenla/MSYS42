@@ -1,15 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db import models
-from django import forms
 from .models import *
 from .forms import *
 from datetime import date, datetime
 from django.db.models import Q
-from decimal import Decimal
 
-from .forms import MedicalHistoryForm, ImmunizationForm
 from django.forms import inlineformset_factory
+
+def parse_input(value, data_type):
+    """
+    Parse input value to the specified data type.
+    Returns None if parsing fails.
+    """
+    if not value or value.strip() == '':
+        return None
+        
+    try:
+        if data_type == "int":
+            return int(value)
+        elif data_type == "float":
+            return float(value)
+        else:
+            return value
+    except (ValueError, TypeError):
+        return None
+
 def home(request):
     query = request.GET.get('q', '')
     
@@ -102,11 +117,11 @@ def edit_child_profile(request,pk):
         if code!= child.code and Child.objects.filter(code=code).exists():
             error_message = 'SPC Code already taken.'
 
-            return render(request, 'msys42app/create_cp.html', {'error_message_var':error_message, 'code':code, 'lastname':lastname, 'firstname':firstname, 'middlename':middlename, 'sex':sex, 'birth':birth, 'blood_group':blood_group, 'address':address, 'philhealth':philhealth_number, 'fourps':fourps_number, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
+            return render(request, 'msys42app/edit_cp.html', {'error_message_var':error_message, 'child': child, 'code':code, 'lastname':lastname, 'firstname':firstname, 'middlename':middlename, 'sex':sex, 'birth':birth, 'blood_group':blood_group, 'address':address, 'philhealth':philhealth_number, 'fourps':fourps_number, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
         
         if (philhealth_number and not philhealth_number.replace("-", "").isdigit()) or (fourps_number and not fourps_number.isdigit()):
             error_message = "Only numerical digits are allowed for PhilHealth Number and 4P's Number."
-            return render(request, 'msys42app/create_cp.html', {'error_message_var':error_message, 'code':code, 'lastname':lastname, 'firstname':firstname, 'middlename':middlename, 'sex':sex, 'birth':birth, 'blood_group':blood_group, 'address':address, 'philhealth':philhealth_number, 'fourps':fourps_number, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
+            return render(request, 'msys42app/edit_cp.html', {'error_message_var':error_message, 'child': child, 'code':code, 'lastname':lastname, 'firstname':firstname, 'middlename':middlename, 'sex':sex, 'birth':birth, 'blood_group':blood_group, 'address':address, 'philhealth':philhealth_number, 'fourps':fourps_number, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
         
         ContactNumber.objects.filter(child=child).delete()
         for phone in contact_numbers:
