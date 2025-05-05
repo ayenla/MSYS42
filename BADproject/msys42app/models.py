@@ -52,6 +52,9 @@ class Education(models.Model):
     def __str__(self):
         return f"{self.child.first_name} {self.child.last_name}: {self.year}: {self.grade}"
 
+    class Meta:
+        db_table = 'spc_ed'
+
 class ContactNumber(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="phone_numbers")
     number = models.CharField(max_length=11)
