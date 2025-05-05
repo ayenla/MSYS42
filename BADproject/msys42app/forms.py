@@ -2,7 +2,32 @@ from django import forms
 import datetime
 from .models import *
 
+# Education
 
+def get_school_year_choices(start=2010):
+    current_year = datetime.datetime.now().year
+    end_year = current_year + 1  # ensure next academic year is included
+    choices = []
+    for y in range(start, end_year):
+        label = f"{y}–{y+1}"
+        choices.append((label, label))
+    return choices
+
+class EducationForm(forms.ModelForm):
+    year = forms.ChoiceField(
+        choices=get_school_year_choices(),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True
+    )
+
+    class Meta:
+        model = Education
+        fields = ['year', 'grade']
+        widgets = {
+            'grade': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+# Medical History
 ALLERGY_CHOICES = [
     ("arthritis", "IRA Arthritic"),
     ("asthma", "Asthma"),
