@@ -17,44 +17,44 @@
             <div class="row mb-3">
                
                 <div class="col-md-2">
-                    <label for="code">SPC Code <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="code" name="code" maxlength="7" minlength="7" pattern="[A-Z]{3}[0-9]{4}" value="{{ child.code }}" placeholder="AAA1234">
+                    <label for="spc_code">SPC Code <span class="required" style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="spc_code" name="code" maxlength="7" minlength="7" pattern="[A-Z]{3}[0-9]{4}" value="{{ child.spc_code }}" placeholder="AAA1234">
                 </div>
 
                 <div class="col-md-3">
                     <label for="lastname">Last Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="lastname" name="lastname" maxlength="25" value="{{ child.lastname }}" required>
+                    <input type="text" class="form-control" id="lastname" name="lastname" maxlength="25" value="{{ child.last_name }}" required>
                 </div>
 
                 <div class="col-md-3">
                     <label for="firstname">First Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="firstname" name="firstname" maxlength="50" value="{{ child.firstname }}" required>
+                    <input type="text" class="form-control" id="firstname" name="firstname" maxlength="50" value="{{ child.first_name }}" required>
                 </div>
 
                 <div class="col-md-3">
                     <label for="middlename">Middle Name</label>
-                    <input type="text" class="form-control" id="middlename" name="middlename" maxlength="25" value="{{ child.middlename }}">
+                    <input type="text" class="form-control" id="middlename" name="middlename" maxlength="25" value="{{ child.middle_name }}">
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-3">
                     <label for="sex">Sex <span class="required" style="color: red;">*</span></label>
-                    <select class="form-control" id="sex" name="sex" value="{{ child.sex }}" required>
-                        <option value="{{ child.sex }}"> {{ child.sex }} </option>
-                        <option value="Female">Female</option>
-                        <option value="Male">Male</option>
+                    <select class="form-control" id="sex" name="sex" required>
+                        <option value="" {% if not child.sex %}selected{% endif %}>Select</option>
+                        <option value="Female" {% if child.sex == 'Female' %}selected{% endif %}>Female</option>
+                        <option value="Male" {% if child.sex == 'Male' %}selected{% endif %}>Male</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label for="birth">Date of Birth <span class="required" style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="birth" name="birth" value="{{ child.birth|date:'Y-m-d' }}" required>
+                    <input type="date" class="form-control" id="birth" name="birth" value="{{ child.dob|date:'Y-m-d' }}" required>
                 </div>
                 
                 <div class="col-md-3">
                     <label for="blood_group">Blood Group</label>
-                    <select class="form-control" id="blood_group" name="blood_group" value="{{ child.blood_group }}">
-                        <option value="{{ child.blood_group }}"> {{ child.blood_group }} </option>
+                    <select class="form-control" id="blood_group" name="blood_group" value="{{ child.blood_grp }}">
+                        <option value="">Select</option>
                         <option value="A+">A+</option>
                         <option value="A-">A-</option>
                         <option value="B+">B+</option>
@@ -69,18 +69,18 @@
             
             <div class="mb-3">
                 <label for="address">Communication Address <span class="required" style="color: red;">*</span></label>
-                <input type="text" class="form-control" id="address" name="address" maxlength="255" value="{{ child.address }}" required>
+                <input type="text" class="form-control" id="address" name="address" maxlength="255" value="{{ child.comm_address }}" required>
             </div>
 
         
             <div class="row mb-3">
                 <div class="col-md-5">
                     <label for="philhealth">Family PhilHealth Number</label>
-                    <input type="text" class="form-control" id="philhealth" name="philhealth" pattern="[0-9]{2}-[0-9]{9}-[0-9]{1}"   value="{{ child.philhealth }}" placeholder="12-123456789-1" maxlength="14">
+                    <input type="text" class="form-control" id="philhealth" name="philhealth" pattern="[0-9]{2}-[0-9]{9}-[0-9]{1}"   value="{{ child.fam_philhealth }}" placeholder="12-123456789-1" maxlength="14">
                 </div>
                 <div class="col-md-5">
                     <label for="fourps">Family 4Ps Number</label>
-                    <input type="text" class="form-control" id="fourps" name="fourps" maxlength="20" value="{{ child.fourps }}" placeholder="123412341234">
+                    <input type="text" class="form-control" id="fourps" name="fourps" maxlength="20" value="{{ child.fam_4ps }}" placeholder="123412341234">
                 </div>
             </div>
 
@@ -99,14 +99,15 @@
                 </div>
                 <div class="col-md-4">
                     <label for="guardian_sex">Guardian's Sex <span class="required" style="color: red;">*</span></label>
-                    <select class="form-control" id="guardian_sex" name="guardian_sex" value="{{ child.guardian_sex }}" required>
-                        <option value="{{ child.guardian_sex }}"> {{ child.guardian_sex }} </option>
-                        <option value="Female">Female</option>
-                        <option value="Male">Male</option>
+                    <select class="form-control" id="guardian_sex" name="guardian_sex" required>
+                        <option value="" {% if not child.guardian_sex %}selected{% endif %}>Select</option>
+                        <option value="Female" {% if child.guardian_sex == 'Female' %}selected{% endif %}>Female</option>
+                        <option value="Male" {% if child.guardian_sex == 'Male' %}selected{% endif %}>Male</option>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label for="relationship">Guardian's Relationship to SPC <span class="required" style="color: red;">*</span></label>
+                    <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
                     <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
                 </div>
             </div>
@@ -114,16 +115,19 @@
             <div class="mb-3" style="width: 300px; align-self: left;">
                 <label for="contact_number[]">Contact Number <span class="required" style="color: red;">*</span></label>
                 <div id="contact-numbers">
-                    {% for contact in contacts %}
-                    <div class="d-flex mb-2">
-                        <input type="tel" name="contact_number[]" class="form-control" pattern="09[0-9]{9}" placeholder="09*********" value="{{ contact.number }}" maxlength="11" required>
-                        {% if forloop.first %}
-                        <button type="button" class="btn btn-success ms-2" id="addContact">+</button>
-                        {% else %}
-                        <button type="button" class="btn btn-danger ms-2 removeContact">-</button>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                    {% if contacts %}
+                        {% for number in contacts %}
+                            <div class="d-flex mb-2">
+                                <input type="tel" id="contact_number[]" pattern="09[0-9]{9}" class="form-control" name="contact_number[]" placeholder="09*********" value="{{ number.number }}" maxlength="11" required>
+                                <button type="button" class="btn btn-success ms-2" id="addContact" style="margin-left: 5px;">+</button>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="d-flex mb-2">
+                            <input type="tel" id="contact_number[]" pattern="09[0-9]{9}" class="form-control" name="contact_number[]" placeholder="09*********" maxlength="11" required>
+                            <button type="button" class="btn btn-success ms-2" id="addContact" style="margin-left: 5px;">+</button>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
              

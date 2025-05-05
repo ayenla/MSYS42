@@ -4,16 +4,16 @@ from django.utils import timezone
 import datetime
 
 class Child(models.Model):
-    code = models.CharField(max_length=7, validators=[RegexValidator(regex=r'^[A-Za-z]{3}\d{4}$')], unique=True, null=False, blank=False)
-    lastname = models.CharField(max_length=25, null=False, blank=False)
-    firstname = models.CharField(max_length=50, null=False, blank=False)
-    middlename = models.CharField(max_length=25, null=True)
+    spc_code = models.CharField(max_length=7, validators=[RegexValidator(regex=r'^[A-Za-z]{3}\d{4}$')], unique=True, null=False, blank=False)
+    last_name = models.CharField(max_length=25, null=False, blank=False)
+    first_name = models.CharField(max_length=50, null=False, blank=False)
+    middle_name = models.CharField(max_length=25, null=True)
     sex = models.CharField(max_length=6, choices=[('Male', 'Male'), ('Female', 'Female')], null=False, blank=False)
-    birth = models.DateField(null=False, blank=False)
-    blood_group = models.CharField(max_length=3, blank=True, null=True)
-    address = models.TextField(max_length=255, null=False, blank=False)
-    philhealth_number = models.CharField(max_length=14, validators=[MinLengthValidator(14)], blank=True, null=True)
-    fourps_number = models.CharField(max_length=20, blank=True, null=True)
+    dob = models.DateField(null=False, blank=False)
+    blood_grp = models.CharField(max_length=3, blank=True, null=True)
+    comm_address = models.TextField(max_length=255, null=False, blank=False)
+    fam_philhealth = models.CharField(max_length=14, validators=[MinLengthValidator(14)], blank=True, null=True)
+    fam_4ps = models.CharField(max_length=20, blank=True, null=True)
     guardian_lastname = models.CharField(max_length=25, null=False, blank=False)
     guardian_firstname = models.CharField(max_length=50, null=False, blank=False)
     guardian_middlename = models.CharField(max_length=25, null=True, blank=True)
@@ -22,25 +22,37 @@ class Child(models.Model):
     age = models.IntegerField(null=False, blank=False)
 
     def __str__(self):
-        return f"{self.pk}: {self.code} {self.firstname} {self.lastname}"
+        return f"{self.pk}: {self.spc_code} {self.first_name} {self.last_name}"
+    
+    class Meta:
+        db_table = 'spc'
+
 
 class ContactNumber(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="phone_numbers")
     number = models.CharField(max_length=11)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['child', 'number'], name='unique_child_number')
+        ]
+
     def __str__(self):
-        return f"{self.pk}: {self.child.firstname} {self.child.lastname} - {self.number}"
+        return f"{self.pk}: {self.child.first_name} {self.child.last_name} - {self.number}"
     
 class FamilyMember(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
-    fm_lastname = models.CharField(max_length=25, null=False, blank=False)
-    fm_firstname = models.CharField(max_length=25, null=False, blank=False)
-    fm_middlename = models.CharField(max_length=25, null=True, blank=False)
-    fm_relationship = models.CharField(max_length=25, null=False, blank=False)
-    fm_sex = models.CharField(max_length=6, choices=[('Male', 'Male'), ('Female', 'Female')], null=False, blank=False)
+    last_name = models.CharField(max_length=25, null=False, blank=False)
+    first_name = models.CharField(max_length=25, null=False, blank=False)
+    middle_name = models.CharField(max_length=25, null=True, blank=False)
+    relationship_w_spc = models.CharField(max_length=25, null=False, blank=False)
+    sex = models.CharField(max_length=6, choices=[('Male', 'Male'), ('Female', 'Female')], null=False, blank=False)
     
     def __str__(self):
-        return f"{self.child}: {self.fm_relationship} {self.fm_firstname} {self.fm_lastname}"
+        return f"{self.child.spc_code}: {self.relationship_w_spc} {self.first_name} {self.last_name}"
+    
+    class Meta:
+        db_table = 'fam_member'
     
 class FamilyMedicalRecord(models.Model):
     member = models.ForeignKey(FamilyMember, on_delete=models.CASCADE)
@@ -56,7 +68,10 @@ class FamilyMedicalRecord(models.Model):
     remarks = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.member.fm_firstname} {self.member.fm_lastname},:  {self.date}"
+        return f"{self.member.first_name} {self.member.last_name},:  {self.date}"
+    
+    class Meta:
+        db_table = 'fam_med_record'
 
     
 # MEDICAL HISTORY SECTION
@@ -82,13 +97,16 @@ ALLERGY_CHOICES = [
 
 class MedicalHistory(models.Model):
     child = models.OneToOneField(Child, on_delete=models.CASCADE)
-    medical_status = models.CharField(max_length=255)
-    medical_status_history = models.TextField()
-    disability_status = models.CharField(max_length=255)
-    disability_status_history = models.TextField()
+    med_stat = models.CharField(max_length=255)
+    med_history = models.TextField()
+    dis_stat = models.CharField(max_length=255)
+    dis_history = models.TextField()
     allergies_conditions = models.ManyToManyField('AllergyCondition', blank=True)
     allergies_history = models.TextField()
     other_condition = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'spc_med_hist'
 
 class AllergyCondition(models.Model):
     name = models.CharField(max_length=100, unique=True) 
@@ -96,10 +114,16 @@ class AllergyCondition(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        db_table = 'spc_cond'
+
 class Immunization(models.Model):
     medical_history = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='immunizations')
     date = models.DateField()
     immunization_given = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = 'spc_im'
 
 # END OF MEDICAL HISTORY
 
@@ -113,10 +137,10 @@ class PhysiciansExam(models.Model):
     height = models.CharField(max_length=2, choices=conditions, default= "NE")
     weight = models.CharField(max_length=2, choices=conditions, default= "NE")
     bp = models.CharField(max_length=2, choices=conditions, default= "NE")
-    vision_right = models.CharField(max_length=2, choices=conditions, default= "NE")
-    vision_left = models.CharField(max_length=2, choices=conditions, default= "NE")
-    hearing_right = models.CharField(max_length=2, choices=conditions, default= "NE")
-    hearing_left = models.CharField(max_length=2, choices=conditions, default= "NE")
+    vision_r = models.CharField(max_length=2, choices=conditions, default= "NE")
+    vision_l = models.CharField(max_length=2, choices=conditions, default= "NE")
+    hearing_r = models.CharField(max_length=2, choices=conditions, default= "NE")
+    hearing_l = models.CharField(max_length=2, choices=conditions, default= "NE")
     eyes = models.CharField(max_length=2, choices=conditions, default= "NE")
     ears = models.CharField(max_length=2, choices=conditions, default= "NE")
     nose = models.CharField(max_length=2, choices=conditions, default= "NE")
@@ -132,7 +156,10 @@ class PhysiciansExam(models.Model):
     other_label = models.CharField(max_length=20, default="other", null=True, blank=True)
 
     def __str__(self):
-        return f"{self.child}: {self.year} {self.child.lastname} - {self.number}"
+        return f"{self.child.spc_code}: {self.year}"
+    
+    class Meta:
+        db_table = 'phys_exam'
 
 #END PHYSICIAN'S EXAM
 
@@ -158,7 +185,8 @@ class AnnualMedicalCheck(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Medical Check for {self.child.firstname} {self.child.lastname} on {self.date}"
+        return f"Medical Check for {self.child.first_name} {self.child.last_name} on {self.date}"
 
     class Meta:
         ordering = ['-date']  # Order by date in descending order (newest first)
+        db_table = 'annual_med_check'
