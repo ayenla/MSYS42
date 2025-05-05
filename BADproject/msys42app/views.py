@@ -51,10 +51,54 @@ def home(request):
         'is_ajax': is_ajax
     })
 
+
+
 def view_child_profile(request, pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
-    return render(request, 'msys42app/view_cp.html', {'child': child, 'contacts':numbers })
+    education_list = Education.objects.filter(child=child)
+
+    year_choices = get_school_year_choices()
+    grade_choices = Education._meta.get_field('grade').choices
+
+    if request.method == 'POST':
+        form = EducationForm(request.POST)
+        if form.is_valid():
+            education = form.save(commit=False)
+            education.child = child 
+            education.save()
+            return redirect('view_child_profile', pk=pk)
+    else:
+        form = EducationForm()
+
+    return render(request, 'msys42app/view_cp.html', {
+        'child': child,
+        'contacts': numbers,
+        'education': education_list,
+        'form': form,
+        'year_choices': year_choices,
+        'grade_choices': grade_choices,
+    })
+
+def edit_education(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    education = get_object_or_404(Education, pk=id)
+    if request.method == 'POST':
+        education.child = child
+        education.year = request.POST.get('year')
+        education.grade = request.POST.get('grade')
+        education.save()
+    return redirect('view_child_profile', pk=child.pk)
+
+def delete_education(request, pk, id):
+    child = get_object_or_404(Child, pk=pk)
+    education = get_object_or_404(Education, pk=id)
+
+    education.delete()
+
+    messages.success(request, "Education Record has been deleted.")
+    return redirect('view_child_profile', pk=pk) 
+
 
 def edit_child_profile(request,pk):
     child = get_object_or_404(Child, pk=pk)
