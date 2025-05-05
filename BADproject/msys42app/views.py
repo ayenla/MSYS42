@@ -59,7 +59,7 @@ def view_child_profile(request, pk):
 def edit_child_profile(request,pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
-    fam_member = get_object_or_404(FamilyMember, child=child, fm_firstname=child.guardian_firstname,fm_lastname=child.guardian_lastname)
+    fam_member = get_object_or_404(FamilyMember, child=child, first_name=child.guardian_firstname, last_name=child.guardian_lastname)
 
     if request.method == 'POST':
         # Check if this is a delete request
@@ -197,12 +197,23 @@ def create_child_profile(request):
             guardian_sex=guardian_sex, age=age
         )
 
-        print("YEAAAHHH")
+        childnum = Child.objects.get(pk=child.pk)
 
-        return redirect('view_child_profile', pk=child.pk)
+        for phone in contact_numbers:
+            if phone.strip():  
+                ContactNumber.objects.create(child=childnum, number=phone)
+
+        member = FamilyMember.objects.create(
+            child=child, first_name=guardian_firstname, last_name=guardian_lastname, 
+            middle_name=guardian_middlename, relationship_w_spc=guardian_relationship,
+            sex=guardian_sex
+        )
+        member.save() 
+
+        return redirect('view_child_profile', pk=childnum.pk)
 
     print("awwww")
-    return render(request, 'msys42app/edit_cp.html', {'child': child, 'contacts':numbers })
+    return render(request, 'msys42app/create_cp.html')
 
 
 def create_child_profile(request):
@@ -257,9 +268,9 @@ def create_child_profile(request):
                 ContactNumber.objects.create(child=childnum, number=phone)
 
         member = FamilyMember.objects.create(
-            child=child, fm_firstname=guardian_firstname, fm_lastname=guardian_lastname, 
-            fm_middlename=guardian_middlename, fm_relationship=guardian_relationship,
-            fm_sex=guardian_sex
+            child=child, first_name=guardian_firstname, last_name=guardian_lastname, 
+            middle_name=guardian_middlename, relationship_w_spc=guardian_relationship,
+            sex=guardian_sex
         )
         member.save() 
 
@@ -280,9 +291,9 @@ def view_family_medicals(request, pk):
         sex = request.POST.get('sex')
     
         member = FamilyMember.objects.create(
-            child=child, fm_firstname=firstname, fm_lastname=lastname, 
-            fm_middlename=middlename, fm_relationship=relationship,
-            fm_sex=sex
+            child=child, first_name=firstname, last_name=lastname, 
+            middle_name=middlename, relationship_w_spc=relationship,
+            sex=sex
         )
         member.save() 
         messages.success(request, "Entry added successfully.")
@@ -326,11 +337,11 @@ def edit_family_info(request, pk, id):
         relationship = request.POST.get('relationship')
         sex = request.POST.get('sex')
 
-        member.fm_firstname = firstname
-        member.fm_lastname = lastname
-        member.fm_middlename = middlename
-        member.fm_relationship = relationship
-        member.fm_sex = sex
+        member.first_name = firstname
+        member.last_name = lastname
+        member.middle_name = middlename
+        member.relationship_w_spc = relationship
+        member.sex = sex
         member.child = child
         member.save()
 
