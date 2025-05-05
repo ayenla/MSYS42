@@ -108,6 +108,7 @@
                 <div class="col-md-4">
                     <label for="relationship">Guardian's Relationship to SPC <span class="required" style="color: red;">*</span></label>
                     <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
+                    <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
                 </div>
             </div>
 
@@ -129,12 +130,46 @@
                     {% endif %}
                 </div>
             </div>
+             
+            
+
 
             <div class="text-left">
-                <button type="submit" class="btn btn-success">Create Profile</button>
+                <button type="submit" class="btn btn-success"> Save </button>
                 <a href="{% url 'view_child_profile' pk=child.pk%}" class="btn btn-secondary" onclick="return confirmCancel();">Cancel</a>
             </div>
         </form>
+        
+        <!-- Horizontal Line -->
+        <hr class="my-4" style="width: 50%; margin-left: 0;">
+        
+        <!-- Delete Button -->
+        <div class="text-left">
+            <button type="button" id="deleteProfileBtn" class="btn btn-danger">Delete Child Profile</button>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Delete child profile? This cannot be undone.
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelDeleteButton">Cancel</button>
+                <form id="deleteForm" method="POST" action="{% url 'edit_child_profile' pk=child.pk %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_profile" value="true">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
 </div>
 
@@ -154,9 +189,8 @@
 
         let removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.classList.add('btn', 'btn-danger', 'ms-2');
-        removeBtn.textContent = '-'
-        removeBtn.style="margin-left:10px";
+        removeBtn.classList.add('btn', 'btn-danger', 'ms-2', 'removeContact');
+        removeBtn.textContent = '-';
 
         removeBtn.addEventListener('click', function () {
             contactDiv.remove();
@@ -186,26 +220,48 @@
         return !hasDuplicates;
     }
 
-    document.getElementById('addContact').addEventListener('click', ContactButton);
-    document.getElementById('contact-numbers').addEventListener('input', checkDuplicateContacts);
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('addContact').addEventListener('click', ContactButton);
 
-    document.querySelector("form").addEventListener("submit", function (event) {
-        if (!checkDuplicateContacts()) {
-            event.preventDefault();
-            alert("Duplicate contact number found");
-        }
+        document.getElementById('contact-numbers').addEventListener('click', function (event) {
+            if (event.target.classList.contains('removeContact')) {
+                event.target.closest('.d-flex').remove();
+            }
+        });
+
+        document.getElementById('contact-numbers').addEventListener('input', checkDuplicateContacts);
+
+        document.querySelector("form").addEventListener("submit", function (event) {
+            if (!checkDuplicateContacts()) {
+                event.preventDefault();
+                alert("Duplicate contact number found");
+            }
+        });
     });
 
     function confirmCancel() {
         return confirm("Cancel entry? The information will be lost.");
     }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        // Ensure at least one contact number input exists
-        let contactInputs = document.querySelectorAll('input[name="contact_number[]"]');
-        if (contactInputs.length === 0) {
-            ContactButton();
-        }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the delete confirmation modal
+        let deleteConfirmationModal;
+        
+        // Set up the click handler for the delete profile button
+        document.getElementById('deleteProfileBtn').addEventListener('click', function() {
+            if (!deleteConfirmationModal) {
+                deleteConfirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+            }
+            deleteConfirmationModal.show();
+        });
+        
+        // Set up the click handler for the cancel delete button
+        document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+            if (deleteConfirmationModal) {
+                deleteConfirmationModal.hide();
+            }
+        });
     });
 </script>
+
 {% endblock %}

@@ -132,8 +132,8 @@ class PhysiciansExamForm(forms.ModelForm):
     nervous_system = forms.ChoiceField(choices=conditions, required=True)
     skin = forms.ChoiceField(choices=conditions, required=True)
     nutrition = forms.ChoiceField(choices=conditions, required=True)
-    other = forms.ChoiceField(choices=conditions, required=True)
-    other_label = forms.CharField(max_length=20)
+    other = forms.ChoiceField(choices=conditions, required=False)
+    other_label = forms.CharField(max_length=20, required=False)
 
     class Meta:
         model = PhysiciansExam
@@ -166,14 +166,14 @@ class AnnualMedicalCheckForm(forms.ModelForm):
     )
     hemoglobin = forms.DecimalField(
         max_digits=4,
-        decimal_places=2,
+        decimal_places=1,
         min_value=0,
         max_value=99.9,
         required=False,
         widget=forms.NumberInput(attrs={
             'class': 'form-control w-100',
             'style': 'height: 50px; font-size: 1rem; padding: 10px;',
-            'step': '0.01'
+            'step': '0.1'
         })
     )
     condition = forms.CharField(
@@ -205,8 +205,24 @@ class AnnualMedicalCheckForm(forms.ModelForm):
             })
         }
 
+    def __init__(self, *args, **kwargs):
+        self.child = kwargs.pop('child', None)
+        super().__init__(*args, **kwargs)
+
     def clean_date(self):
         date = self.cleaned_data.get('date')
         if not date:
             raise forms.ValidationError("Please select a date.")
+        
+        # Check if there's already a medical check for this year
+        if self.child and date:
+            year = date.year
+            existing_check = AnnualMedicalCheck.objects.filter(
+                child=self.child,
+                date__year=year
+            ).exists()
+            
+            if existing_check:
+                raise forms.ValidationError(f"A medical check already exists for the year {year}.")
+        
         return date

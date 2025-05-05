@@ -38,31 +38,6 @@
         <div class="card-body">
             <h2 class="card-title mb-4" style="font-weight: 1000;">Edit Annual Medical Check</h2>
             
-            {% if messages %}
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    {% for message in messages %}
-                    {% if message.tags == 'error' %}
-                    <li>{{ message }}</li>
-                    {% endif %}
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-            
-            {% if form.errors %}
-            <div class="alert alert-danger">
-                {% for field in form %}
-                    {% for error in field.errors %}
-                    <p class="mb-0">{{ field.label }}: {{ error }}</p>
-                    {% endfor %}
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                <p class="mb-0">{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
             <form method="post" action="{% url 'edit_annual_medical_check' child_id=child.id check_id=medical_check.id %}" id="medicalCheckForm">
                 {% csrf_token %}
                 
@@ -83,6 +58,11 @@
                     <div class="w-100">
                         {{ form.height }}
                     </div>
+                    {% if form.height.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.height.errors }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="mb-4">
@@ -90,6 +70,11 @@
                     <div class="w-100">
                         {{ form.weight }}
                     </div>
+                    {% if form.weight.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.weight.errors }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="mb-4">
@@ -97,6 +82,11 @@
                     <div class="w-100">
                         {{ form.hemoglobin }}
                     </div>
+                    {% if form.hemoglobin.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.hemoglobin.errors }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="mb-4">
@@ -104,6 +94,11 @@
                     <div class="w-100">
                         {{ form.condition }}
                     </div>
+                    {% if form.condition.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.condition.errors }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="mb-4">
@@ -111,6 +106,11 @@
                     <div class="w-100">
                         {{ form.notes }}
                     </div>
+                    {% if form.notes.errors %}
+                    <div class="text-danger mt-1">
+                        {{ form.notes.errors }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="text-center">
@@ -144,11 +144,11 @@
         <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="text-align: left;">
         You are about to save the changes made to this Annual Medical Check Entry.
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-secondary" id="cancelButton">Cancel</button>
         <button type="button" class="btn btn-success" id="confirmSave">Save</button>
       </div>
     </div>
@@ -167,7 +167,7 @@
         You are about to delete this Annual Medical Check Entry.
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-secondary" id="cancelDeleteButton">Cancel</button>
         <a href="{% url 'delete_annual_medical_check' child_id=child.id check_id=medical_check.id %}" class="btn btn-danger" id="confirmDelete">Delete</a>
       </div>
     </div>
@@ -189,103 +189,71 @@
         border: 1px solid #ced4da;
         border-radius: 4px;
     }
+    .text-danger {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize modal functionality
-        initBootstrapComponents();
+        // Initialize the modals
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        const deleteConfirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
         
-        // Handle the Save Changes button
+        // Set up the click handler for the save changes button
         document.getElementById('saveChangesBtn').addEventListener('click', function(e) {
             e.preventDefault();
-            showConfirmationModal();
+            confirmationModal.show();
         });
         
-        // Handle the Confirm Save button
+        // Set up the click handler for the confirm save button
         document.getElementById('confirmSave').addEventListener('click', function() {
-            // Submit the form
-            document.getElementById('medicalCheckForm').submit();
+            document.querySelector('form').submit();
+        });
+        
+        // Set up the click handler for the cancel button
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            confirmationModal.hide();
         });
         
         // Handle the Delete Record button
         document.getElementById('deleteRecordBtn').addEventListener('click', function(e) {
             e.preventDefault();
-            showDeleteConfirmationModal();
+            deleteConfirmationModal.show();
         });
-    });
-    
-    // Initialize Bootstrap components
-    function initBootstrapComponents() {
-        // Make sure we have access to Bootstrap
-        if (typeof bootstrap !== 'undefined') {
-            // Bootstrap is already available
-            console.log('Bootstrap is available');
-        } else {
-            // Load Bootstrap if it's not available
-            console.log('Bootstrap not found, attempting to load');
+
+        // Set up the click handler for the cancel delete button
+        document.getElementById('cancelDeleteButton').addEventListener('click', function() {
+            deleteConfirmationModal.hide();
+        });
+        
+        // Prevent future dates in the date field
+        const dateInput = document.getElementById('id_date');
+        if (dateInput) {
+            // Set max date to today to prevent future dates
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1; // Months start at 0
+            let dd = today.getDate();
             
-            // Create a script element to load Bootstrap
-            var bootstrapScript = document.createElement('script');
-            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js';
-            bootstrapScript.integrity = 'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4';
-            bootstrapScript.crossOrigin = 'anonymous';
-            document.head.appendChild(bootstrapScript);
-        }
-    }
-    
-    // Show the confirmation modal
-    function showConfirmationModal() {
-        const modalElement = document.getElementById('confirmationModal');
-        
-        // Create and show modal with Bootstrap if available
-        if (typeof bootstrap !== 'undefined') {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        } else {
-            // Fallback if Bootstrap isn't available yet
-            setTimeout(function() {
-                if (typeof bootstrap !== 'undefined') {
-                    const modal = new bootstrap.Modal(modalElement);
-                    modal.show();
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+            
+            const formattedToday = yyyy + '-' + mm + '-' + dd;
+            dateInput.setAttribute('max', formattedToday);
+            
+            // Add validation for future dates
+            dateInput.addEventListener('change', function() {
+                const selectedDate = new Date(this.value);
+                
+                if (selectedDate > today) {
+                    this.setCustomValidity('Future dates are not allowed.');
                 } else {
-                    // Manual fallback
-                    modalElement.style.display = 'block';
-                    modalElement.classList.add('show');
-                    document.body.classList.add('modal-open');
-                    const backdrop = document.createElement('div');
-                    backdrop.className = 'modal-backdrop fade show';
-                    document.body.appendChild(backdrop);
+                    this.setCustomValidity('');
                 }
-            }, 500); // Wait for Bootstrap to load
+            });
         }
-    }
-    
-    // Show the delete confirmation modal
-    function showDeleteConfirmationModal() {
-        const modalElement = document.getElementById('deleteConfirmationModal');
-        
-        // Create and show modal with Bootstrap if available
-        if (typeof bootstrap !== 'undefined') {
-            const modal = new bootstrap.Modal(modalElement);
-            modal.show();
-        } else {
-            // Fallback if Bootstrap isn't available yet
-            setTimeout(function() {
-                if (typeof bootstrap !== 'undefined') {
-                    const modal = new bootstrap.Modal(modalElement);
-                    modal.show();
-                } else {
-                    // Manual fallback
-                    modalElement.style.display = 'block';
-                    modalElement.classList.add('show');
-                    document.body.classList.add('modal-open');
-                    const backdrop = document.createElement('div');
-                    backdrop.className = 'modal-backdrop fade show';
-                    document.body.appendChild(backdrop);
-                }
-            }, 500); // Wait for Bootstrap to load
-        }
-    }
+    });
 </script>
 {% endblock %} 

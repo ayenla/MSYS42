@@ -19,7 +19,6 @@
         <li class="nav-item">
             <a class="nav-link active" href="{% url 'annual_medical_check_list' child.id %}" style="color: rgb(0, 0, 0); font-weight: 750; font-size: large;">
                 Medical Checks
-                <span style="display: block; width: 135px; height: 3px; background-color: red; position: center; bottom: -3px; left: 0;"></span>
             </a>
         </li>
         <li class="nav-item">
@@ -142,5 +141,61 @@
         border: 1px solid #ced4da;
         border-radius: 4px;
     }
+    .year-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
 </style>
+
+<div id="existing-years-data" data-years='{{ existing_years|join:"," }}' style="display: none;"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('id_date');
+        const yearError = document.createElement('div');
+        yearError.className = 'year-error';
+        dateInput.parentNode.appendChild(yearError);
+
+        // Get existing years from the data attribute
+        const yearsData = document.getElementById('existing-years-data').dataset.years;
+        const existingYears = new Set(yearsData ? yearsData.split(',').map(Number) : []);
+        
+        // Set max date to today to prevent future dates
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        let mm = today.getMonth() + 1; // Months start at 0
+        let dd = today.getDate();
+        
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+        
+        const formattedToday = yyyy + '-' + mm + '-' + dd;
+        dateInput.setAttribute('max', formattedToday);
+
+        dateInput.addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const selectedYear = selectedDate.getFullYear();
+            
+            // Check for future date
+            if (selectedDate > today) {
+                yearError.textContent = 'Future dates are not allowed.';
+                yearError.style.display = 'block';
+                this.setCustomValidity('Future dates are not allowed.');
+                return;
+            }
+            
+            // Check for existing year
+            if (existingYears.has(selectedYear)) {
+                yearError.textContent = `A medical check already exists for the year ${selectedYear}.`;
+                yearError.style.display = 'block';
+                this.setCustomValidity('A medical check already exists for this year.');
+            } else {
+                yearError.style.display = 'none';
+                this.setCustomValidity('');
+            }
+        });
+    });
+</script>
 {% endblock %} 

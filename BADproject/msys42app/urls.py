@@ -13,6 +13,8 @@ urlpatterns = [
     path('family-medical-records/<int:pk>/', views.view_family_medicals, name='view_family_medicals'),
     path('family-medical-records/<int:pk>/view/<int:id>/', views.view_family_medical_record, name='view_family_medical_record'),
     path('family-medical-records/<int:pk>/edit/<int:id>/', views.edit_family_medical_record, name='edit_family_medical_record'),
+    path('family-medical-records/<int:pk>/edit-family-information/<int:id>/', views.edit_family_info, name='edit_family_info'),
+    path('family-medical-records/<int:pk>/delete-family-member/<int:id>/', views.delete_family_member, name='delete_family_member'),
 
     # Medical History Paths
     path('medical-history/add/<int:child_id>/', views.add_medical_history, name='create_medical_history'),
@@ -22,6 +24,8 @@ urlpatterns = [
     path('physician-exam/home/<int:pk>/', views.home_physicians_exam, name='home_physicians_exam'),
     path('physician-exam/add/<int:pk>/', views.create_physicians_exam, name='create_physicians_exam'),
     path('physician-exam/view/<int:pk>/<int:id>/', views.view_physicians_exam, name='view_physicians_exam'),
+    path('physician-exam/edit/<int:pk>/<int:id>/', views.edit_physicians_exam, name='edit_physicians_exam'),
+    path('physician-exam/delete/<int:pk>/<int:id>/', views.delete_physicians_exam, name='delete_physicians_exam'),
 
     #Annual Medical Check
     path('child/<int:child_id>/annual-medical-check/', views.annual_medical_check_list, name='annual_medical_check_list'),

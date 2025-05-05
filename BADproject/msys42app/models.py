@@ -60,8 +60,8 @@ class FamilyMedicalRecord(models.Model):
     age = models.PositiveSmallIntegerField(null=True, blank=True)  
     height = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True) 
     weight = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
-    bmi = models.DecimalField(max_digits=4, decimal_places=1, null=True)
-    bp = models.CharField(max_length=5, null=True, blank=True) 
+    bmi = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
+    bp = models.CharField(max_length=5, null=True, blank=True)
     temp = models.DecimalField(max_digits=3, decimal_places=1, null=True, blank=True)
     med_stat = models.CharField(max_length=50, null=True, blank=True)
     medication = models.CharField(max_length=100, null=True, blank=True)
@@ -152,8 +152,8 @@ class PhysiciansExam(models.Model):
     nervous_system = models.CharField(max_length=2, choices=conditions, default= "NE")
     skin = models.CharField(max_length=2, choices=conditions, default= "NE")
     nutrition = models.CharField(max_length=2, choices=conditions, default= "NE")
-    other = models.CharField(max_length=2, choices=conditions, default= "NE")
-    other_label = models.CharField(max_length=20, default="other")
+    other = models.CharField(max_length=2, choices=conditions, default= "NE", null=True, blank=True)
+    other_label = models.CharField(max_length=20, default="other", null=True, blank=True)
 
     def __str__(self):
         return f"{self.child.spc_code}: {self.year}"
@@ -169,7 +169,7 @@ class AnnualMedicalCheck(models.Model):
     height = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in cm
     weight = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in kg
     bmi = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-    hemoglobin = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    hemoglobin = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True)
     condition = models.TextField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
 

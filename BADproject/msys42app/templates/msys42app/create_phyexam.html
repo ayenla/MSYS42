@@ -293,14 +293,22 @@
                             </select>
                         </td>
                     </tr>
-                    <tfoot id="add-row-footer">
+                    <!-- Other Fields Section -->
+                    <tr>
+                        <td colspan="2" class="text-center" style="padding: 10px; background-color: #f8f9fa;">
+                            <strong>Other Conditions</strong>
+                        </td>
+                    </tr>
+                    <!-- Container for additional fields -->
+                    <tbody id="additional-fields-container">
+                    </tbody>
+                    <tfoot>
                         <tr id="add-button-row">
                             <td colspan="2" style="text-align: center;">
                                 <button type="button" class="btn btn-success" onclick="addRow()">&#43; Add Field</button>
                             </td>
                         </tr>
                     </tfoot>
-            
                 </table>
             </div>
     
@@ -312,38 +320,43 @@
     </div>
 </div>
 <script>
+    let fieldCounter = 0;
+    
     function addRow() {
-        const footer = document.getElementById('add-row-footer');
-        footer.innerHTML = `
-            <tr id="custom-other-row">
-                <td>
-                    <input type="text" class="form-control" id="other_label" name="other_label" placeholder="Other (e.g., Spine)">
-                </td>
-                <td>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <select class="form-control" id="other" name="other">
-                            <option value="NE">NE</option>
-                            <option value="N">N</option>
-                            <option value="A">A</option>
-                            <option value="C">C</option>
-                            <option value="R">R</option>
-                        </select>
-                        <button type="button" class="btn btn-danger ms-2" onclick="removeRow()">&#x2715;</button>
-                    </div>
-                </td>
-            </tr>
+        fieldCounter++;
+        const container = document.getElementById('additional-fields-container');
+        const newRow = document.createElement('tr');
+        newRow.id = `additional-field-${fieldCounter}`;
+        
+        // Use standard other_label and other names for the first row
+        const fieldName = fieldCounter === 1 ? 'other_label' : `additional_label_${fieldCounter}`;
+        const valueName = fieldCounter === 1 ? 'other' : `additional_value_${fieldCounter}`;
+        
+        newRow.innerHTML = `
+            <td>
+                <input type="text" class="form-control" name="${fieldName}" placeholder="Condition">
+            </td>
+            <td>
+                <div class="d-flex justify-content-between align-items-center">
+                    <select class="form-control" name="${valueName}">
+                        <option value="NE" selected>NE</option>
+                        <option value="N">N</option>
+                        <option value="A">A</option>
+                        <option value="C">C</option>
+                        <option value="R">R</option>
+                    </select>
+                    <button type="button" class="btn btn-danger ms-2" onclick="removeRow(${fieldCounter})">&#x2715;</button>
+                </div>
+            </td>
         `;
+        container.appendChild(newRow);
     }
 
-    function removeRow() {
-        const footer = document.getElementById('add-row-footer');
-        footer.innerHTML = `
-            <tr id="add-button-row">
-                <td colspan="2" style="text-align: center;">
-                    <button type="button" class="btn btn-success" onclick="addRow()">&#43; Add Field</button>
-                </td>
-            </tr>
-        `;
+    function removeRow(id) {
+        const row = document.getElementById(`additional-field-${id}`);
+        if (row) {
+            row.remove();
+        }
     }
 </script>
 
