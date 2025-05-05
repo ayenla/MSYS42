@@ -16,10 +16,10 @@ def home(request):
     if query:
         # Search for child by code or name (case-insensitive, partial match)
         children = Child.objects.filter(
-            Q(code__icontains=query) |
-            Q(lastname__icontains=query) |
-            Q(firstname__icontains=query) |
-            Q(middlename__icontains=query)
+            Q(spc_code__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(middle_name__icontains=query)
         )
     else:
         children = Child.objects.all()
@@ -53,16 +53,16 @@ def create_child_profile(request):
     numbers = ContactNumber.objects.all()
 
     if request.method == 'POST':
-        code = request.POST.get('code')
-        lastname = request.POST.get('lastname')
-        firstname = request.POST.get('firstname')
-        middlename = request.POST.get('middlename')
+        spc_code = request.POST.get('code')
+        last_name = request.POST.get('lastname')
+        first_name = request.POST.get('firstname')
+        middle_name = request.POST.get('middlename')
         sex = request.POST.get('sex')
-        birth = request.POST.get('birth')
-        blood_group = request.POST.get('blood_group')
-        address = request.POST.get('address')
-        philhealth_number = request.POST.get('philhealth')
-        fourps_number = request.POST.get('fourps')
+        dob = request.POST.get('birth')
+        blood_grp = request.POST.get('blood_group')
+        comm_address = request.POST.get('address')
+        fam_philhealth = request.POST.get('philhealth')
+        fam_4ps = request.POST.get('fourps')
         guardian_lastname = request.POST.get('guardian_lastname')
         guardian_firstname = request.POST.get('guardian_firstname')
         guardian_middlename = request.POST.get('guardian_middlename')
@@ -70,27 +70,23 @@ def create_child_profile(request):
         guardian_sex = request.POST.get('guardian_sex')
         contact_numbers = request.POST.getlist('contact_number[]') 
 
-        birth_date = date.fromisoformat(birth)
+        birth_date = date.fromisoformat(dob)
         today = date.today()
         age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
 
-        
-
-        if Child.objects.filter(code=code).exists():
+        if Child.objects.filter(spc_code=spc_code).exists():
             error_message = 'SPC Code already taken.'
 
-            return render(request, 'msys42app/create_cp.html', {'error_message_var':error_message, 'code':code, 'lastname':lastname, 'firstname':firstname, 'middlename':middlename, 'sex':sex, 'birth':birth, 'blood_group':blood_group, 'address':address, 'philhealth':philhealth_number, 'fourps':fourps_number, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
+            return render(request, 'msys42app/create_cp.html', {'error_message_var':error_message, 'code':spc_code, 'lastname':last_name, 'firstname':first_name, 'middlename':middle_name, 'sex':sex, 'birth':dob, 'blood_group':blood_grp, 'address':comm_address, 'philhealth':fam_philhealth, 'fourps':fam_4ps, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
         
-        if (philhealth_number and not philhealth_number.replace("-", "").isdigit()) or (fourps_number and not fourps_number.isdigit()):
+        if (fam_philhealth and not fam_philhealth.replace("-", "").isdigit()) or (fam_4ps and not fam_4ps.isdigit()):
             error_message = "Only numerical digits are allowed for PhilHealth Number and 4P's Number."
-            return render(request, 'msys42app/create_cp.html', {'error_message_var':error_message, 'code':code, 'lastname':lastname, 'firstname':firstname, 'middlename':middlename, 'sex':sex, 'birth':birth, 'blood_group':blood_group, 'address':address, 'philhealth':philhealth_number, 'fourps':fourps_number, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
+            return render(request, 'msys42app/create_cp.html', {'error_message_var':error_message, 'code':spc_code, 'lastname':last_name, 'firstname':first_name, 'middlename':middle_name, 'sex':sex, 'birth':dob, 'blood_group':blood_grp, 'address':comm_address, 'philhealth':fam_philhealth, 'fourps':fam_4ps, 'guardian_lastname':guardian_lastname, 'guardian_firstname':guardian_firstname, 'guardian_middlename':guardian_middlename, 'guardian_relationship':guardian_relationship, 'guardian_sex':guardian_sex, 'phone':contact_numbers})
         
-
-      
         child = Child.objects.create(
-            code=code, lastname=lastname, firstname=firstname, middlename=middlename,
-            sex=sex, birth=birth, blood_group=blood_group, address=address,
-            philhealth_number=philhealth_number, fourps_number=fourps_number,
+            spc_code=spc_code, last_name=last_name, first_name=first_name, middle_name=middle_name,
+            sex=sex, dob=dob, blood_grp=blood_grp, comm_address=comm_address,
+            fam_philhealth=fam_philhealth, fam_4ps=fam_4ps,
             guardian_lastname=guardian_lastname, guardian_firstname=guardian_firstname, 
             guardian_middlename=guardian_middlename, guardian_relationship=guardian_relationship,
             guardian_sex=guardian_sex, age=age

@@ -4,7 +4,7 @@ from django.utils import timezone
 import datetime
 
 class Child(models.Model):
-    spc_code = models.CharField(max_length=7, validators=[RegexValidator(regex=r'^[A-Za-z]{3}\d{4}$')], unique=True, null=False, blank=False, primary_key=True)
+    spc_code = models.CharField(max_length=7, validators=[RegexValidator(regex=r'^[A-Za-z]{3}\d{4}$')], unique=True, null=False, blank=False)
     last_name = models.CharField(max_length=25, null=False, blank=False)
     first_name = models.CharField(max_length=50, null=False, blank=False)
     middle_name = models.CharField(max_length=25, null=True)
@@ -29,7 +29,7 @@ class Child(models.Model):
 
 
 class ContactNumber(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="phone_numbers", to_field="spc_code")
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="phone_numbers")
     number = models.CharField(max_length=11)
 
     class Meta:
@@ -41,7 +41,7 @@ class ContactNumber(models.Model):
         return f"{self.pk}: {self.child.first_name} {self.child.last_name} - {self.number}"
     
 class FamilyMember(models.Model):
-    spc_code = models.ForeignKey(Child, on_delete=models.CASCADE)
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
     last_name = models.CharField(max_length=25, null=False, blank=False)
     first_name = models.CharField(max_length=25, null=False, blank=False)
     middle_name = models.CharField(max_length=25, null=True, blank=False)
@@ -49,7 +49,7 @@ class FamilyMember(models.Model):
     sex = models.CharField(max_length=6, choices=[('Male', 'Male'), ('Female', 'Female')], null=False, blank=False)
     
     def __str__(self):
-        return f"{self.spc_code}: {self.relationship_w_spc} {self.first_name} {self.last_name}"
+        return f"{self.child.spc_code}: {self.relationship_w_spc} {self.first_name} {self.last_name}"
     
     class Meta:
         db_table = 'fam_member'
@@ -96,7 +96,7 @@ ALLERGY_CHOICES = [
 ]
 
 class MedicalHistory(models.Model):
-    spc_code = models.OneToOneField(Child, on_delete=models.CASCADE)
+    child = models.OneToOneField(Child, on_delete=models.CASCADE)
     med_stat = models.CharField(max_length=255)
     med_history = models.TextField()
     dis_stat = models.CharField(max_length=255)
@@ -129,7 +129,7 @@ class Immunization(models.Model):
 
 # PHYSICIAN EXAM SECTION
 class PhysiciansExam(models.Model):
-    spc_code = models.ForeignKey(Child, on_delete=models.CASCADE)
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
     year_choices = [(year, year) for year in range(2000, datetime.datetime.now().year + 1)]
     conditions = [("N", "N"), ("A", "A"), ("C", "C"), ("R", "R"), ("NE", "NE")]
     year = models.IntegerField(choices=year_choices, default=datetime.datetime.now().year)
@@ -156,7 +156,7 @@ class PhysiciansExam(models.Model):
     other_label = models.CharField(max_length=20, default="other")
 
     def __str__(self):
-        return f"{self.child}: {self.year} {self.child.last_name} - {self.number}"
+        return f"{self.child.spc_code}: {self.year}"
     
     class Meta:
         db_table = 'phys_exam'
@@ -164,7 +164,7 @@ class PhysiciansExam(models.Model):
 #END PHYSICIAN'S EXAM
 
 class AnnualMedicalCheck(models.Model):
-    spc_code = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='annual_medical_checks')
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name='annual_medical_checks')
     date = models.DateField()
     height = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in cm
     weight = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)  # in kg
@@ -189,5 +189,4 @@ class AnnualMedicalCheck(models.Model):
 
     class Meta:
         ordering = ['-date']  # Order by date in descending order (newest first)
-
         db_table = 'annual_med_check'
