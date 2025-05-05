@@ -18,7 +18,7 @@
                
                 <div class="col-md-2">
                     <label for="spc_code">SPC Code <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="spc_code" name="code" maxlength="7" minlength="7" pattern="[A-Z]{3}[0-9]{4}" value="{{ code }}" placeholder="AAA1234">
+                    <input type="text" class="form-control" id="spc_code" name="code" maxlength="7" minlength="7" pattern="[A-Z]{3}[0-9]{4}" value="{{ code }}" placeholder="AAA1234" required>
                 </div>
 
                 <div class="col-md-3">
@@ -48,21 +48,21 @@
                 </div>
                 <div class="col-md-4">
                     <label for="birth">Date of Birth <span class="required" style="color: red;">*</span></label>
-                    <input type="date" class="form-control" id="birth" name="birth" value="{{ dob|date:'Y-m-d' }}" required>
+                    <input type="date" class="form-control" id="birth" name="birth" value="{{ dob }}" max="{{ today }}" required>
 
                 </div>
                 <div class="col-md-3">
                     <label for="blood_group">Blood Group</label>
-                    <select class="form-control" id="blood_group" name="blood_group" value="{{ blood_grp }}">
+                    <select class="form-control" id="blood_group" name="blood_group">
                         <option value="">Select</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
+                        <option value="A+" {% if blood_grp == 'A+' %}selected{% endif %}>A+</option>
+                        <option value="A-" {% if blood_grp == 'A-' %}selected{% endif %}>A-</option>
+                        <option value="B+" {% if blood_grp == 'B+' %}selected{% endif %}>B+</option>
+                        <option value="B-" {% if blood_grp == 'B-' %}selected{% endif %}>B-</option>
+                        <option value="AB+" {% if blood_grp == 'AB+' %}selected{% endif %}>AB+</option>
+                        <option value="AB-" {% if blood_grp == 'AB-' %}selected{% endif %}>AB-</option>
+                        <option value="O+" {% if blood_grp == 'O+' %}selected{% endif %}>O+</option>
+                        <option value="O-" {% if blood_grp == 'O-' %}selected{% endif %}>O-</option>
                     </select>
                 </div>
             </div>
@@ -80,7 +80,7 @@
                 </div>
                 <div class="col-md-5">
                     <label for="fourps">Family 4Ps Number</label>
-                    <input type="text" class="form-control" id="fourps" name="fourps" maxlength="20" value="{{ fam_4ps }}" placeholder="123412341234">
+                    <input type="text" class="form-control" id="fourps" name="fourps" maxlength="12" minlength="12" pattern="^\d{12}$" value="{{ fam_4ps }}" placeholder="123412341234">
                 </div>
             </div>
 
@@ -115,10 +115,12 @@
                 <label for="contact_number[]">Contact Number <span class="required" style="color: red;">*</span></label>
                 <div id="contact-numbers">
                     {% if phone %}
-                        <div class="d-flex mb-2">
-                            <input type="tel" id="contact_number[]" pattern="09[0-9]{9}" class="form-control" name="contact_number[]" placeholder="09*********" value="{{ phone }}" maxlength="11" required>
-                            <button type="button" class="btn btn-success ms-2" id="addContact" style="margin-left: 5px;">+</button>
-                        </div>
+                        {% for number in phone %}
+                            <div class="d-flex mb-2">
+                                <input type="tel" id="contact_number[]" pattern="09[0-9]{9}" class="form-control" name="contact_number[]" placeholder="09*********" value="{{ number }}" maxlength="11" required>
+                                <button type="button" class="btn btn-success ms-2" id="addContact" style="margin-left: 5px;">+</button>
+                            </div>
+                        {% endfor %}
                     {% else %}
                         <div class="d-flex mb-2">
                             <input type="tel" id="contact_number[]" pattern="09[0-9]{9}" class="form-control" name="contact_number[]" placeholder="09*********" maxlength="11" required>
