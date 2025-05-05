@@ -26,7 +26,34 @@ class Child(models.Model):
     
     class Meta:
         db_table = 'spc'
+    
+class Education(models.Model):
+    grades = [
+    ("Preparatory", "Preparatory"),
+    ("Grade 1", "Grade 1"),
+    ("Grade 2", "Grade 2"),
+    ("Grade 3", "Grade 3"),
+    ("Grade 4", "Grade 4"),
+    ("Grade 5", "Grade 5"),
+    ("Grade 6", "Grade 6"),
+    ("Grade 7", "Grade 7"),
+    ("Grade 8", "Grade 8"),
+    ("Grade 9", "Grade 9"),
+    ("Grade 10", "Grade 10"),
+    ("Grade 11", "Grade 11"),
+    ("Grade 12", "Grade 12"),
+    ("NE", "Not Evaluated"),
+    ("Higher Education", "Higher Education"),
+]
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    year = models.CharField(max_length=9, blank=True, null=True)
+    grade = models.CharField(max_length= 25, blank=True, null=True, choices=grades)
 
+    def __str__(self):
+        return f"{self.child.first_name} {self.child.last_name}: {self.year}: {self.grade}"
+
+    class Meta:
+        db_table = 'spc_ed'
 
 class ContactNumber(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="phone_numbers")

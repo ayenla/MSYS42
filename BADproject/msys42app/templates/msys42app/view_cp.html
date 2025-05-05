@@ -96,15 +96,115 @@
         <div class="card p-5 me-3" style="border-radius: 20px; width: 60%; max-width: 1000px;">
             <h2> Education </h2>
             <div class="educ_info">
-                <table>
-                    <thead>
+                <table class="table" style="max-width: fit-content;">
+                    <thead class="thead-dark">
                         <tr>
-                            <th>Year</th>
-                            <th>Grade Level</th> 
+                        <th scope="col">Year</th>
+                        <th scope="col">Grade Level</th>
+                        <th scope="col"> Action </th>
                         </tr>
                     </thead>
+                    <tbody>
+                    {% for year in education %}
+                    <tr>
+                        <td>{{ year.year }}</td>
+                        <td>{{ year.grade }}</td>
+                        <td>
+                            <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#editEducation{{ year.id }}">Edit</button>
+                        </td>
+                    </tr>
+                    
+                    <!-- Edit Modal (unique ID per education record) -->
+                    <div class="modal fade" id="editEducation{{ year.id }}" tabindex="-1" role="dialog">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <form method="POST" action="{% url 'edit_education' child.id year.id %}" class="form-container">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Education</h5>
+                                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <!-- Year Dropdown -->
+                                        <label>Year</label>
+                                        <select name="year" class="form-control" required>
+                                            {% for val, display in year_choices %}
+                                            <option value="{{ val }}" {% if val == year.year %}selected{% endif %}>{{ display }}</option>
+                                            {% endfor %}
+                                        </select>
+
+                                        <br>
+
+                                        <!-- Grade Dropdown -->
+                                        <label>Grade</label>
+                                        <select name="grade" class="form-control">
+                                            {% for val, display in grade_choices %}
+                                            <option value="{{ val }}" {% if val == year.grade %}selected{% endif %}>{{ display }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="modal-footer d-flex justify-content-between">
+                                        <div>
+                                            <a href="{% url 'delete_education' pk=child.pk id=year.pk %}" 
+                                               class="btn btn-danger" 
+                                               onclick="return confirm('Are you sure you want to delete this record?');">
+                                               Delete
+                                            </a>
+                                        </div>
+                                        
+                                        <div>
+                                            <button type="submit" class="btn btn-success">Save</button>
+                                            <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                        
+                    </tbody>
+                    <tfoot>
+                        <td colspan="3" class="text-center"> 
+                            <button type="button" class="bi bi-plus-circle" style="font-size:medium; cursor: pointer; border-width: 0; background-color: transparent;" data-toggle="modal" data-target="#addEducation"> Add Education </button>
+                        </td>
+
+                    <!-- Modal to Add Education -->
+                    <form method="POST" action="{% url 'view_child_profile' child.id %}" class="form-container">
+                        {% csrf_token %}
+                        <div class="modal fade" id="addEducation" tabindex="-1" role="dialog">
+                            <div class="modal-dialog modal-dialog-centered" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Add Education</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="modal-body">
+                                        {{ form.year.label_tag }}
+                                        {{ form.year }}
+                                        <br>
+                                        {{ form.grade.label_tag }}
+                                        {{ form.grade }}
+                                    </div>
+                    
+                                    <div class="modal-footer d-flex justify-content-between">
+                                        <button type="submit" class="btn btn-success">Save</button>
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- END Modal to Add Education -->
+
+                </div>
+                    </tfoot>
+                </table>
             </div>
-        </div>    
+        </div>        
     </div>
 </div>
 
