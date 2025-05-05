@@ -8,6 +8,9 @@ urlpatterns = [
     path('CreateChildProfile/', views.create_child_profile, name='create_child_profile'),
     path('view/<int:pk>/', views.view_child_profile, name='view_child_profile'),
     path('edit/<int:pk>/', views.edit_child_profile, name='edit_child_profile'),
+    path('edit-education/<int:pk>/<int:id>/', views.edit_education, name='edit_education'),
+    path('delete-education/<int:pk>/<int:id>/', views.delete_education, name='delete_education'),
+
 
     #Family Medical Records
     path('family-medical-records/<int:pk>/', views.view_family_medicals, name='view_family_medicals'),
