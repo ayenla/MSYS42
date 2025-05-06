@@ -234,11 +234,18 @@
         document.getElementById('contact-numbers').addEventListener('input', checkDuplicateContacts);
 
         document.querySelector("form").addEventListener("submit", function (event) {
-            if (!checkDuplicateContacts()) {
-                event.preventDefault();
-                alert("Duplicate contact number found");
-            }
-        });
+    if (!checkDuplicateContacts()) {
+        event.preventDefault();
+        alert("Duplicate contact number found");
+        return;
+    }
+
+    const confirmSubmit = confirm("Are you sure you want to save changes to this profile?");
+    if (!confirmSubmit) {
+        event.preventDefault();
+    }
+});
+
     });
 
     function confirmCancel() {
