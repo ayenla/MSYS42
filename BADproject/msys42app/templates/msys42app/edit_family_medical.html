@@ -140,11 +140,11 @@
                                 {% for record in records %}
                                 <tr>
                                     <td><input type="date" name="records[][date]" class="form-control" value="{{ record.date | date:'Y-m-d'}}" style="min-width: 120px;"></td>
-                                    <td><input type="text" name="records[][age]" class="form-control" value="{{ record.age |default_if_none:'0.00' }}" style="min-width: 100px;"></td>
-                                    <td><input type="text" name="records[][height]" class="form-control" value="{{ record.height |default_if_none:'0.00' }}" style="min-width: 100px;"></td>
-                                    <td><input type="text" name="records[][weight]" class="form-control" value="{{ record.weight |default_if_none:'0.00' }}" style="min-width: 100px;"></td>
+                                    <td><input type="number" name="records[][age]" class="form-control" value="{{ record.age |default_if_none:'0.00' }}" min="0" max="999" style="min-width: 100px;"></td>
+                                    <td><input type="number" name="records[][height]" class="form-control" value="{{ record.height |default_if_none:'0.00' }}" step="0.1" min="0" max="999.9" style="min-width: 100px;"></td>
+                                    <td><input type="number" name="records[][weight]" class="form-control" value="{{ record.weight |default_if_none:'0.00' }}" step="0.1" min="0" max="999.9" style="min-width: 100px;"></td>
                                     <td><input type="text" name="records[][bp]" class="form-control" value="{{ record.bp }}" style="min-width: 100px;"></td>
-                                    <td><input type="text" name="records[][temperature]" class="form-control" value="{{ record.temp |default_if_none:'0.00' }}" style="min-width: 100px;"></td>
+                                    <td><input type="number" name="records[][temperature]" class="form-control" value="{{ record.temp |default_if_none:'0.00' }}" step="0.1" min="0" max="99.9" style="min-width: 100px;"></td>
                                     <td><input type="text" name="records[][medical_status]" class="form-control" value="{{ record.med_stat }}" style="min-width: 150px;"></td>
                                     <td><textarea name="records[][medication]" class="form-control" style="min-width: 150px; resize: vertical;">{{ record.medication }}</textarea></td>
                                     <td><textarea name="records[][remarks]" class="form-control" style="min-width: 150px; resize: vertical;">{{ record.remarks }}</textarea></td>
