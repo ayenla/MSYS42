@@ -43,9 +43,9 @@
             <div class="info mb-4">
                 <div class="d-flex ">
                     <div class="column">
-                        <strong>Name:</strong> {{member.fm_firstname}} {{member.fm_middlename}} {{member.fm_lastname}}<br>
-                        <strong>Sex:</strong> {{member.fm_sex}}<br>
-                        <strong>Relationship with {{child.firstname}}:</strong> {{member.fm_relationship}}<br>
+                        <strong>Name:</strong> {{member.first_name}} {{member.middle_name}} {{member.last_name}}<br>
+                        <strong>Sex:</strong> {{member.sex}}<br>
+                        <strong>Relationship with {{child.first_name}}:</strong> {{member.relationship_w_spc}}<br>
                     </div>
                     <div class="column d-flex justify-content-center align-items-center" style="min-width: 50px;">
                         <button type="button" class="bi bi-pencil-square" style="font-size: 1.5rem; cursor: pointer; border-width: 0; background-color: transparent;" data-toggle="modal" data-target="#exampleModalCenter"></button>
@@ -68,17 +68,17 @@
                             <div class="modal-body">
                                     
                                 <label> First Name<span class="required" style="color: red;">*</span> </label>
-                                <input type="text" name="firstname" value="{{ member.fm_firstname }}" required>
+                                <input type="text" name="firstname" value="{{ member.first_name }}" required>
                                 <label> Middle Name </label>
-                                <input class="form-control" type="text" id="middlename" name="middlename" value="{{member.fm_middlename}}">
+                                <input class="form-control" type="text" id="middlename" name="middle_name" value="{{member.fm_middlename}}">
                                 <label> Last Name<span class="required" style="color: red;">*</span> </label>
-                                <input class="form-control" type="text" id="lastname" name="lastname" value="{{member.fm_lastname}}" required>                      
+                                <input class="form-control" type="text" id="lastname" name="lastname" value="{{member.last_name}}" required>                      
                                 <label>Sex<span class="required" style="color: red;">*</span> </label>
                                 <select class="form-control" id="sex" name="sex" required>
-                                    {% if member.fm_sex == "Female" %}
+                                    {% if member.sex == "Female" %}
                                         <option value="Female" selected>Female</option>
                                         <option value="Male">Male</option>
-                                    {% elif member.fm_sex == "Male" %}
+                                    {% elif member.sex == "Male" %}
                                         <option value="Male" selected>Male</option>
                                         <option value="Female">Female</option>
                                     {% else %}
@@ -89,7 +89,7 @@
                                 </select>
                                 
                                 <label>Relation with Child<span class="required" style="color: red;">*</span></label>
-                                <input class="form-control" type="text" id="relationship" name="relationship" value="{{member.fm_relationship}}" required>
+                                <input class="form-control" type="text" id="relationship" name="relationship" value="{{member.relationship_w_spc}}" required>
 
                             </div>
                             <div class="modal-footer d-flex justify-content-between">

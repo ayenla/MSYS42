@@ -88,15 +88,15 @@
                     <th>Name</th>
                     <th>Sex</th>
                     <th>Relation with Child</th>
-                    <th></th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody style="background-color: white;">
                 {% for member in members %}
                   <tr>
-                    <td> {{member.fm_firstname}} {{member.fm_middlename}} {{member.fm_lastname}}</td>
-                    <td> {{member.fm_sex}} </td>
-                    <td> {{member.fm_relationship}} </td>
+                    <td> {{member.first_name}} {{member.middle_name}} {{member.last_name}}</td>
+                    <td> {{member.sex}} </td>
+                    <td> {{member.relationship_w_spc}} </td>
                     <td>
                         <a href="{% url 'view_family_medical_record' child.id member.pk%}" class="btn btn-primary">
                             <i class="fas fa-eye"></i> View

@@ -53,16 +53,16 @@
                 
                 <div class="col-md-3">
                     <label for="blood_group">Blood Group</label>
-                    <select class="form-control" id="blood_group" name="blood_group" value="{{ child.blood_grp }}">
+                    <select class="form-control" id="blood_group" name="blood_group">
                         <option value="">Select</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
+                        <option value="A+" {% if blood_grp|default:child.blood_grp == 'A+' %}selected{% endif %}>A+</option>
+                        <option value="A-" {% if blood_grp|default:child.blood_grp == 'A-' %}selected{% endif %}>A-</option>
+                        <option value="B+" {% if blood_grp|default:child.blood_grp == 'B+' %}selected{% endif %}>B+</option>
+                        <option value="B-" {% if blood_grp|default:child.blood_grp == 'B-' %}selected{% endif %}>B-</option>
+                        <option value="AB+" {% if blood_grp|default:child.blood_grp == 'AB+' %}selected{% endif %}>AB+</option>
+                        <option value="AB-" {% if blood_grp|default:child.blood_grp == 'AB-' %}selected{% endif %}>AB-</option>
+                        <option value="O+" {% if blood_grp|default:child.blood_grp == 'O+' %}selected{% endif %}>O+</option>
+                        <option value="O-" {% if blood_grp|default:child.blood_grp == 'O-' %}selected{% endif %}>O-</option>
                     </select>
                 </div>
             </div>
@@ -107,7 +107,6 @@
                 </div>
                 <div class="col-md-4">
                     <label for="relationship">Guardian's Relationship to SPC <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
                     <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
                 </div>
             </div>
