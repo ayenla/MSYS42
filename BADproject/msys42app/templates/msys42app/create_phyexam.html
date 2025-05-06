@@ -28,7 +28,7 @@
             <a class="nav-link" href="{% url 'view_family_medicals' child.id%}">Family Medical Records</a>
         </li>
     </ul>
-    <h5> {{child.lastname}}, {{child.firstname}} {{child.middlename}} </h5>
+    <h5> {{child.last_name}}, {{child.first_name}} {{child.middle_name}} </h5>
 </nav>
 {% endblock %}
 
@@ -62,18 +62,6 @@
             <!-- Table Layout -->
             <div class="d-flex justify-content-center" style="gap: 10px;">
                 <table class="table table-bordered" style="width: 45%; font-weight: 800;">
-                    <tr>
-                        <td>Grade</td>
-                        <td>
-                            <select class="form-control" id="grade" name="grade" value="{{ grade }}">
-                                <option value="NE">NE</option>
-                                <option value="N">N</option>
-                                <option value="A">A</option>
-                                <option value="C">C</option>
-                                <option value="R">R</option>
-                            </select>
-                        </td>
-                    </tr>
                     <tr>
                         <td>Height</td>
                         <td>
