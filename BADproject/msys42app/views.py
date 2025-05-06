@@ -466,12 +466,12 @@ def edit_family_medical_record(request, pk, id):
     records = FamilyMedicalRecord.objects.filter(member=member)
     
     if request.method == "POST":
+        records.delete() # Clear existing records and only save what is submitted
         # Assuming multiple new records are submitted
         dates = request.POST.getlist('records[][date]')
         ages = request.POST.getlist('records[][age]')
         heights = request.POST.getlist('records[][height]')
         weights = request.POST.getlist('records[][weight]')
-        bmis = request.POST.getlist('records[][bmi]')
         bps = request.POST.getlist('records[][bp]')
         temps = request.POST.getlist('records[][temperature]')
         statuses = request.POST.getlist('records[][medical_status]')
@@ -486,7 +486,6 @@ def edit_family_medical_record(request, pk, id):
                 age=ages[i],
                 height=heights[i],
                 weight=weights[i],
-                bmi=bmis[i],
                 bp=bps[i],
                 temp=temps[i],
                 med_stat=statuses[i],
@@ -499,7 +498,6 @@ def edit_family_medical_record(request, pk, id):
                 height = parse_input(heights[i],"float")
                 weight = parse_input(weights[i],"float")
                 height = parse_input(heights[i],"int")
-                bmi = parse_input(bmis[i],"float")
                 temp = parse_input(temps[i],"int")        
 
                 record = FamilyMedicalRecord.objects.create(
@@ -508,17 +506,24 @@ def edit_family_medical_record(request, pk, id):
                 age=age,
                 height=height,
                 weight=weight,
-                bmi=bmi,
                 bp=bps[i],
                 temp=temp,
                 med_stat=statuses[i],
                 medication=meds[i],
                 remarks=remarks[i]
                 )
-                
-            
-        return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
+        return redirect('view_family_medical_record', pk=pk, id=id)   
+        
+    return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
+
+def delete_family_medical_record(request, pk, id, rec):
+    child = get_object_or_404(Child, pk=pk)
+    member = get_object_or_404(FamilyMember, pk=id)
+    records = FamilyMedicalRecord.objects.filter(member=member)
+    record = get_object_or_404(FamilyMedicalRecord, pk=rec)
     
+    FamilyMedicalRecord.objects.filter(pk=rec).delete()
+    record.delete()
 
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
 

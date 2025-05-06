@@ -18,6 +18,7 @@ urlpatterns = [
     path('family-medical-records/<int:pk>/edit/<int:id>/', views.edit_family_medical_record, name='edit_family_medical_record'),
     path('family-medical-records/<int:pk>/edit-family-information/<int:id>/', views.edit_family_info, name='edit_family_info'),
     path('family-medical-records/<int:pk>/delete-family-member/<int:id>/', views.delete_family_member, name='delete_family_member'),
+    path('family-medical-records/<int:pk>/delete-family-medical-record/<int:id>/<int:rec>/', views.delete_family_medical_record, name='delete_family_medical_record'),
 
     # Medical History Paths
     path('medical-history/add/<int:child_id>/', views.add_medical_history, name='create_medical_history'),
