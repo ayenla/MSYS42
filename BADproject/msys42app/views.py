@@ -605,10 +605,10 @@ def add_medical_history(request, child_id):
         
         # Initialize form with existing data including allergies
         initial_data = {
-            'medical_status': medical_history.medical_status,
-            'medical_status_history': medical_history.medical_status_history,
-            'disability_status': medical_history.disability_status,
-            'disability_status_history': medical_history.disability_status_history,
+            'medical_status': medical_history.med_stat,
+            'medical_status_history': medical_history.med_history,
+            'disability_status': medical_history.dis_stat,
+            'disability_status_history': medical_history.dis_history,
             'allergies_history': medical_history.allergies_history,
             'allergies_conditions': existing_allergies,
             'other_condition': medical_history.other_condition
