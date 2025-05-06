@@ -39,9 +39,11 @@
         <div class="card-body">
             <div class="text-center mb-4">
                 <h2 class="mb-3" style="font-weight: 1000;">Physician's Exams</h2>
+                {% if perms.can_create %}
                 <a href="{% url 'create_physicians_exam' child.id %}" class="btn btn-success">
                     <i class="fas fa-plus"></i> Add Physician's Exam
                 </a>
+                {% endif %}
             </div>
 
             {% if exams %}

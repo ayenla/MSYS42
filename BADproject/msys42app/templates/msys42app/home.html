@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid pt-100 pb-20">
+<div class="container-fluid pt-4 pb-3">
     <div class="d-flex align-items-center">
         <div class="search-container">
             <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by code or name..." value="{{ search_query }}">
@@ -19,16 +19,18 @@
             <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
         </svg>
 
+        {% if perms.can_create %}
         <a class="btn btn-success create-btn" href="{% url 'create_child_profile' %}">Create Child Profile</a>
+        {% endif %}
     </div>
 </div>
 
 <style>
-    .pt-100 {
-        padding-top: 100px;
+    .pt-4 {
+        padding-top: 1.5rem;
     }
-    .pb-20 {
-        padding-bottom: 20px;
+    .pb-3 {
+        padding-bottom: 1rem;
     }
     .search-container {
         position: relative;
@@ -56,7 +58,7 @@
     }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid mt-2">
     <table class="table table-bordered table-striped text-left">
         <thead class="table-dark">
             <tr>

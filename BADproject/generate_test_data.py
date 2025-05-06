@@ -40,7 +40,7 @@ def calculate_age(birth_date):
     age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
     return age
 
-def generate_child_profiles(num_profiles=500):
+def generate_child_profiles(num_profiles=100):
     """Generate specified number of child profiles"""
     blood_groups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', None]
     relationships = ['Mother', 'Father', 'Grandmother', 'Grandfather', 'Aunt', 'Uncle', 'Guardian']
@@ -49,19 +49,19 @@ def generate_child_profiles(num_profiles=500):
         try:
             # Generate unique SPC code
             while True:
-                code = generate_spc_code()
-                if not Child.objects.filter(code=code).exists():
+                spc_code = generate_spc_code()
+                if not Child.objects.filter(spc_code=spc_code).exists():
                     break
             
             # Generate child's data
-            lastname = fake.last_name()
-            firstname = fake.first_name()
-            middlename = fake.first_name()
+            last_name = fake.last_name()
+            first_name = fake.first_name()
+            middle_name = fake.first_name()
             sex = random.choice(['Male', 'Female'])
-            birth = generate_birth_date()
-            age = calculate_age(birth)
-            blood_group = random.choice(blood_groups)
-            address = fake.address()
+            dob = generate_birth_date()
+            age = calculate_age(dob)
+            blood_grp = random.choice(blood_groups)
+            comm_address = fake.address()
             
             # Generate guardian's data
             guardian_lastname = fake.last_name()
@@ -72,16 +72,16 @@ def generate_child_profiles(num_profiles=500):
             
             # Create child profile
             child = Child.objects.create(
-                code=code,
-                lastname=lastname,
-                firstname=firstname,
-                middlename=middlename,
+                spc_code=spc_code,
+                last_name=last_name,
+                first_name=first_name,
+                middle_name=middle_name,
                 sex=sex,
-                birth=birth,
-                blood_group=blood_group,
-                address=address,
-                philhealth_number=None,  # Optional
-                fourps_number=None,      # Optional
+                dob=dob,
+                blood_grp=blood_grp,
+                comm_address=comm_address,
+                fam_philhealth=None,  # Optional
+                fam_4ps=None,      # Optional
                 guardian_lastname=guardian_lastname,
                 guardian_firstname=guardian_firstname,
                 guardian_middlename=guardian_middlename,
@@ -101,14 +101,14 @@ def generate_child_profiles(num_profiles=500):
             # Create family member record
             FamilyMember.objects.create(
                 child=child,
-                fm_lastname=guardian_lastname,
-                fm_firstname=guardian_firstname,
-                fm_middlename=guardian_middlename,
-                fm_relationship=guardian_relationship,
-                fm_sex=guardian_sex
+                last_name=guardian_lastname,
+                first_name=guardian_firstname,
+                middle_name=guardian_middlename,
+                relationship_w_spc=guardian_relationship,
+                sex=guardian_sex
             )
             
-            print(f"Created profile {i+1}/{num_profiles}: {code} - {firstname} {lastname}")
+            print(f"Created profile {i+1}/{num_profiles}: {spc_code} - {first_name} {last_name}")
         except Exception as e:
             print(f"Error creating profile {i+1}: {str(e)}")
             continue
