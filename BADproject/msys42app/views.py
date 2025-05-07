@@ -748,7 +748,7 @@ def create_physicians_exam(request, pk):
 
     if request.method == "POST":
         year = request.POST.get('year')
-        grade = request.POST.get('grade')
+        # grade = request.POST.get('grade')
         height = request.POST.get('height')
         weight = request.POST.get('weight')
         bp = request.POST.get('bp')
@@ -950,7 +950,7 @@ def edit_physicians_exam(request, pk, id):
                 'error': "Year cannot be in the future."
             })
             
-        grade = request.POST.get('grade')
+        # grade = request.POST.get('grade')
         height = request.POST.get('height')
         weight = request.POST.get('weight')
         bp = request.POST.get('bp')
@@ -974,7 +974,7 @@ def edit_physicians_exam(request, pk, id):
         clear_other = request.POST.get('clear_other', 'false')
 
         exam.year = year
-        exam.grade = grade
+        # exam.grade = grade
         exam.height = height
         exam.weight = weight
         exam.bp = bp
