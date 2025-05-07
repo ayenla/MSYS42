@@ -52,15 +52,6 @@
                 </div>
                 {% endif %}
                 
-                {% if messages %}
-                <div class="alert alert-success" role="alert">
-                    {% for message in messages %}
-                        {{ message }}
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                
                 <form method="POST" action="{% url 'view_family_medicals' child.id %}" class="form-container">
                 {% csrf_token %}
                     <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="EditInfo" aria-hidden="true">

@@ -143,6 +143,16 @@
       .child-nav .nav-link.active::after {
         animation: underlineGrow 0.4s ease-out forwards;
       }
+      
+      /* Alert custom styles */
+      .custom-success-alert {
+        border-left: 4px solid #28a745;
+        background-color: #f0fff0;
+      }
+      
+      .custom-error-alert {
+        border-left: 4px solid #dc3545;
+      }
     </style>
 
     <title> BYSMP </title>
@@ -201,6 +211,24 @@
     </nav>
 
     <div class="container-fluid" style="padding-left: 0; padding-right: 0;">
+          {% if messages %}
+          <!-- Messages container with fixed position -->
+          <div id="message-container" style="position: fixed; top: 90px; right: 20px; max-width: 400px; z-index: 9999;">
+              {% for message in messages %}
+              <div class="alert alert-dismissible fade show shadow-sm {% if message.tags == 'success' %}alert-success custom-success-alert{% elif message.tags == 'error' %}alert-danger custom-error-alert{% else %}alert-{{ message.tags }}{% endif %}" 
+                   role="alert" 
+                   style="margin-bottom: 10px;">
+                  {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill mr-2" style="color: #28a745;"></i>{% endif %}
+                  {% if message.tags == 'error' %}<i class="bi bi-exclamation-triangle-fill mr-2" style="color: #dc3545;"></i>{% endif %}
+                  {{ message }}
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+              </div>
+              {% endfor %}
+          </div>
+          {% endif %}
+          
           {% block content %}
           {% endblock %}
     </div>
@@ -212,6 +240,14 @@
     
     <script>
       document.addEventListener('DOMContentLoaded', function() {
+        // Auto-dismiss messages after 2.5 seconds (reduced from 3)
+        const alerts = document.querySelectorAll('.alert-dismissible');
+        alerts.forEach(alert => {
+          setTimeout(() => {
+            $(alert).alert('close');
+          }, 2500); // Changed from 3000 to 2500ms
+        });
+        
         const homeIcon = document.getElementById('homeIcon');
         const profileIcon = document.getElementById('profileDropdown');
         

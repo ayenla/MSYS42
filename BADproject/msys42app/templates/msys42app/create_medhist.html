@@ -227,68 +227,222 @@
 </style>
 
 <script>
-    // Update the TOTAL_FORMS count when adding new forms
-    function updateFormCount() {
-        const totalForms = document.getElementById('id_immunization-TOTAL_FORMS');
-        const forms = document.querySelectorAll('.immunization-entry');
-        totalForms.value = forms.length;
+    // Store deleted rows to preserve formset behavior
+    let deletedRows = [];
+    let formPrefix = 'immunization';
+    
+    // Initialize the form
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup event listeners
+        setupFormHandlers();
+        setupClearButtons();
+        setupOthersCheckbox();
+        setupCharacterCounters();
+        initBootstrapComponents();
+        
+        // Set max date for date inputs
+        document.querySelectorAll('input[type="date"]').forEach(input => {
+            input.max = new Date().toISOString().split('T')[0];
+        });
+    });
+    
+    // Initialize Bootstrap components
+    function initBootstrapComponents() {
+        // Make sure we have access to Bootstrap
+        if (typeof bootstrap !== 'undefined') {
+            console.log('Bootstrap is available');
+        } else {
+            // Load Bootstrap if it's not available
+            console.log('Bootstrap not found, attempting to load');
+            
+            // Create a script element to load Bootstrap
+            var bootstrapScript = document.createElement('script');
+            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js';
+            bootstrapScript.integrity = 'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4';
+            bootstrapScript.crossOrigin = 'anonymous';
+            document.head.appendChild(bootstrapScript);
+        }
     }
-
-    // Add form validation
-    document.querySelector('form').addEventListener('submit', function(e) {
+    
+    // Setup all form-related handlers
+    function setupFormHandlers() {
+        // Add row button
+        document.getElementById('add-immunization').addEventListener('click', addImmunizationRow);
+        
+        // Delete row buttons (using event delegation)
+        document.getElementById('immunization-table-body').addEventListener('click', handleDeleteRow);
+        
+        // Form submission
+        document.querySelector('form').addEventListener('submit', handleFormSubmit);
+    }
+    
+    // Add a new immunization row
+    function addImmunizationRow() {
+        const rows = document.querySelectorAll('#immunization-table-body tr.immunization-entry');
+        const newIndex = rows.length + deletedRows.length; // Account for deleted rows
+        
+        const newRow = document.createElement('tr');
+        newRow.className = 'immunization-entry';
+        
+        newRow.innerHTML = `
+            <td style="border: none; border-right: 1px solid #dee2e6;">
+                <input type="hidden" name="${formPrefix}-${newIndex}-id" id="id_${formPrefix}-${newIndex}-id">
+                <input type="date" name="${formPrefix}-${newIndex}-date" id="id_${formPrefix}-${newIndex}-date" class="form-control w-100" max="${new Date().toISOString().split('T')[0]}">
+            </td>
+            <td style="border: none; border-right: 1px solid #dee2e6;">
+                <input type="text" name="${formPrefix}-${newIndex}-immunization_given" id="id_${formPrefix}-${newIndex}-immunization_given" class="form-control w-100">
+            </td>
+            <td style="border: none;">
+                <input type="hidden" name="${formPrefix}-${newIndex}-DELETE" id="id_${formPrefix}-${newIndex}-DELETE">
+                <button type="button" class="btn btn-danger btn-sm delete-immunization">Delete</button>
+            </td>
+        `;
+        
+        document.getElementById('immunization-table-body').appendChild(newRow);
+        updateFormsetManagement();
+    }
+    
+    // Handle deleting a row
+    function handleDeleteRow(event) {
+        if (!event.target.classList.contains('delete-immunization')) return;
+        
+        const row = event.target.closest('tr');
+        if (!row) return;
+        
+        // Check if this is an existing row (has an ID field with a value)
+        const idField = row.querySelector('input[name*="-id"]');
+        if (idField && idField.value) {
+            // Mark as deleted instead of removing
+            const deleteField = row.querySelector('input[name*="-DELETE"]');
+            if (deleteField) {
+                deleteField.value = 'on';
+                
+                // Add to deleted rows count
+                deletedRows.push(idField.value);
+                
+                // Visually hide the row
+                row.style.display = 'none';
+            }
+        } else {
+            // New row, just remove it
+            row.remove();
+        }
+        
+        updateFormsetManagement();
+    }
+    
+    // Update the formset management form
+    function updateFormsetManagement() {
+        // Get all management form inputs
+        const totalFormsInput = document.getElementById(`id_${formPrefix}-TOTAL_FORMS`);
+        const initialFormsInput = document.getElementById(`id_${formPrefix}-INITIAL_FORMS`);
+        
+        if (!totalFormsInput) return;
+        
+        // Count all rows, including hidden (deleted) ones
+        const rows = document.querySelectorAll('#immunization-table-body tr.immunization-entry');
+        
+        // Count visible rows (not deleted)
+        const visibleRows = Array.from(rows).filter(row => row.style.display !== 'none');
+        
+        // Set TOTAL_FORMS to include ALL forms (including deleted ones with DELETE=True)
+        totalFormsInput.value = rows.length;
+        
+        // Re-index the form elements to ensure sequential numbering
+        let index = 0;
+        
+        rows.forEach((row) => {
+            // Update all input names and IDs in this row, for both visible and hidden rows
+            row.querySelectorAll('input').forEach(input => {
+                // Keep the current input name and replace only the index
+                const name = input.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(new RegExp(`${formPrefix}-\\d+`), `${formPrefix}-${index}`);
+                    input.setAttribute('name', newName);
+                }
+                
+                // Same for ID
+                const id = input.getAttribute('id');
+                if (id) {
+                    const newId = id.replace(new RegExp(`id_${formPrefix}-\\d+`), `id_${formPrefix}-${index}`);
+                    input.setAttribute('id', newId);
+                }
+            });
+            
+            index++;
+        });
+    }
+    
+    // Handle form submission
+    function handleFormSubmit(e) {
         e.preventDefault();
         
+        // Final update of all formset management
+        updateFormsetManagement();
+        
+        // Basic validation - ensure required fields are filled
         let hasError = false;
         let errorMessage = '';
         
-        // Check each immunization row
-        const rows = document.querySelectorAll('.immunization-entry');
-        rows.forEach((row, index) => {
-            const dateInput = row.querySelector('input[type="date"]');
-            const immunizationInput = row.querySelector('input[type="text"]');
-            const deleteCheckbox = row.querySelector('input[type="checkbox"]');
-            
-            // Skip validation if row is marked for deletion
-            if (deleteCheckbox && deleteCheckbox.checked) {
-                return;
-            }
-            
-            // Check if both fields are empty
-            if (!dateInput.value && !immunizationInput.value) {
-                hasError = true;
-                errorMessage = `Please fill in date and immunization details for row ${index + 1} in the Immunization Section Table.`;
-            }
-            // Check if only date is filled
-            else if (dateInput.value && !immunizationInput.value) {
-                hasError = true;
-                errorMessage = `Please fill in immunization details for row ${index + 1} in the Immunization Section Table.`;
-            }
-            // Check if only immunization is filled
-            else if (!dateInput.value && immunizationInput.value) {
-                hasError = true;
-                errorMessage = `Please fill in date for row ${index + 1} in the Immunization Section Table.`;
-            }
-            // Check if date is in the future
-            else if (dateInput.value) {
-                const selectedDate = new Date(dateInput.value);
-                const today = new Date();
-                // Set both dates to midnight for accurate comparison
-                selectedDate.setHours(0, 0, 0, 0);
-                today.setHours(0, 0, 0, 0);
+        // Check character limits for all text fields
+        const textFields = [
+            { id: 'id_medical_status', name: 'Medical Status' },
+            { id: 'id_medical_status_history', name: 'Medical Status History' },
+            { id: 'id_disability_status', name: 'Disability Status' },
+            { id: 'id_disability_status_history', name: 'Disability Status History' },
+            { id: 'id_allergies_history', name: 'Allergies History' },
+            { id: 'id_other_condition', name: 'Other Condition' }
+        ];
+        
+        for (const field of textFields) {
+            const element = document.getElementById(field.id);
+            if (element && element.value) {
+                // Fix: use trim to handle any whitespace and get exact length
+                const trimmedValue = element.value.trim();
+                const valueLength = trimmedValue.length;
                 
-                if (selectedDate > today) {
-                    hasError = true;
-                    errorMessage = `Date in row ${index + 1} cannot be in the future.`;
-                }
+                // Only block if strictly greater than max length
+                if (valueLength > 255) {
+                hasError = true;
+                    errorMessage = `${field.name}: Inputted text exceeds the maximum possible character count of 255.`;
+                    console.log(`${field.name} length: ${valueLength}`);
+                    break;
             }
-        });
+            }
+        }
+        
+        // Validate rows
+        if (!hasError) {
+            const visibleRows = Array.from(document.querySelectorAll('#immunization-table-body tr.immunization-entry'))
+                .filter(row => row.style.display !== 'none');
+                
+            visibleRows.forEach((row, index) => {
+                const dateInput = row.querySelector('input[name*="-date"]');
+                const immInput = row.querySelector('input[name*="-immunization_given"]');
+                
+                // Both fields must be filled or both empty
+                if ((dateInput && dateInput.value && (!immInput || !immInput.value)) || 
+                    (immInput && immInput.value && (!dateInput || !dateInput.value))) {
+                hasError = true;
+                    errorMessage = `Row ${index + 1}: Both date and immunization must be provided together.`;
+            }
+                
+                // Check character limit for immunization field
+                if (immInput && immInput.value && immInput.value.length > 50) {
+                    hasError = true;
+                    errorMessage = `Row ${index + 1}: Immunization name exceeds the maximum possible character count of 50.`;
+                }
+            });
+            }
         
         // Validate "Others" field
+        if (!hasError) {
         const otherCheckbox = document.querySelector('input[value="other"]:checked');
         const otherField = document.getElementById('id_other_condition');
-        if (otherCheckbox && (!otherField.value || otherField.value.trim() === '')) {
+            if (otherCheckbox && (!otherField || !otherField.value || otherField.value.trim() === '')) {
             hasError = true;
             errorMessage = 'Please specify the other condition.';
+            }
         }
         
         if (hasError) {
@@ -296,39 +450,11 @@
             return;
         }
         
-        // If validation passes, submit the form
+        // Submit the form
         this.submit();
-    });
-
-    // Function to set max date for date inputs
-    function setMaxDateForInputs() {
-        const today = new Date().toISOString().split('T')[0];
-        document.querySelectorAll('.immunization-entry input[type="date"]').forEach(input => {
-            input.max = today;
-        });
     }
 
-    // Update existing immunization inputs to take full width and set max date
-    document.addEventListener('DOMContentLoaded', function() {
-        const immunizationInputs = document.querySelectorAll('.immunization-entry input[type="text"], .immunization-entry input[type="date"]');
-        immunizationInputs.forEach(input => {
-            input.className = 'form-control w-100';
-        });
-        
-        // Set max date for existing date inputs
-        setMaxDateForInputs();
-        
-        // Setup the Clear buttons
-        setupClearButtons();
-        
-        // Initialize Bootstrap components
-        initBootstrapComponents();
-        
-        // Setup "Others" checkbox toggle
-        setupOthersCheckbox();
-    });
-    
-    // Handle "Others" checkbox
+    // Setup "Others" checkbox
     function setupOthersCheckbox() {
         const checkboxes = document.querySelectorAll('#id_allergies_conditions input[type="checkbox"]');
         const otherConditionContainer = document.getElementById('other-condition-container');
@@ -353,23 +479,65 @@
         });
     }
     
-    // Initialize Bootstrap components
-    function initBootstrapComponents() {
-        // Make sure we have access to Bootstrap
-        if (typeof bootstrap !== 'undefined') {
-            // Modal is already available
-            console.log('Bootstrap is available');
-        } else {
-            // Load Bootstrap if it's not available
-            console.log('Bootstrap not found, attempting to load');
+    // Setup character counter and validation for text fields
+    function setupCharacterCounters() {
+        const textFields = [
+            { id: 'id_medical_status', maxLength: 255 },
+            { id: 'id_medical_status_history', maxLength: 255 },
+            { id: 'id_disability_status', maxLength: 255 },
+            { id: 'id_disability_status_history', maxLength: 255 },
+            { id: 'id_allergies_history', maxLength: 255 },
+            { id: 'id_other_condition', maxLength: 255 }
+        ];
+        
+        textFields.forEach(field => {
+            const element = document.getElementById(field.id);
+            if (!element) return;
             
-            // Create a script element to load Bootstrap
-            var bootstrapScript = document.createElement('script');
-            bootstrapScript.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js';
-            bootstrapScript.integrity = 'sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4';
-            bootstrapScript.crossOrigin = 'anonymous';
-            document.head.appendChild(bootstrapScript);
-        }
+            // Create character counter display
+            const counterContainer = document.createElement('div');
+            counterContainer.className = 'text-right text-muted small mt-1';
+            counterContainer.id = `${field.id}-counter`;
+            counterContainer.textContent = `0/${field.maxLength} characters`;
+            
+            // Insert counter after the field
+            element.parentNode.insertBefore(counterContainer, element.nextSibling);
+            
+            // Add input event listener to update counter
+            element.addEventListener('input', function() {
+                // Get value and trim it to get an accurate count
+                const value = this.value;
+                const trimmedValue = value.trim();
+                const count = trimmedValue.length;
+                const counterEl = document.getElementById(`${field.id}-counter`);
+                
+                if (counterEl) {
+                    counterEl.textContent = `${count}/${field.maxLength} characters`;
+                    
+                    // Change counter color when approaching/exceeding limit
+                    if (count > field.maxLength) {
+                        counterEl.className = 'text-right small mt-1 text-danger';
+                        counterEl.style.color = '';
+                    } else if (count === field.maxLength) {
+                        // Special case for exactly at the limit - make it red
+                        counterEl.className = 'text-right small mt-1';
+                        counterEl.style.color = '#FF0000'; // Red color
+                        console.log(`Field ${field.id} is exactly at max length: ${count}`);
+                    } else if (count > field.maxLength * 0.9) {
+                        // Red-orange for approaching limit
+                        counterEl.className = 'text-right small mt-1';
+                        counterEl.style.color = '#FF4500'; // Red-orange color
+        } else {
+                        counterEl.className = 'text-right small mt-1 text-muted';
+                        counterEl.style.color = ''; // Reset custom color
+                    }
+                }
+            });
+            
+            // Trigger initial count
+            const event = new Event('input');
+            element.dispatchEvent(event);
+        });
     }
 
     // Setup clear buttons functionality
@@ -485,87 +653,28 @@
                 document.getElementById('other-condition-container').style.display = 'none';
                 break;
             case 'immunizations':
-                // Mark all existing rows for deletion
-                document.querySelectorAll('.immunization-entry').forEach(row => {
-                    const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
-                    if (deleteCheckbox) {
-                        deleteCheckbox.checked = true;
+                // Mark all existing rows as deleted
+                document.querySelectorAll('#immunization-table-body tr.immunization-entry').forEach(row => {
+                    const idField = row.querySelector('input[name*="-id"]');
+                    if (idField && idField.value) {
+                        // Mark as deleted
+                        const deleteField = row.querySelector('input[name*="-DELETE"]');
+                        if (deleteField) {
+                            deleteField.value = 'on';
                         row.style.display = 'none';
+                            deletedRows.push(idField.value);
+                        }
+                    } else {
+                        // New row, just remove
+                        row.remove();
                     }
                 });
+                
+                // Update formset management
+                updateFormsetManagement();
                 break;
         }
     }
-
-    document.getElementById("add-immunization").addEventListener("click", function() {
-        let formIdx = document.querySelectorAll(".immunization-entry").length;
-        let newForm = "{{ immunization_formset.empty_form|escapejs }}".replace(/__prefix__/g, formIdx);
-    
-        // Create a new table row
-        let tr = document.createElement("tr");
-        tr.classList.add("immunization-entry");
-    
-        // Extract the fields from the new form HTML
-        let tempDiv = document.createElement("div");
-        tempDiv.innerHTML = newForm;
-        let inputs = tempDiv.querySelectorAll("input");
-    
-        // Ensure correct input fields are used
-        let tdDate = document.createElement("td");
-        let tdImmunization = document.createElement("td");
-        let tdAction = document.createElement("td");
-    
-        if (inputs.length > 1) {
-            // Add hidden DELETE field
-            const deleteInput = document.createElement('input');
-            deleteInput.type = 'checkbox';
-            deleteInput.name = `immunization-${formIdx}-DELETE`;
-            deleteInput.id = `immunization-${formIdx}-DELETE`;
-            deleteInput.style.display = 'none';
-            
-            // Set up date input
-            const dateInput = document.createElement('input');
-            dateInput.type = 'date';
-            dateInput.name = `immunization-${formIdx}-date`;
-            dateInput.id = `immunization-${formIdx}-date`;
-            dateInput.className = 'form-control';
-            // Set max date to today
-            dateInput.max = new Date().toISOString().split('T')[0];
-            tdDate.appendChild(dateInput);
-            
-            // Set up immunization input
-            const immunizationInput = document.createElement('input');
-            immunizationInput.type = 'text';
-            immunizationInput.name = `immunization-${formIdx}-immunization_given`;
-            immunizationInput.id = `immunization-${formIdx}-immunization_given`;
-            immunizationInput.className = 'form-control';
-            tdImmunization.appendChild(immunizationInput);
-            
-            tdAction.appendChild(deleteInput);
-        }
-    
-        // Add delete button
-        tdAction.innerHTML += '<button type="button" class="btn btn-danger btn-sm delete-immunization">Delete</button>';
-    
-        tr.appendChild(tdDate);
-        tr.appendChild(tdImmunization);
-        tr.appendChild(tdAction);
-    
-        document.getElementById("immunization-table-body").appendChild(tr);
-        updateFormCount();
-    });
-    
-    // Event delegation to handle delete button clicks
-    document.getElementById("immunization-table-body").addEventListener("click", function(event) {
-        if (event.target.classList.contains("delete-immunization")) {
-            const row = event.target.closest("tr");
-            const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
-            if (deleteCheckbox) {
-                deleteCheckbox.checked = true;
-            }
-            row.style.display = 'none';
-        }
-    });
 </script>
 
 {% endblock %}
