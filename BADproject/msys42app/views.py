@@ -151,7 +151,7 @@ def delete_education(request, pk, id):
 
     education.delete()
 
-    messages.success(request, "Education Record has been deleted.")
+    messages.success(request, "Education detail has been deleted successfully.")
     return redirect('view_child_profile', pk=pk) 
 
 
