@@ -151,7 +151,7 @@ def delete_education(request, pk, id):
 
     education.delete()
 
-    messages.success(request, "Education detail has been deleted successfully.")
+    messages.error(request, "Education detail has been deleted successfully.")
     return redirect('view_child_profile', pk=pk) 
 
 
@@ -463,7 +463,7 @@ def view_family_medicals(request, pk):
             sex=sex
         )
         member.save() 
-        messages.success(request, "Entry added successfully.")
+        messages.success(request, "New family member has been added.")
         return render(request, 'msys42app/home_family_medical.html', {
             'child': child, 
             'members': members,
