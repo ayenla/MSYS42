@@ -307,6 +307,26 @@
         
     </div>
 </div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmationModalLabel">Confirmation</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        You are about to save the changes made to this Annual Physician's Exam Entry.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelButton" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" id="confirmSave">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     let fieldCounter = 0;
 
@@ -356,6 +376,32 @@ function removeRow(id) {
     }
 }
 
+// Setup confirmation modal
+document.addEventListener('DOMContentLoaded', function() {
+    // Get references to the form and modal elements
+    const form = document.querySelector('form');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    const confirmSaveButton = document.getElementById('confirmSave');
+    const cancelButton = document.getElementById('cancelButton');
+    
+    // Prevent the default form submission and show the modal instead
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        confirmationModal.show();
+    });
+    
+    // When the confirm button is clicked, submit the form
+    confirmSaveButton.addEventListener('click', function() {
+        confirmationModal.hide();
+        form.submit();
+    });
+    
+    // Ensure the cancel button properly closes the modal
+    cancelButton.addEventListener('click', function() {
+        confirmationModal.hide();
+    });
+});
 </script>
 
 {% endblock %}

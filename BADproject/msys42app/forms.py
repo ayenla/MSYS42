@@ -2,6 +2,7 @@ from django import forms
 import datetime
 from .models import *
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
+from django.core.validators import MaxLengthValidator
 
 # Education
 
@@ -51,41 +52,71 @@ ALLERGY_CHOICES = [
 class MedicalHistoryForm(forms.ModelForm):
     medical_status = forms.CharField(
         required=False,
+        max_length=255,
+        validators=[MaxLengthValidator(255)],
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'style': 'height: 50px; width: 100%; font-size: 1rem; padding: 10px;'
-        })
+            'style': 'height: 50px; width: 100%; font-size: 1rem; padding: 10px;',
+            'maxlength': '255'
+        }),
+        error_messages={
+            'max_length': 'Inputted text exceeds the maximum possible character count of 255.'
+        }
     )
     medical_status_history = forms.CharField(
         required=False,
+        max_length=255,
+        validators=[MaxLengthValidator(255)],
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 4,
-            'style': 'min-height: 120px; width: 100%; font-size: 1rem; padding: 10px; resize: vertical;'
-        })
+            'style': 'min-height: 120px; width: 100%; font-size: 1rem; padding: 10px; resize: vertical;',
+            'maxlength': '255'
+        }),
+        error_messages={
+            'max_length': 'Inputted text exceeds the maximum possible character count of 255.'
+        }
     )
     disability_status = forms.CharField(
         required=False,
+        max_length=255,
+        validators=[MaxLengthValidator(255)],
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'style': 'height: 50px; width: 100%; font-size: 1rem; padding: 10px;'
-        })
+            'style': 'height: 50px; width: 100%; font-size: 1rem; padding: 10px;',
+            'maxlength': '255'
+        }),
+        error_messages={
+            'max_length': 'Inputted text exceeds the maximum possible character count of 255.'
+        }
     )
     disability_status_history = forms.CharField(
         required=False,
+        max_length=255,
+        validators=[MaxLengthValidator(255)],
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 4,
-            'style': 'min-height: 120px; width: 100%; font-size: 1rem; padding: 10px; resize: vertical;'
-        })
+            'style': 'min-height: 120px; width: 100%; font-size: 1rem; padding: 10px; resize: vertical;',
+            'maxlength': '255'
+        }),
+        error_messages={
+            'max_length': 'Inputted text exceeds the maximum possible character count of 255.'
+        }
     )
     allergies_history = forms.CharField(
         required=False,
+        max_length=255,
+        validators=[MaxLengthValidator(255)],
         widget=forms.Textarea(attrs={
             'class': 'form-control',
             'rows': 4,
-            'style': 'min-height: 120px; width: 100%; font-size: 1rem; padding: 10px; resize: vertical;'
-        })
+            'style': 'min-height: 120px; width: 100%; font-size: 1rem; padding: 10px; resize: vertical;',
+            'maxlength': '255'
+        }),
+        error_messages={
+            'max_length': 'Inputted text exceeds the maximum possible character count of 255.'
+        }
     )
     allergies_conditions = forms.MultipleChoiceField(
         choices=ALLERGY_CHOICES,
@@ -94,11 +125,17 @@ class MedicalHistoryForm(forms.ModelForm):
     )
     other_condition = forms.CharField(
         required=False,
+        max_length=255,
+        validators=[MaxLengthValidator(255)],
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'style': 'height: 50px; width: 100%; font-size: 1rem; padding: 10px; margin-top: 10px;',
-            'placeholder': 'Please specify other condition'
-        })
+            'placeholder': 'Please specify other condition',
+            'maxlength': '255'
+        }),
+        error_messages={
+            'max_length': 'Inputted text exceeds the maximum possible character count of 255.'
+        }
     )
 
     class Meta:
@@ -112,6 +149,36 @@ class MedicalHistoryForm(forms.ModelForm):
             'allergies_history',
             'other_condition'
         ]
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Check each field for max length
+        fields_to_check = [
+            'medical_status', 
+            'medical_status_history', 
+            'disability_status', 
+            'disability_status_history', 
+            'allergies_history', 
+            'other_condition'
+        ]
+        
+        for field_name in fields_to_check:
+            value = cleaned_data.get(field_name, '')
+            if value:
+                # Trim the value to handle any whitespace issues
+                trimmed_value = value.strip()
+                value_length = len(trimmed_value)
+                print(f"Field {field_name} length: {value_length}")
+                
+                # Only raise error if strictly greater than 255
+                if value_length > 255:
+                    self.add_error(
+                        field_name, 
+                        f'Inputted text exceeds the maximum possible character count of 255. Current length: {value_length}'
+                    )
+        
+        return cleaned_data
 
 class ImmunizationForm(forms.ModelForm):
     date = forms.DateField(
@@ -133,6 +200,28 @@ class ImmunizationForm(forms.ModelForm):
                 'style': 'height: 50px; font-size: 1rem; padding: 10px;'
             })
         }
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # If the form is marked for deletion, skip validation
+        if cleaned_data.get('DELETE', False):
+            return cleaned_data
+            
+        date = cleaned_data.get('date')
+        immunization = cleaned_data.get('immunization_given')
+        
+        # If one field is filled, the other must be too
+        if (date and not immunization) or (not date and immunization):
+            raise forms.ValidationError("Both date and immunization must be provided together.")
+            
+        # If both fields are empty and it's not marked for deletion, the form is effectively empty
+        # Just return it as is for formset management to handle it
+        if not date and not immunization and not self.cleaned_data.get('DELETE', False):
+            pass
+            
+        return cleaned_data
+
 year_choices = [(year, year) for year in range(2000, datetime.datetime.now().year + 1)]
 conditions = [("N", "N"), ("A", "A"), ("C", "C"), ("R", "R")]
 

@@ -142,6 +142,7 @@ def edit_education(request, pk, id):
         education.year = request.POST.get('year')
         education.grade = request.POST.get('grade')
         education.save()
+        messages.success(request, "Education details updated successfully.")
     return redirect('view_child_profile', pk=child.pk)
 
 @login_required
@@ -151,7 +152,7 @@ def delete_education(request, pk, id):
 
     education.delete()
 
-    messages.error(request, "Education detail has been deleted successfully.")
+    messages.success(request, "Education detail has been deleted successfully.")
     return redirect('view_child_profile', pk=pk) 
 
 
@@ -164,6 +165,9 @@ def edit_child_profile(request,pk):
     if request.method == 'POST':
         # Check if this is a delete request
         if 'delete_profile' in request.POST:
+            # Get child name before deletion
+            child_name = f"{child.first_name} {child.last_name}"
+            
             # Delete related records first to maintain database integrity
             ContactNumber.objects.filter(child=child).delete()
             
@@ -188,6 +192,7 @@ def edit_child_profile(request,pk):
             # Finally delete the child
             child.delete()
             
+            messages.success(request, f"Child profile for {child_name} was successfully deleted.")
             return redirect('home')
         
         # Otherwise, proceed with the regular edit functionality
@@ -244,7 +249,8 @@ def edit_child_profile(request,pk):
         )
 
         print("YEAAAHHH")
-
+        
+        messages.success(request, f"Profile for {firstname} {lastname} has been updated successfully.")
         return redirect('view_child_profile', pk=pk)
 
     print("awwww")
@@ -421,6 +427,7 @@ def create_child_profile(request):
         )
         member.save() 
 
+        messages.success(request, f"New child profile for {first_name} {last_name} created successfully.")
         return redirect('view_child_profile', pk=childnum.pk)
 
     else:
@@ -490,9 +497,10 @@ def delete_family_member(request, pk, id):
     
     FamilyMedicalRecord.objects.filter(member=member).delete()
 
+    member_name = f"{member.first_name} {member.last_name}"
     member.delete()
 
-    messages.success(request, "Family member and their records were successfully deleted.")
+    messages.success(request, f"Family member {member_name} and their records were successfully deleted.")
     return redirect('view_family_medicals', pk=pk) 
 
 @login_required
@@ -587,6 +595,7 @@ def edit_family_medical_record(request, pk, id):
                 medication=meds[i],
                 remarks=remarks[i]
                 )
+        messages.success(request, f"Medical records for {member.first_name} {member.last_name} updated successfully.")
         return redirect('view_family_medical_record', pk=pk, id=id)   
         
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
@@ -601,6 +610,7 @@ def delete_family_medical_record(request, pk, id, rec):
     FamilyMedicalRecord.objects.filter(pk=rec).delete()
     record.delete()
 
+    messages.success(request, "Medical record entry was successfully deleted.")
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
 
 # START OF MEDICAL HISTORY
@@ -631,6 +641,14 @@ def add_medical_history(request, child_id):
                 medical_history = form.save(commit=False)
                 medical_history.child = child
                 
+                # Map form fields to model fields
+                medical_history.med_stat = form.cleaned_data.get('medical_status', '')
+                medical_history.med_history = form.cleaned_data.get('medical_status_history', '')
+                print(f"medical_status_history value: '{medical_history.med_history}' length: {len(medical_history.med_history)}")
+                medical_history.dis_stat = form.cleaned_data.get('disability_status', '')
+                medical_history.dis_history = form.cleaned_data.get('disability_status_history', '')
+                medical_history.allergies_history = form.cleaned_data.get('allergies_history', '')
+                
                 # Handle other_condition field
                 other_condition = form.cleaned_data.get('other_condition', '')
                 selected_allergies = form.cleaned_data.get('allergies_conditions', [])
@@ -639,7 +657,9 @@ def add_medical_history(request, child_id):
                 elif 'other' not in selected_allergies:
                     medical_history.other_condition = ''
                 
+                # Save the model
                 medical_history.save()
+                print(f"After save - medical_status_history value: '{medical_history.med_history}' length: {len(medical_history.med_history)}")
 
                 # Handle allergies
                 medical_history.allergies_conditions.clear()  # Clear existing allergies
@@ -655,27 +675,30 @@ def add_medical_history(request, child_id):
                     allergy, _ = AllergyCondition.objects.get_or_create(name="Others")
                     medical_history.allergies_conditions.add(allergy)
                 
-                # Save immunizations
-                immunizations = immunization_formset.save(commit=False)
+                # Handle immunizations
+                # Instead of deleting all immunizations, let the formset handle deletions
+                immunization_formset.save(commit=False)
                 
-                # Delete any marked for deletion
+                # Process deletions from the formset
                 for obj in immunization_formset.deleted_objects:
                     obj.delete()
+                    
+                # Save new/modified immunizations
+                for form in immunization_formset:
+                    if form.is_valid() and not form.cleaned_data.get('DELETE', False):
+                        if form.cleaned_data.get('date') and form.cleaned_data.get('immunization_given'):
+                            immunization = form.save(commit=False)
+                            immunization.medical_history = medical_history
+                            immunization.save()
                 
-                # Save only non-empty immunizations
-                for immunization in immunizations:
-                    if immunization.date or immunization.immunization_given:  # Save if either field is filled
-                        immunization.medical_history = medical_history
-                        immunization.save()
-                
+                messages.success(request, f"Medical history for {child.first_name} {child.last_name} saved successfully.")
                 return redirect('view_medical_history', child_id=child.id)
             except Exception as e:
                 print(f"Error saving data: {str(e)}")
                 messages.error(request, f"Error saving data: {str(e)}")
         else:
+            # Don't add individual error messages - the form will display them
             print("Form validation errors:", form.errors)
-            for field, errors in form.errors.items():
-                messages.error(request, f"{field}: {', '.join(errors)}")
             print("Formset errors:", immunization_formset.errors)
 
     else:  # GET request
@@ -736,7 +759,11 @@ def home_physicians_exam(request, pk):
 def view_physicians_exam(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     exam = get_object_or_404(PhysiciansExam, pk=id)
-    return render(request, 'msys42app/view_phyexam.html', {'child': child, 'exam':exam })
+    return render(request, 'msys42app/view_phyexam.html', {
+        'child': child, 
+        'exam': exam,
+        'perms': get_user_permissions(request.user)
+    })
 
 @login_required
 def create_physicians_exam(request, pk):
@@ -808,6 +835,7 @@ def create_physicians_exam(request, pk):
         # Process any additional fields (this would require model changes to support)
         # For now, we'll just handle the main "other" field
         
+        messages.success(request, f"Physician's exam for {year} created successfully.")
         return redirect('home_physicians_exam', pk=child.pk)
 
     return render(request, "msys42app/create_phyexam.html", {"child": child, "years": available_years, "exams":exams})
@@ -838,6 +866,7 @@ def create_annual_medical_check(request, child_id):
                 medical_check = form.save(commit=False)
                 medical_check.child = child
                 medical_check.save()
+                messages.success(request, f"Annual medical check for {medical_check.date.year} created successfully.")
                 return redirect('annual_medical_check_list', child_id=child_id)
             except Exception as e:
                 print(f"Error saving medical check: {str(e)}")
@@ -881,6 +910,7 @@ def edit_annual_medical_check(request, child_id, check_id):
         if form.is_valid():
             try:
                 form.save()
+                messages.success(request, f"Annual medical check for {medical_check.date.year} updated successfully.")
                 return redirect('view_annual_medical_check', child_id=child_id, year=medical_check.date.year)
             except Exception as e:
                 print(f"Error updating medical check: {str(e)}")
@@ -904,8 +934,10 @@ def delete_annual_medical_check(request, child_id, check_id):
     child = get_object_or_404(Child, id=child_id)
     medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
     
+    check_year = medical_check.date.year
     try:
         medical_check.delete()
+        messages.success(request, f"Annual medical check for {check_year} was successfully deleted.")
     except Exception as e:
         print(f"Error deleting medical check: {str(e)}")
         messages.error(request, f"Error deleting medical check: {str(e)}")
@@ -1004,6 +1036,7 @@ def edit_physicians_exam(request, pk, id):
             exam.other = other
 
         exam.save()
+        messages.success(request, f"Physician's exam for {year} updated successfully.")
         return redirect('view_physicians_exam', pk=child.pk, id=exam.pk)
 
     return render(request, 'msys42app/edit_phyexam.html', {'child': child, 'exam': exam, 'available_years': available_years})
@@ -1014,7 +1047,9 @@ def delete_physicians_exam(request, pk, id):
     exam = get_object_or_404(PhysiciansExam, pk=id)
     
     if request.method == 'POST':
+        exam_year = exam.year
         exam.delete()
+        messages.success(request, f"Physician's exam for {exam_year} was successfully deleted.")
         return redirect('home_physicians_exam', pk=child.pk)
     
     return render(request, 'msys42app/delete_phyexam.html', {'child': child, 'exam': exam})

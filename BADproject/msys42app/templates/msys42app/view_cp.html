@@ -30,8 +30,6 @@
 
 
 {% block content %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
-
 <div class="container-fluid" style="min-height: 100vh; display: flex; justify-content: center; align-items: top; position: relative; z-index: 10;">
     <div class="card p-5" style="border-radius: 20px; width: 100%; max-width: 1500px; position: relative; z-index: 10;">
         <h1 class="text-center mb-4">Profile Overview</h1>
@@ -42,13 +40,6 @@
         </div>
         {% endif %}
         
-        {% if messages %}
-        <div class="alert alert-danger" role="alert">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        </div>
-        {% endif %}
         <div class="d-flex justify-content-between">
             
             <div class="card p-5 me-3" style="border-radius: 20px; width: 60%; max-width: 1000px;">
@@ -229,5 +220,87 @@
         </div>        
     </div>
 </div>
+
+<style>
+    /* Super-aggressive modal styling */
+    #addEducation {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        display: none;
+        z-index: 999999 !important;
+        background-color: rgba(0,0,0,0.5);
+        overflow-y: auto;
+        padding: 30px;
+    }
+    
+    .modal-dialog {
+        position: relative !important;
+        z-index: 1000000 !important;
+        margin: 100px auto !important;
+        max-width: 500px !important;
+        pointer-events: all !important;
+    }
+    
+    .modal-content {
+        position: relative !important;
+        z-index: 1000001 !important;
+        background-color: white !important;
+        border-radius: 5px !important;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5) !important;
+        pointer-events: all !important;
+    }
+    
+    /* Hide Bootstrap backdrop */
+    .modal-backdrop {
+        display: none !important;
+    }
+    
+    /* Force modal to show correctly */
+    .modal.custom-show {
+        display: block !important;
+    }
+</style>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        // Replace modal functionality with custom implementation
+        
+        // Remove any existing backdrops
+        $('.modal-backdrop').remove();
+        
+        // Add custom click handler for add education button
+        $('[data-target="#addEducation"]').click(function(e) {
+            e.preventDefault();
+            
+            // Show the modal with our custom show class
+            $('#addEducation').addClass('custom-show');
+            $('#addEducation').css('display', 'block');
+            
+            return false;
+        });
+        
+        // Handle modal close
+        $('#addEducation .btn-secondary, #addEducation .close').click(function(e) {
+            e.preventDefault();
+            
+            // Hide the modal
+            $('#addEducation').removeClass('custom-show');
+            $('#addEducation').css('display', 'none');
+            
+            return false;
+        });
+        
+        // ESC key handler
+        $(document).keydown(function(e) {
+            if (e.keyCode === 27) { // ESC key
+                $('#addEducation').removeClass('custom-show');
+                $('#addEducation').css('display', 'none');
+            }
+        });
+    });
+</script>
 
 {% endblock %}

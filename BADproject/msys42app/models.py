@@ -147,11 +147,11 @@ ALLERGY_CHOICES = [
 class MedicalHistory(models.Model):
     child = models.OneToOneField(Child, on_delete=models.CASCADE)
     med_stat = models.CharField(max_length=255)
-    med_history = models.TextField()
+    med_history = models.CharField(max_length=255)
     dis_stat = models.CharField(max_length=255)
-    dis_history = models.TextField()
+    dis_history = models.CharField(max_length=255)
     allergies_conditions = models.ManyToManyField('AllergyCondition', blank=True)
-    allergies_history = models.TextField()
+    allergies_history = models.CharField(max_length=255)
     other_condition = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
@@ -169,7 +169,7 @@ class AllergyCondition(models.Model):
 class Immunization(models.Model):
     medical_history = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='immunizations')
     date = models.DateField()
-    immunization_given = models.CharField(max_length=255)
+    immunization_given = models.CharField(max_length=50)
 
     class Meta:
         db_table = 'spc_im'

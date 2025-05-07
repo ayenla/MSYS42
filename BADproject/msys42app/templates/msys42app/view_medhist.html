@@ -40,11 +40,11 @@
                 <h4 class="mb-2" style="padding-top: 0; font-weight: 1000;">Medical Status</h4>
                 <div class="mt-2">
                     <p class="mb-1"><strong>Medical Status:</strong></p>
-                    <p class="ml-3 mb-2">{{ medical_history.medical_status|default:"Not specified" }}</p>
+                    <p class="ml-3 mb-2">{{ medical_history.med_stat|default:"Not specified" }}</p>
                 </div>
                 <div class="mt-2">
                     <p class="mb-1"><strong>History:</strong></p>
-                    <p class="ml-3">{{ medical_history.medical_status_history|default:"No history available" }}</p>
+                    <p class="ml-3">{{ medical_history.med_history|default:"No history available" }}</p>
                 </div>
             </div>
         </div>
@@ -54,11 +54,11 @@
                 <h4 class="mb-2" style="padding-top: 0; font-weight: 1000;">Disability Status</h4>
                 <div class="mt-2">
                     <p class="mb-1"><strong>Disability Status:</strong></p>
-                    <p class="ml-3 mb-2">{{ medical_history.disability_status|default:"Not specified" }}</p>
+                    <p class="ml-3 mb-2">{{ medical_history.dis_stat|default:"Not specified" }}</p>
                 </div>
                 <div class="mt-2">
                     <p class="mb-1"><strong>History:</strong></p>
-                    <p class="ml-3">{{ medical_history.disability_status_history|default:"No history available" }}</p>
+                    <p class="ml-3">{{ medical_history.dis_history|default:"No history available" }}</p>
                 </div>
             </div>
         </div>
