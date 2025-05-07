@@ -38,9 +38,11 @@
         <div class="card-body">
             <div class="text-center mb-4">
                 <h2 class="mb-3" style="font-weight: 1000;">Annual Medical Check</h2>
+                {% if perms.can_create %}
                 <a href="{% url 'create_annual_medical_check' child.id %}" class="btn btn-success">
                     <i class="fas fa-plus"></i> Add Medical Check
                 </a>
+                {% endif %}
             </div>
 
             {% if medical_checks %}

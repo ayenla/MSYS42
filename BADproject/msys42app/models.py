@@ -2,6 +2,29 @@ from django.db import models
 from django.core.validators import MinLengthValidator, RegexValidator 
 from django.utils import timezone
 import datetime
+from django.contrib.auth.models import User
+
+# User Profile model to extend the default User model
+class UserProfile(models.Model):
+    ROLE_CHOICES = (
+        ('admin', 'Admin'),
+        ('medical_staff', 'Medical Staff'),
+        ('program_coordinator', 'Program Coordinator'),
+    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='program_coordinator')
+    
+    def is_medical_staff(self):
+        return self.role == 'medical_staff' or self.role == 'admin'
+    
+    def is_program_coordinator(self):
+        return self.role == 'program_coordinator'
+    
+    def is_admin(self):
+        return self.role == 'admin' or self.user.is_superuser
+        
+    class Meta:
+        db_table = 'user_profiles'
 
 class Child(models.Model):
     spc_code = models.CharField(max_length=7, validators=[RegexValidator(regex=r'^[A-Za-z]{3}\d{4}$')], unique=True, null=False, blank=False)

@@ -129,9 +129,11 @@
             <a href="{% url 'view_child_profile' pk=child.id %}" class="btn btn-secondary me-2" style="border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem;">
                 <i class="fas fa-arrow-left"></i> Back
             </a>
+            {% if perms.can_edit %}
             <a href="{% url 'create_medical_history' child.id %}" class="btn btn-primary" style="background-color: #1fa12f; border-color: #1fa12f; color: white; border-radius: 8px; padding: 8px 30px; font-weight: 500; font-size: 1rem;">
                 {% if medical_history.medical_status %}Edit{% else %}Edit{% endif %} Medical History
             </a>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.urls import path
 from . import views
+from . import views_auth
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('CreateChildProfile/', views.create_child_profile, name='create_child_profile'),
     path('view/<int:pk>/', views.view_child_profile, name='view_child_profile'),
@@ -37,4 +37,12 @@ urlpatterns = [
     path('child/<int:child_id>/annual-medical-check/<int:year>/', views.view_annual_medical_check, name='view_annual_medical_check'),
     path('child/<int:child_id>/annual-medical-check/<int:check_id>/edit/', views.edit_annual_medical_check, name='edit_annual_medical_check'),
     path('child/<int:child_id>/annual-medical-check/<int:check_id>/delete/', views.delete_annual_medical_check, name='delete_annual_medical_check'),
+
+    # Authentication and user management URLs
+    path('login/', views_auth.login_view, name='login'),
+    path('logout/', views_auth.logout_view, name='logout'),
+    path('users/', views_auth.user_list, name='user_list'),
+    path('users/add/', views_auth.register_user, name='register_user'),
+    path('users/<int:user_id>/edit/', views_auth.user_edit, name='user_edit'),
+    path('users/<int:user_id>/delete/', views_auth.user_delete, name='user_delete'),
 ]

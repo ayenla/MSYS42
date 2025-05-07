@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from .models import *
 from .forms import *
 from datetime import date, datetime
@@ -7,6 +8,52 @@ from django.db.models import Q
 import re
 
 from django.forms import inlineformset_factory
+
+# Add this function to get user permissions based on role
+def get_user_permissions(user):
+    """Get user permissions based on role"""
+    if not user.is_authenticated:
+        return {
+            'can_edit': False,
+            'can_delete': False,
+            'can_create': False,
+            'can_view': False,
+        }
+    
+    # Get user profile or default to program coordinator (view-only)
+    if hasattr(user, 'profile'):
+        profile = user.profile
+    else:
+        # Fallback if no profile exists
+        return {
+            'can_edit': False,
+            'can_delete': False,
+            'can_create': False,
+            'can_view': True,
+        }
+    
+    # Set permissions based on role
+    if profile.is_admin():
+        return {
+            'can_edit': True,
+            'can_delete': True,
+            'can_create': True,
+            'can_view': True,
+        }
+    elif profile.is_medical_staff():
+        return {
+            'can_edit': True,
+            'can_delete': True,
+            'can_create': True,
+            'can_view': True,
+        }
+    else:  # Program Coordinator
+        return {
+            'can_edit': False,
+            'can_delete': False,
+            'can_create': False,
+            'can_view': True,
+        }
 
 def parse_input(value, data_type):
     """
@@ -26,6 +73,7 @@ def parse_input(value, data_type):
     except (ValueError, TypeError):
         return None
 
+@login_required
 def home(request):
     query = request.GET.get('q', '')
     
@@ -45,15 +93,18 @@ def home(request):
     # Check if it's an AJAX request
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     
-    return render(request, 'msys42app/home.html', {
+    # Add user permissions to context
+    context = {
         'children': children, 
         'contacts': numbers,
         'search_query': query,
-        'is_ajax': is_ajax
-    })
+        'is_ajax': is_ajax,
+        'perms': get_user_permissions(request.user)
+    }
+    return render(request, 'msys42app/home.html', context)
 
 
-
+@login_required
 def view_child_profile(request, pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
@@ -79,8 +130,10 @@ def view_child_profile(request, pk):
         'form': form,
         'year_choices': year_choices,
         'grade_choices': grade_choices,
+        'perms': get_user_permissions(request.user),
     })
 
+@login_required
 def edit_education(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     education = get_object_or_404(Education, pk=id)
@@ -91,6 +144,7 @@ def edit_education(request, pk, id):
         education.save()
     return redirect('view_child_profile', pk=child.pk)
 
+@login_required
 def delete_education(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     education = get_object_or_404(Education, pk=id)
@@ -101,6 +155,7 @@ def delete_education(request, pk, id):
     return redirect('view_child_profile', pk=pk) 
 
 
+@login_required
 def edit_child_profile(request,pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
@@ -196,6 +251,7 @@ def edit_child_profile(request,pk):
     return render(request, 'msys42app/edit_cp.html', {'child': child, 'contacts':numbers })
 
 
+@login_required
 def create_child_profile(request):
     numbers = ContactNumber.objects.all()
 
@@ -389,6 +445,7 @@ def create_child_profile(request):
         })
 
 #Family Medical Records
+@login_required
 def view_family_medicals(request, pk): 
     child = get_object_or_404(Child, pk=pk)
     members = FamilyMember.objects.filter(child=child)
@@ -407,10 +464,19 @@ def view_family_medicals(request, pk):
         )
         member.save() 
         messages.success(request, "Entry added successfully.")
-        return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
+        return render(request, 'msys42app/home_family_medical.html', {
+            'child': child, 
+            'members': members,
+            'perms': get_user_permissions(request.user),
+        })
     
-    return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
+    return render(request, 'msys42app/home_family_medical.html', {
+        'child': child, 
+        'members': members,
+        'perms': get_user_permissions(request.user),
+    })
 
+@login_required
 def delete_family_member(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -429,12 +495,20 @@ def delete_family_member(request, pk, id):
     messages.success(request, "Family member and their records were successfully deleted.")
     return redirect('view_family_medicals', pk=pk) 
 
+@login_required
 def view_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
     records = FamilyMedicalRecord.objects.filter(member=member)
 
-    return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
+    return render(request, 'msys42app/view_family_medical_records.html', {
+        'child': child, 
+        'member': member, 
+        'records': records,
+        'perms': get_user_permissions(request.user),
+    })
+
+@login_required
 def edit_family_info(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -460,6 +534,7 @@ def edit_family_info(request, pk, id):
     
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
 
+@login_required
 def edit_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -516,6 +591,7 @@ def edit_family_medical_record(request, pk, id):
         
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
 
+@login_required
 def delete_family_medical_record(request, pk, id, rec):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -540,6 +616,7 @@ ImmunizationFormSet = inlineformset_factory(
 )
 
 
+@login_required
 def add_medical_history(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     medical_history, created = MedicalHistory.objects.get_or_create(child=child)
@@ -629,6 +706,7 @@ def add_medical_history(request, child_id):
     })
 
 
+@login_required
 def view_medical_history(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     medical_history, created = MedicalHistory.objects.get_or_create(child=child)
@@ -639,20 +717,28 @@ def view_medical_history(request, child_id):
         'immunizations': immunizations,
         'child': child,
         'today': date.today().isoformat(),
+        'perms': get_user_permissions(request.user),
     })
 # END OF MEDICAL HISTORY
 
 #Start of Physician's Exams
+@login_required
 def home_physicians_exam(request, pk):
     child = get_object_or_404(Child, pk=pk)
     exams = PhysiciansExam.objects.filter(child=child).order_by('-year')
-    return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
+    return render(request, 'msys42app/home_pe.html', {
+        'child': child, 
+        'exams': exams,
+        'perms': get_user_permissions(request.user),
+    })
 
+@login_required
 def view_physicians_exam(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     exam = get_object_or_404(PhysiciansExam, pk=id)
     return render(request, 'msys42app/view_phyexam.html', {'child': child, 'exam':exam })
 
+@login_required
 def create_physicians_exam(request, pk):
     child = get_object_or_404(Child, pk=pk)
     exams = PhysiciansExam.objects.filter(child=child)
@@ -727,14 +813,17 @@ def create_physicians_exam(request, pk):
     return render(request, "msys42app/create_phyexam.html", {"child": child, "years": available_years, "exams":exams})
 
 
+@login_required
 def annual_medical_check_list(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     medical_checks = AnnualMedicalCheck.objects.filter(child=child)
     return render(request, 'msys42app/annual_medical_check_list.html', {
         'child': child,
-        'medical_checks': medical_checks
+        'medical_checks': medical_checks,
+        'perms': get_user_permissions(request.user),
     })
 
+@login_required
 def create_annual_medical_check(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     
@@ -767,6 +856,7 @@ def create_annual_medical_check(request, child_id):
         'today': date.today().isoformat(),
     })
 
+@login_required
 def view_annual_medical_check(request, child_id, year):
     child = get_object_or_404(Child, id=child_id)
     medical_checks = AnnualMedicalCheck.objects.filter(
@@ -781,6 +871,7 @@ def view_annual_medical_check(request, child_id, year):
         'today': date.today().isoformat(),
     })
 
+@login_required
 def edit_annual_medical_check(request, child_id, check_id):
     child = get_object_or_404(Child, id=child_id)
     medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
@@ -808,6 +899,7 @@ def edit_annual_medical_check(request, child_id, check_id):
         'today': date.today().isoformat(),
     })
 
+@login_required
 def delete_annual_medical_check(request, child_id, check_id):
     child = get_object_or_404(Child, id=child_id)
     medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
@@ -820,6 +912,7 @@ def delete_annual_medical_check(request, child_id, check_id):
         
     return redirect('annual_medical_check_list', child_id=child_id)
 
+@login_required
 def edit_physicians_exam(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     exam = get_object_or_404(PhysiciansExam, pk=id)
@@ -915,6 +1008,7 @@ def edit_physicians_exam(request, pk, id):
 
     return render(request, 'msys42app/edit_phyexam.html', {'child': child, 'exam': exam, 'available_years': available_years})
 
+@login_required
 def delete_physicians_exam(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     exam = get_object_or_404(PhysiciansExam, pk=id)
