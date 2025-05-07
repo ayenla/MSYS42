@@ -543,72 +543,38 @@ ImmunizationFormSet = inlineformset_factory(
 def add_medical_history(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     medical_history, created = MedicalHistory.objects.get_or_create(child=child)
-
     if request.method == 'POST':
         form = MedicalHistoryForm(request.POST, instance=medical_history)
         immunization_formset = ImmunizationFormSet(request.POST, instance=medical_history, prefix='immunization')
-
         if form.is_valid() and immunization_formset.is_valid():
-            try:
-                # Save the main form
-                medical_history = form.save(commit=False)
-                medical_history.child = child
-                
-                # Handle other_condition field
-                other_condition = form.cleaned_data.get('other_condition', '')
-                selected_allergies = form.cleaned_data.get('allergies_conditions', [])
-                if 'other' in selected_allergies and other_condition:
-                    medical_history.other_condition = other_condition
-                elif 'other' not in selected_allergies:
-                    medical_history.other_condition = ''
-                
-                medical_history.save()
-
-                # Handle allergies
-                medical_history.allergies_conditions.clear()  # Clear existing allergies
-                
-                # First add all allergies except "other"
-                for allergy_code in selected_allergies:
-                    if allergy_code != 'other':
-                        allergy, _ = AllergyCondition.objects.get_or_create(name=dict(ALLERGY_CHOICES)[allergy_code])
-                        medical_history.allergies_conditions.add(allergy)
-                
-                # Then add "other" if it exists (so it's at the end)
-                if 'other' in selected_allergies:
-                    allergy, _ = AllergyCondition.objects.get_or_create(name="Others")
+            medical_history = form.save(commit=False)
+            other_condition = form.cleaned_data.get('other_condition', '')
+            selected_allergies = form.cleaned_data.get('allergies_conditions', [])
+            if 'other' in selected_allergies and other_condition:
+                medical_history.other_condition = other_condition
+            else:
+                medical_history.other_condition = ''
+            medical_history.save()
+            medical_history.allergies_conditions.clear()
+            for allergy_code in selected_allergies:
+                if allergy_code != 'other':
+                    allergy, _ = AllergyCondition.objects.get_or_create(name=dict(ALLERGY_CHOICES)[allergy_code])
                     medical_history.allergies_conditions.add(allergy)
-                
-                # Save immunizations
-                immunizations = immunization_formset.save(commit=False)
-                
-                # Delete any marked for deletion
-                for obj in immunization_formset.deleted_objects:
-                    obj.delete()
-                
-                # Save only non-empty immunizations
-                for immunization in immunizations:
-                    if immunization.date or immunization.immunization_given:  # Save if either field is filled
-                        immunization.medical_history = medical_history
-                        immunization.save()
-                
-                return redirect('view_medical_history', child_id=child.id)
-            except Exception as e:
-                print(f"Error saving data: {str(e)}")
-                messages.error(request, f"Error saving data: {str(e)}")
+            if 'other' in selected_allergies:
+                allergy, _ = AllergyCondition.objects.get_or_create(name='Others')
+                medical_history.allergies_conditions.add(allergy)
+            immunizations = immunization_formset.save(commit=False)
+            for obj in immunization_formset.deleted_objects:
+                obj.delete()
+            for immunization in immunizations:
+                if immunization.date or immunization.immunization_given:
+                    immunization.medical_history = medical_history
+                    immunization.save()
+            return redirect('view_medical_history', child_id=child_id)
         else:
-            print("Form validation errors:", form.errors)
-            for field, errors in form.errors.items():
-                messages.error(request, f"{field}: {', '.join(errors)}")
-            print("Formset errors:", immunization_formset.errors)
-
-    else:  # GET request
-        # Get existing allergies and convert them to choice codes
-        existing_allergies = [
-            next(code for code, name in ALLERGY_CHOICES if name == allergy.name)
-            for allergy in medical_history.allergies_conditions.all()
-        ]
-        
-        # Initialize form with existing data including allergies
+            messages.error(request, 'Form validation failed. Please correct the errors.')
+    else:
+        existing_allergies = [next(code for code, name in ALLERGY_CHOICES if name == allergy.name) for allergy in medical_history.allergies_conditions.all()]
         initial_data = {
             'medical_status': medical_history.med_stat,
             'medical_status_history': medical_history.med_history,
@@ -620,13 +586,12 @@ def add_medical_history(request, child_id):
         }
         form = MedicalHistoryForm(instance=medical_history, initial=initial_data)
         immunization_formset = ImmunizationFormSet(instance=medical_history, prefix='immunization')
-
-    return render(request, 'msys42app/create_medhist.html', {
-        'form': form,
-        'immunization_formset': immunization_formset,
-        'child': child,
-        'today': date.today().isoformat(),
-    })
+        return render(request, 'msys42app/create_medhist.html', {
+            'form': form,
+            'immunization_formset': immunization_formset,
+            'child': child,
+            'today': date.today().isoformat(),
+        })
 
 
 def view_medical_history(request, child_id):
