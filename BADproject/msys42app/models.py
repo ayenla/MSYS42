@@ -182,7 +182,7 @@ class PhysiciansExam(models.Model):
     year_choices = [(year, year) for year in range(2000, datetime.datetime.now().year + 1)]
     conditions = [("N", "N"), ("A", "A"), ("C", "C"), ("R", "R"), ("NE", "NE")]
     year = models.IntegerField(choices=year_choices, default=datetime.datetime.now().year)
-    grade = models.CharField(max_length=2, choices=conditions, default= "NE")
+    # grade = models.CharField(max_length=2, choices=conditions, default= "NE")
     height = models.CharField(max_length=2, choices=conditions, default= "NE")
     weight = models.CharField(max_length=2, choices=conditions, default= "NE")
     bp = models.CharField(max_length=2, choices=conditions, default= "NE")
