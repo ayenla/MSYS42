@@ -6,13 +6,20 @@ from django.core.validators import MaxLengthValidator
 
 # Education
 
-def get_school_year_choices(start=2010):
+def get_school_year_choices(start=2000):
     current_year = datetime.datetime.now().year
-    end_year = current_year + 1  # ensure next academic year is included
+    end_year = current_year + 1
+
+    # Get used year strings from the database (e.g., "2024–2025")
+    used_years = set(Education.objects.values_list('year', flat=True))
+
     choices = []
     for y in range(start, end_year):
         label = f"{y}–{y+1}"
-        choices.append((label, label))
+        if label not in used_years:
+            choices.append((label, label))  # value and label are the same
+
+    choices.reverse()  # most recent first
     return choices
 
 class EducationForm(forms.ModelForm):
