@@ -81,11 +81,17 @@
                             <div class="modal-body">
                                     
                                 <label> First Name<span class="required" style="color: red;">*</span> </label>
-                                <input type="text" name="firstname" value="{{ member.first_name }}" required>
+                                <input type="text" name="firstname" value="{{ member.first_name }}" required class="form-control validate-special" pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                <div class="invalid-feedback">Invalid input/s. Please try again.</div>
+                                
                                 <label> Middle Name </label>
-                                <input class="form-control" type="text" id="middlename" name="middlename" value="{{member.middle_name}}">
+                                <input class="form-control validate-special" type="text" id="middlename" name="middlename" value="{{member.middle_name}}" pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                <div class="invalid-feedback">Invalid input/s. Please try again.</div>
+                                
                                 <label> Last Name<span class="required" style="color: red;">*</span> </label>
-                                <input class="form-control" type="text" id="lastname" name="lastname" value="{{member.last_name}}" required>                      
+                                <input class="form-control validate-special" type="text" id="lastname" name="lastname" value="{{member.last_name}}" required pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                <div class="invalid-feedback">Invalid input/s. Please try again.</div>
+                                
                                 <label>Sex<span class="required" style="color: red;">*</span> </label>
                                 <select class="form-control" id="sex" name="sex" required>
                                     {% if member.sex == "Female" %}
@@ -102,7 +108,8 @@
                                 </select>
                                 
                                 <label>Relation with Child<span class="required" style="color: red;">*</span></label>
-                                <input class="form-control" type="text" id="relationship" name="relationship" value="{{member.relationship_w_spc}}" required>
+                                <input class="form-control validate-special" type="text" id="relationship" name="relationship" value="{{member.relationship_w_spc}}" required pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                <div class="invalid-feedback">Invalid input/s. Please try again.</div>
 
                             </div>
                             <div class="modal-footer d-flex justify-content-between">
@@ -193,9 +200,109 @@
     </div>
 </div>
 
+<style>
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 80%;
+        color: #dc3545;
+        background-color: #fff8f8;
+        padding: 5px 10px;
+        border-radius: 4px;
+        border-left: 3px solid #dc3545;
+        margin-bottom: 10px;
+    }
+    .is-invalid + .invalid-feedback {
+        display: block;
+    }
+    .is-invalid {
+        border-color: #dc3545;
+    }
+    .table-responsive {
+        overflow-x: auto;
+        margin-bottom: 1rem;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+    }
+    
+    textarea.form-control {
+        min-height: 60px;
+    }
+    
+    .btn {
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    .bmi-output {
+        background-color: #f8f9fa;
+        font-weight: 500;
+    }
+</style>
+
 <script>
+  // Add validation for special characters
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get all fields with the validate-special class
+    const specialFields = document.querySelectorAll('.validate-special');
+    
+    // Add input validation event listener to each field
+    specialFields.forEach(function(input) {
+        input.addEventListener('input', validateSpecialChars);
+        input.addEventListener('blur', validateSpecialChars);
+        
+        // Also validate on page load
+        validateSpecialChars.call(input);
+    });
+    
+    // Validate the form on submit
+    const forms = document.querySelectorAll('form');
+    forms.forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+            
+            // Check all special character fields
+            const fields = this.querySelectorAll('.validate-special');
+            fields.forEach(function(field) {
+                if (!validateSpecialCharsField(field)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                event.preventDefault();
+                alert('Please fix the highlighted errors before submitting the form.');
+            }
+        });
+    });
+    
+    // Function to validate a field for special characters
+    function validateSpecialChars() {
+        validateSpecialCharsField(this);
+    }
+    
+    // Modify the validateSpecialCharsField function within the existing script
+    function validateSpecialCharsField(field) {
+        // Regular expression that only allows letters, numbers, spaces, periods, and hyphens
+        const validPattern = /^[A-Za-z0-9\s.-]*$/;
+        
+        if (!validPattern.test(field.value)) {
+            field.classList.add('is-invalid');
+            return false;
+        } else {
+            field.classList.remove('is-invalid');
+            return true;
+        }
+    }
+  });
   
-    function addMedicalRow() {
+  function addMedicalRow() {
   const tableBody = document.querySelector("tbody");
   const newRow = document.createElement("tr");
 
@@ -244,33 +351,4 @@
 }
   </script>
   
-  
-<style>
-    .table-responsive {
-        overflow-x: auto;
-        margin-bottom: 1rem;
-    }
-    
-    .form-control {
-        font-size: 0.9rem;
-    }
-    
-    textarea.form-control {
-        min-height: 60px;
-    }
-    
-    .btn {
-        padding: 0.375rem 0.75rem;
-    }
-    
-    .table th, .table td {
-        vertical-align: middle;
-    }
-
-    .bmi-output {
-        background-color: #f8f9fa;
-        font-weight: 500;
-    }
-</style>
-
 {% endblock %}

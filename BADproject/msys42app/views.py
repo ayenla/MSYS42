@@ -522,31 +522,55 @@ def create_child_profile(request):
 def view_family_medicals(request, pk): 
     child = get_object_or_404(Child, pk=pk)
     members = FamilyMember.objects.filter(child=child)
+    error = None
     
     if request.method == "POST":
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        middlename = request.POST.get('middlename')
-        relationship = request.POST.get('relationship')
-        sex = request.POST.get('sex')
-    
-        member = FamilyMember.objects.create(
-            child=child, first_name=firstname, last_name=lastname, 
-            middle_name=middlename, relationship_w_spc=relationship,
-            sex=sex
-        )
-        member.save() 
-        messages.success(request, "New family member has been added.")
-        return render(request, 'msys42app/home_family_medical.html', {
-            'child': child, 
-            'members': members,
-            'perms': get_user_permissions(request.user),
-        })
+        firstname = request.POST.get('firstname', '')
+        lastname = request.POST.get('lastname', '')
+        middlename = request.POST.get('middlename', '')
+        relationship = request.POST.get('relationship', '')
+        sex = request.POST.get('sex', '')
+        
+        # Regular expression to validate allowed characters (letters, numbers, spaces, periods, hyphens)
+        import re
+        pattern = re.compile(r'^[A-Za-z0-9\s.-]*$')
+        
+        # Validate field content for special characters
+        if not pattern.match(firstname):
+            error = "First name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        elif not pattern.match(lastname):
+            error = "Last name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        elif middlename and not pattern.match(middlename):
+            error = "Middle name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        elif not pattern.match(relationship):
+            error = "Relationship contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        # Validate field lengths
+        elif len(firstname) > 50:  # First name can be up to 50 characters
+            error = "First name cannot exceed 50 characters."
+        elif len(lastname) > 25:  # Last name can be up to 25 characters
+            error = "Last name cannot exceed 25 characters."
+        elif middlename and len(middlename) > 25:  # Middle name can be up to 25 characters
+            error = "Middle name cannot exceed 25 characters."
+        elif len(relationship) > 25:  # Relationship can be up to 25 characters
+            error = "Relationship cannot exceed 25 characters."
+        else:
+            try:
+                member = FamilyMember.objects.create(
+                    child=child, first_name=firstname, last_name=lastname, 
+                    middle_name=middlename, relationship_w_spc=relationship,
+                    sex=sex
+                )
+                member.save() 
+                messages.success(request, "New family member has been added.")
+                return redirect('view_family_medicals', pk=child.id)
+            except Exception as e:
+                error = f"An error occurred: {str(e)}"
     
     return render(request, 'msys42app/home_family_medical.html', {
         'child': child, 
         'members': members,
         'perms': get_user_permissions(request.user),
+        'error': error,
     })
 
 @login_required
@@ -594,6 +618,38 @@ def edit_family_info(request, pk, id):
         middlename = request.POST.get('middlename')
         relationship = request.POST.get('relationship')
         sex = request.POST.get('sex')
+        
+        # Regular expression to validate allowed characters (letters, numbers, spaces, periods, hyphens)
+        import re
+        pattern = re.compile(r'^[A-Za-z0-9\s.-]*$')
+        
+        # Validate field content for special characters
+        if not pattern.match(firstname):
+            messages.error(request, "First name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif not pattern.match(lastname):
+            messages.error(request, "Last name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif middlename and not pattern.match(middlename):
+            messages.error(request, "Middle name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif not pattern.match(relationship):
+            messages.error(request, "Relationship contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        
+        # Validate field lengths
+        if len(firstname) > 50:
+            messages.error(request, "First name cannot exceed 50 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif len(lastname) > 25:
+            messages.error(request, "Last name cannot exceed 25 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif middlename and len(middlename) > 25:
+            messages.error(request, "Middle name cannot exceed 25 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif len(relationship) > 25:
+            messages.error(request, "Relationship cannot exceed 25 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
 
         member.first_name = firstname
         member.last_name = lastname
@@ -603,7 +659,7 @@ def edit_family_info(request, pk, id):
         member.child = child
         member.save()
 
-        print(f"{firstname} {lastname} {middlename} {relationship} {sex}")
+        messages.success(request, f"Family member information for {firstname} {lastname} updated successfully.")
         return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
     
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
@@ -1117,3 +1173,103 @@ def delete_annual_medical_check(request, child_id, check_id):
         messages.error(request, f"Error deleting medical check: {str(e)}")
         
     return redirect('annual_medical_check_list', child_id=child_id)
+
+@login_required
+def summary_report_page(request):
+    """
+    Displays the summary report launch page.
+    """
+    return render(request, 'msys42app/summary_report_page.html')
+
+@login_required
+def generate_summary_report(request):
+    """
+    Generates a summary report of all child profiles highlighting health concerns.
+    """
+    # Count total number of child profiles
+    total_profiles = Child.objects.count()
+    
+    # Initialize counters for BMI categories
+    overweight_count = 0
+    underweight_count = 0
+    obese_count = 0
+    
+    # Process each child to get their latest BMI data
+    for child in Child.objects.all():
+        # Get the most recent annual medical check
+        latest_check = AnnualMedicalCheck.objects.filter(child=child).order_by('-date').first()
+        
+        if latest_check and latest_check.bmi:
+            bmi = float(latest_check.bmi)
+            if bmi < 18.5:
+                underweight_count += 1
+            elif 25 <= bmi < 30:
+                overweight_count += 1
+            elif bmi >= 30:
+                obese_count += 1
+    
+    # Initialize counters for health conditions
+    condition_counts = {
+        'arthritis': 0,
+        'asthma': 0,
+        'behavioral_problem': 0,
+        'cancer': 0,
+        'chronic_cough': 0,
+        'diabetes': 0,
+        'hearing_problem': 0,
+        'heart_disease': 0,
+        'hypertension': 0,
+        'jaundice': 0,
+        'malaria': 0,
+        'seizures': 0,
+        'sickle_cell_anemia': 0,
+        'skin_problem': 0,
+        'vision_problem': 0,
+    }
+    
+    # Dictionary to store other conditions
+    other_conditions = {}
+    
+    # Create a reverse mapping of condition names to their codes for easier lookup
+    condition_name_to_code = {name: code for code, name in ALLERGY_CHOICES}
+    
+    # Get all medical histories
+    medical_histories = MedicalHistory.objects.all()
+    
+    # Count conditions from allergies/conditions
+    for med_hist in medical_histories:
+        allergies_conditions = med_hist.allergies_conditions.all()
+        
+        # Check for "Others" condition first
+        has_other = False
+        for condition in allergies_conditions:
+            if condition.name == "Others":
+                has_other = True
+                if med_hist.other_condition and med_hist.other_condition.strip():
+                    other_condition_name = med_hist.other_condition.strip()
+                    if other_condition_name in other_conditions:
+                        other_conditions[other_condition_name] += 1
+                    else:
+                        other_conditions[other_condition_name] = 1
+        
+        # Then process standard conditions
+        for condition in allergies_conditions:
+            if condition.name in condition_name_to_code:
+                condition_code = condition_name_to_code[condition.name]
+                if condition_code in condition_counts:
+                    condition_counts[condition_code] += 1
+    
+    # Get current date and time
+    report_datetime = datetime.now()
+    
+    context = {
+        'total_profiles': total_profiles,
+        'overweight_count': overweight_count,
+        'underweight_count': underweight_count,
+        'obese_count': obese_count,
+        'condition_counts': condition_counts,
+        'other_conditions': other_conditions,
+        'report_datetime': report_datetime,
+    }
+    
+    return render(request, 'msys42app/summary_report.html', context)
