@@ -123,12 +123,14 @@
                     <td>Nutrition</td>
                     <td>{{ exam.nutrition }}</td>
                 </tr>
-                {% if exam.other_label and exam.other and exam.other != "NE" %}
+                {% for other in others %}
+                {% if other.attribute and other.condition != "NE" %}
                 <tr>
-                    <td>{{ exam.other_label }}</td>
-                    <td>{{ exam.other }}</td>
+                    <td>{{ other.attribute }}</td>
+                    <td>{{ other.condition }}</td>
                 </tr>
                 {% endif %}
+                {% endfor %}
             </table>
         </div>
 

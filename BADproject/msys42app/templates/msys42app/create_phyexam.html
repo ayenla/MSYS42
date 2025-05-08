@@ -289,11 +289,12 @@
                     </tr>
                     <!-- Container for additional fields -->
                     <tbody id="additional-fields-container">
+                        
                     </tbody>
                     <tfoot>
                         <tr id="add-button-row">
                             <td colspan="2" style="text-align: center;">
-                                <button type="button" class="btn btn-success" onclick="addRow()">&#43; Add Field</button>
+                                <button type="button" class="btn btn-success" onclick="OtherCond()">&#43; Add Field</button>
                             </td>
                         </tr>
                     </tfoot>
@@ -328,53 +329,43 @@
 </div>
 
 <script>
-    let fieldCounter = 0;
 
-function addRow() {
-    fieldCounter++;
+let otherCounter = 0;
+
+function OtherCond() {
+    otherCounter++; // Increment counter for unique ID
     const container = document.getElementById('additional-fields-container');
     const newRow = document.createElement('tr');
-    newRow.id = `additional-field-${fieldCounter}`;
-    
-    const fieldName = fieldCounter === 1 ? 'other_label' : `additional_label_${fieldCounter}`;
-    const valueName = fieldCounter === 1 ? 'other' : `additional_value_${fieldCounter}`;
-    
+    newRow.id = `other-field-${otherCounter}`; // Unique ID
+
     newRow.innerHTML = `
-        <td>
-            <input type="text" class="form-control" name="${fieldName}" placeholder="Condition">
+        <td style="width: 190px;">
+            <input type="text" class="form-control" name="attribute_[]" placeholder="Attribute" required>
         </td>
         <td>
             <div class="d-flex justify-content-between align-items-center">
-                <select class="form-control" name="${valueName}">
-                    <option value="NE" selected>NE</option>
+                <select class="form-control" name="condition_[]">
+                    <option value="NE">NE</option>
                     <option value="N">N</option>
                     <option value="A">A</option>
                     <option value="C">C</option>
                     <option value="R">R</option>
                 </select>
-                <button type="button" class="btn btn-danger ms-2" onclick="removeRow(${fieldCounter})">&#x2715;</button>
+                <button type="button" class="btn btn-danger ms-2" style="margin-left: 5px;" onclick="removeOtherField('other-field-${otherCounter}')">&#x2715;</button>
             </div>
         </td>
     `;
     container.appendChild(newRow);
-
-    // Hide the Add button
-    document.getElementById('add-button-row').style.display = 'none';
 }
 
-function removeRow(id) {
-    const row = document.getElementById(`additional-field-${id}`);
+function removeOtherField(id) {
+    const row = document.getElementById(id);
     if (row) {
         row.remove();
     }
-
-    // Show the Add button again if no additional rows exist
-    const remainingRows = document.querySelectorAll('#additional-fields-container tr');
-    if (remainingRows.length === 0) {
-        document.getElementById('add-button-row').style.display = '';
-        fieldCounter = 0; // Reset counter if desired
-    }
 }
+
+
 
 // Setup confirmation modal
 document.addEventListener('DOMContentLoaded', function() {
