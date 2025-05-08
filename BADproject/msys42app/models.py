@@ -201,14 +201,25 @@ class PhysiciansExam(models.Model):
     nervous_system = models.CharField(max_length=2, choices=conditions, default= "NE")
     skin = models.CharField(max_length=2, choices=conditions, default= "NE")
     nutrition = models.CharField(max_length=2, choices=conditions, default= "NE")
-    other = models.CharField(max_length=2, choices=conditions, default= "NE", null=True, blank=True)
-    other_label = models.CharField(max_length=20, default="other", null=True, blank=True)
 
     def __str__(self):
         return f"{self.child.spc_code}: {self.year}"
     
     class Meta:
         db_table = 'phys_exam'
+
+class PhysiciansExamOther(models.Model):
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    conditions = [("N", "N"), ("A", "A"), ("C", "C"), ("R", "R"), ("NE", "NE")]
+    year = models.IntegerField(default=datetime.datetime.now().year)
+    condition = models.CharField(max_length=2, choices=conditions, default= "NE", null=False, blank=False)
+    attribute = models.CharField(max_length=20, default="other", null=False, blank=False)
+
+    def __str__(self):
+        return f"{self.child.spc_code}: {self.year}"
+    
+    class Meta:
+        db_table = 'phys_exam_other'
 
 #END PHYSICIAN'S EXAM
 

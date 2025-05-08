@@ -307,30 +307,35 @@
                     </tr>
                     <!-- Container for additional fields -->
                     <tbody id="additional-fields-container">
-                        {% if exam.other_label %}
-                        <tr id="existing-other-row">
-                            <td>
-                                <input type="text" class="form-control" id="other_label" name="other_label" value="{{ exam.other_label }}">
+                        {% if others %}
+                        {% for other in others %}
+                        <tr id="existing-other-row-{{ forloop.counter }}">
+                            <td style="width: 190px;">
+                                <input type="text" class="form-control" name="attribute_[]" value="{{ other.attribute }}">
                             </td>
                             <td>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <select class="form-control" id="other" name="other">
-                                        <option value="NE" {% if exam.other == "NE" %}selected{% endif %}>NE</option>
-                                        <option value="N" {% if exam.other == "N" %}selected{% endif %}>N</option>
-                                        <option value="A" {% if exam.other == "A" %}selected{% endif %}>A</option>
-                                        <option value="C" {% if exam.other == "C" %}selected{% endif %}>C</option>
-                                        <option value="R" {% if exam.other == "R" %}selected{% endif %}>R</option>
+                                    <select class="form-control" name="condition_[]">
+                                        <option value="NE" {% if other.condition == "NE" %}selected{% endif %}>NE</option>
+                                        <option value="N" {% if other.condition == "N" %}selected{% endif %}>N</option>
+                                        <option value="A" {% if other.condition == "A" %}selected{% endif %}>A</option>
+                                        <option value="C" {% if other.condition == "C" %}selected{% endif %}>C</option>
+                                        <option value="R" {% if other.condition == "R" %}selected{% endif %}>R</option>
                                     </select>
-                                    <button type="button" class="btn btn-danger ms-2" onclick="removeExistingRow()">&#x2715;</button>
+                                    <button type="button" class="btn btn-danger ms-2" style="margin-left: 5px;" onclick="removeOtherField('existing-other-row-{{ forloop.counter }}')">&#x2715;</button>
                                 </div>
                             </td>
                         </tr>
+                        {% endfor %}
+
                         {% endif %}
+
+                        
                     </tbody>
                     <tfoot>
                         <tr id="add-button-row">
                             <td colspan="2" style="text-align: center;">
-                                <button type="button" class="btn btn-success" onclick="addRow()">&#43; Add Field</button>
+                                <button type="button" class="btn btn-success" onclick="OtherCond()">&#43; Add Field</button>
                             </td>
                         </tr>
                     </tfoot>
@@ -396,62 +401,42 @@
     </div>
 </div>
 <script>
-    let fieldCounter = 0;
-    
-    function addRow() {
-        fieldCounter++;
-        const container = document.getElementById('additional-fields-container');
-        const newRow = document.createElement('tr');
-        newRow.id = `additional-field-${fieldCounter}`;
-        
-        // If there's no existing other field and this is the first additional field,
-        // use the standard field names
-        const existingOtherRow = document.getElementById('existing-other-row');
-        const useStandardNames = !existingOtherRow && fieldCounter === 1;
-        
-        const fieldName = useStandardNames ? 'other_label' : `additional_label_${fieldCounter}`;
-        const valueName = useStandardNames ? 'other' : `additional_value_${fieldCounter}`;
-        
-        newRow.innerHTML = `
-            <td>
-                <input type="text" class="form-control" name="${fieldName}" placeholder="Condition">
-            </td>
-            <td>
-                <div class="d-flex justify-content-between align-items-center">
-                    <select class="form-control" name="${valueName}">
-                        <option value="NE" selected>NE</option>
-                        <option value="N">N</option>
-                        <option value="A">A</option>
-                        <option value="C">C</option>
-                        <option value="R">R</option>
-                    </select>
-                    <button type="button" class="btn btn-danger ms-2" onclick="removeRow(${fieldCounter})">&#x2715;</button>
-                </div>
-            </td>
-        `;
-        container.appendChild(newRow);
-    }
 
-    function removeRow(id) {
-        const row = document.getElementById(`additional-field-${id}`);
-        if (row) {
-            row.remove();
-        }
+let otherCounter = 0;
+
+function OtherCond() {
+    otherCounter++; // Increment counter for unique ID
+    const container = document.getElementById('additional-fields-container');
+    const newRow = document.createElement('tr');
+    newRow.id = `other-field-${otherCounter}`; // Unique ID
+
+    newRow.innerHTML = `
+        <td style="width: 190px;">
+            <input type="text" class="form-control" name="attribute_[]" placeholder="Attribute" required>
+        </td>
+        <td>
+            <div class="d-flex justify-content-between align-items-center">
+                <select class="form-control" name="condition_[]">
+                    <option value="NE">NE</option>
+                    <option value="N">N</option>
+                    <option value="A">A</option>
+                    <option value="C">C</option>
+                    <option value="R">R</option>
+                </select>
+                <button type="button" class="btn btn-danger ms-2" style="margin-left: 5px;" onclick="removeOtherField('other-field-${otherCounter}')">&#x2715;</button>
+            </div>
+        </td>
+    `;
+    container.appendChild(newRow);
+}
+
+function removeOtherField(id) {
+    const row = document.getElementById(id);
+    if (row) {
+        row.remove();
     }
-    
-    function removeExistingRow() {
-        const row = document.getElementById('existing-other-row');
-        if (row) {
-            row.remove();
-            // Add a hidden input to indicate that the other field should be cleared
-            const container = document.getElementById('additional-fields-container');
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'clear_other';
-            hiddenInput.value = 'true';
-            container.appendChild(hiddenInput);
-        }
-    }
+}
+
     
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize the modals
