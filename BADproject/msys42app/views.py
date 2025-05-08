@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .models import *
 from .forms import *
 from datetime import date, datetime
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery, DecimalField
 import re
 
 from django.forms import inlineformset_factory
@@ -74,30 +74,96 @@ def parse_input(value, data_type):
         return None
 
 @login_required
+
 def home(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     
+    # Search Child Profile
     if query:
-        # Search for child by code or name (case-insensitive, partial match)
-        children = Child.objects.filter(
+        children = children.filter(
             Q(spc_code__icontains=query) |
             Q(last_name__icontains=query) |
             Q(first_name__icontains=query) |
             Q(middle_name__icontains=query)
         )
-    else:
-        children = Child.objects.all()
+
+    # Filter Child Profile
+
+    selected_sex = request.GET.get('sex', '').strip()
+    age_min = request.GET.get('age_min')
+    age_max = request.GET.get('age_max')
+    bmi_min = request.GET.get('bmi_min')
+    bmi_max = request.GET.get('bmi_max')
+    selected_condition = request.GET.get('condition')
     
+    allergies_conditions = [
+    ("IRA Arthritic", "IRA Arthritic"),
+    ("Asthma", "Asthma"),
+    ("Behavioral Problem", "Behavioral Problem"),
+    ("Cancer", "Cancer"),
+    ("Chronic Cough/Wheezing", "Chronic Cough/Wheezing"),
+    ("Diabetes", "Diabetes"),
+    ("Hearing Problem", "Hearing Problem"),
+    ("Heart Disease", "Heart Disease"),
+    ("Hypertension", "Hypertension"),
+    ("Jaundice", "Jaundice"),
+    ("Malaria", "Malaria"),
+    ("Seizures", "Seizures"),
+    ("Sickle Cell Anemia", "Sickle Cell Anemia"),
+    ("Skin Problem", "Skin Problem"),
+    ("Vision Problem", "Vision Problem"),
+    ("Others", "Others"),
+    ]
+    
+    # Subquery to get the latest BMI for each child
+    latest_check = AnnualMedicalCheck.objects.filter(
+        child=OuterRef('pk')
+    ).order_by('-date')
+
+    # Annotate each Child with latest BMI
+    children = Child.objects.annotate(
+        latest_bmi=Subquery(latest_check.values('bmi')[:1], output_field=DecimalField())
+    )
+
+    # Actual Filtering
+    if selected_sex:
+        children = children.filter(sex__iexact=selected_sex)
+
+    if age_min or age_max:
+        if age_min:
+            children = children.filter(age__gte=int(age_min))
+        if age_max:
+            children = children.filter(age__lte=int(age_max))
+
+    if bmi_min or bmi_max:
+        if bmi_min:
+            children = children.filter(latest_bmi__gte=float(bmi_min))
+        if bmi_max:
+            children = children.filter(latest_bmi__lte=float(bmi_max))
+
+    if selected_condition:
+        children = children.filter(
+            medicalhistory__allergies_conditions__name=selected_condition
+        )
+        print(selected_condition)
+        print(children)
+
+
+    # Processing
     numbers = ContactNumber.objects.all()
-    
-    # Check if it's an AJAX request
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    # Add user permissions to context
+
     context = {
-        'children': children, 
+        'children': children,
         'contacts': numbers,
         'search_query': query,
+        'selected_sex': selected_sex,
+        'age_min': age_min,
+        'age_max': age_max,
+        'bmi_min': bmi_min,
+        'bmi_max': bmi_max,
+        'allergies_conditions': allergies_conditions,  # Pass available allergy conditions to the template
+        'selected_condition': selected_condition,  # Pass selected condition
         'is_ajax': is_ajax,
         'perms': get_user_permissions(request.user)
     }

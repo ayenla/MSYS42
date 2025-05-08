@@ -15,9 +15,62 @@
             </div>
         </div>
 
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders slider-icon" viewBox="0 0 16 16">
+        <!-- SVG Button Trigger -->
+        <button id="filterBtn" type="button" class="btn btn-transparent" style="margin-left: 10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders slider-icon" viewBox="0 0 16 16" width="24" height="24">
             <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
-        </svg>
+            </svg>
+        </button>
+  
+        
+        <div id="customModal" class="card shadow-sm p-3 bg-white border rounded d-none position-absolute" style="z-index:1050; width: 300px;">
+            <div class="d-flex justify-content-between mb-2">
+              <h5 class="mb-0">Filter Options</h5>
+              <button type="button" class="close" id="closeModal">&times;</button>
+            </div>
+            <!-- Modal Body -->
+            <form id="filterForm">
+              <div class="form-group justify-content-between mb-2">
+                <label>Sex</label>
+                <select class="form-control" name="sex" id="sex">
+                    <option value="">Any</option>
+                    <option value="Male" {% if selected_sex == "Male" %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if selected_sex == "Female" %}selected{% endif %}>Female</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Age Range</label>
+                <div class="d-flex gap-2">
+                  <input type="number" name="age_min" class="form-control" placeholder="Min" min="0" value="{{ age_min }}">
+                  <input type="number" name="age_max" class="form-control" placeholder="Max" min="0" value="{{ age_max }}">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="condition">Condition</label>
+                <select class="form-control" name="condition" id="condition">
+                    <option value="">Select Condition</option>
+                    {% for val, label in allergies_conditions %}
+                        <option value="{{ val }}" {% if val == selected_condition %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+              <div class="form-group">
+                <label> BMI </label>
+                <div class="d-flex gap-2">
+                  <input type="number" name="bmi_min" class="form-control" placeholder="Min" min="0" value="{{ bmi_min }}">
+                  <input type="number" name="bmi_max" class="form-control" placeholder="Max" min="0" value="{{ bmi_max }}">
+                </div>
+              </div>
+
+              <div class="text-right">
+
+                <button type="button" id="clearBtn" class="btn btn-sm btn-outline-danger"> Clear </button>
+                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+              </div>
+            </form>
+          </div>
+          
 
         {% if perms.can_create %}
         <a class="btn btn-success create-btn" href="{% url 'create_child_profile' %}">Create Child Profile</a>
@@ -157,5 +210,49 @@
             xhr.send();
         }
     });
+
+    const filterBtn = document.getElementById('filterBtn');
+const modal = document.getElementById('customModal');
+const closeBtn = document.getElementById('closeModal');
+
+filterBtn.addEventListener('click', (e) => {
+  const rect = filterBtn.getBoundingClientRect();
+
+  // Adjust these to control placement
+  const offsetX = 10; // pixels to the right of button
+  const offsetY = 0;  // vertically aligned
+
+  // Position the modal right next to the button
+  modal.style.top = `${rect.top + offsetY + window.scrollY}px`;
+  modal.style.left = `${rect.right + offsetX + window.scrollX}px`;
+
+  modal.classList.toggle('d-none');
+});
+
+closeBtn.addEventListener('click', () => {
+  modal.classList.add('d-none');
+});
+
+document.addEventListener('click', (e) => {
+  if (!modal.contains(e.target) && !filterBtn.contains(e.target)) {
+    modal.classList.add('d-none');
+  }
+});
+
+  document
+    .getElementById('clearBtn')
+    .addEventListener('click', function() {
+      const form = document.getElementById('filterForm');
+      
+      // wipe every input/select
+      form.querySelectorAll('input, select').forEach(el => {
+        // for checkboxes/radios you might also want: el.checked = false;
+        el.value = '';
+      });
+      
+      // submit
+      form.submit();
+    });
+
 </script>
 {% endblock %}
