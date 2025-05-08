@@ -93,7 +93,7 @@ class ContactNumber(models.Model):
 class FamilyMember(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
     last_name = models.CharField(max_length=25, null=False, blank=False)
-    first_name = models.CharField(max_length=25, null=False, blank=False)
+    first_name = models.CharField(max_length=50, null=False, blank=False)
     middle_name = models.CharField(max_length=25, null=True, blank=False)
     relationship_w_spc = models.CharField(max_length=25, null=False, blank=False)
     sex = models.CharField(max_length=6, choices=[('Male', 'Male'), ('Female', 'Female')], null=False, blank=False)

@@ -1,0 +1,17 @@
+{% extends 'msys42app/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 80vh; padding: 20px;">
+    <div class="card shadow-sm" style="max-width: 700px; width: 100%;">
+        <div class="card-body text-center p-5">
+            <h1 class="mb-3" style="font-weight: 800;">Summary Report</h1>
+            <p class="lead mb-5">Generate a report counting the number of children with illnesses or conditions that may need attention or treatment.</p>
+            
+            <a href="{% url 'generate_summary_report' %}" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-file-earmark-bar-graph me-2"></i>Generate
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

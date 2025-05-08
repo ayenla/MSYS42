@@ -37,6 +37,10 @@ urlpatterns = [
     path('child/<int:child_id>/annual-medical-check/<int:year>/', views.view_annual_medical_check, name='view_annual_medical_check'),
     path('child/<int:child_id>/annual-medical-check/<int:check_id>/edit/', views.edit_annual_medical_check, name='edit_annual_medical_check'),
     path('child/<int:child_id>/annual-medical-check/<int:check_id>/delete/', views.delete_annual_medical_check, name='delete_annual_medical_check'),
+    
+    # Summary Reports
+    path('summary-reports/', views.summary_report_page, name='summary_report_page'),
+    path('summary-reports/generate/', views.generate_summary_report, name='generate_summary_report'),
 
     # Authentication and user management URLs
     path('login/', views_auth.login_view, name='login'),
