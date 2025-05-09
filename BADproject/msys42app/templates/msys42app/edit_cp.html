@@ -24,17 +24,17 @@
 
                 <div class="col-md-3">
                     <label for="lastname">Last Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="lastname" name="lastname" maxlength="25" value="{{ child.last_name }}" required>
+                    <input type="text" class="form-control" id="lastname" name="lastname" maxlength="25" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ child.last_name }}" required>
                 </div>
 
                 <div class="col-md-3">
                     <label for="firstname">First Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="firstname" name="firstname" maxlength="50" value="{{ child.first_name }}" required>
+                    <input type="text" class="form-control" id="firstname" name="firstname" maxlength="50" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ child.first_name }}" required>
                 </div>
 
                 <div class="col-md-3">
                     <label for="middlename">Middle Name</label>
-                    <input type="text" class="form-control" id="middlename" name="middlename" maxlength="25" value="{{ child.middle_name }}">
+                    <input type="text" class="form-control" id="middlename" name="middlename" maxlength="25" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ child.middle_name }}">
                 </div>
             </div>
 
@@ -79,26 +79,26 @@
             <div class="row mb-3">
                 <div class="col-md-5">
                     <label for="philhealth">Family PhilHealth Number</label>
-                    <input type="text" class="form-control" id="philhealth" name="philhealth" pattern="[0-9]{2}-[0-9]{9}-[0-9]{1}"   value="{{ child.fam_philhealth }}" placeholder="12-123456789-1" maxlength="14">
+                    <input type="text" class="form-control" id="philhealth" name="philhealth" pattern="[0-9]{2}-[0-9]{9}-[0-9]{1}" value="{% if child.fam_philhealth != 'None' %}{{ child.fam_philhealth }}{% endif %}" placeholder="12-123456789-1" maxlength="14">
                 </div>
                 <div class="col-md-5">
                     <label for="fourps">Family 4Ps Number</label>
-                    <input type="text" class="form-control" id="fourps" name="fourps" maxlength="20" value="{{ child.fam_4ps }}" placeholder="123412341234">
+                    <input type="text" class="form-control" id="fourps" name="fourps" maxlength="20" value="{% if child.fam_4ps != 'None' %}{{ child.fam_4ps }}{% endif %}" placeholder="123412341234">
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="guardian_lastname">Guardian's Last Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="guardian_lastname" name="guardian_lastname" value="{{ child.guardian_lastname }}" required>
+                    <input type="text" class="form-control" id="guardian_lastname" name="guardian_lastname" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ child.guardian_lastname }}" required>
                 </div>
                 <div class="col-md-4">
                     <label for="guardian_firstname">Guardian's First Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="guardian_firstname" name="guardian_firstname" value="{{ child.guardian_firstname }}" required>
+                    <input type="text" class="form-control" id="guardian_firstname" name="guardian_firstname" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ child.guardian_firstname }}" required>
                 </div>
                 <div class="col-md-4">
                     <label for="guardian_middlename">Guardian's Middle Name</label>
-                    <input type="text" class="form-control" id="guardian_middlename" name="guardian_middlename" value="{{ child.guardian_middlename }}">
+                    <input type="text" class="form-control" id="guardian_middlename" name="guardian_middlename" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ child.guardian_middlename }}">
                 </div>
             </div>
             <div class="row mb-3">
@@ -112,7 +112,7 @@
                 </div>
                 <div class="col-md-4">
                     <label for="relationship">Guardian's Relationship to SPC <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="relationship" name="relationship" value="{{ child.guardian_relationship }}" required>
+                    <input type="text" class="form-control" id="relationship" name="relationship" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ child.guardian_relationship }}" required>
                 </div>
             </div>
 
@@ -140,15 +140,15 @@
 
             <div class="text-left">
                 <button type="submit" class="btn btn-success"> Save </button>
-                <a href="{% url 'view_child_profile' pk=child.pk%}" class="btn btn-secondary" onclick="return confirmCancel();">Cancel</a>
+                <button type="button" id="cancelEditBtn" class="btn btn-secondary">Cancel</button>
             </div>
         </form>
         
         <!-- Horizontal Line -->
-        <hr class="my-4" style="width: 50%; margin-left: 0;">
+        <hr class="my-2" style="width: 50%; margin-left: 0;">
         
         <!-- Delete Button -->
-        <div class="text-left">
+        <div class="text-left mt-2">
             <button type="button" id="deleteProfileBtn" class="btn btn-danger">Delete Child Profile</button>
         </div>
         
@@ -170,6 +170,44 @@
                     <input type="hidden" name="delete_profile" value="true">
                     <button type="submit" class="btn btn-danger">Delete</button>
                 </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Save Confirmation Modal -->
+        <div class="modal fade" id="saveConfirmationModal" tabindex="-1" aria-labelledby="saveConfirmationModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="saveConfirmationModalLabel">Save Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Are you sure you want to save changes to this profile?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelSaveButton">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmSaveButton">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Cancel Confirmation Modal -->
+        <div class="modal fade" id="cancelConfirmationModal" tabindex="-1" aria-labelledby="cancelConfirmationModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="cancelConfirmationModalLabel">Cancel Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Cancel entry? The information will be lost.
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelCancelButton">No</button>
+                <a href="{% url 'view_child_profile' pk=child.pk%}" class="btn btn-danger">Yes</a>
               </div>
             </div>
           </div>
@@ -225,6 +263,11 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize all modals
+        const deleteConfirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+        const cancelConfirmationModal = new bootstrap.Modal(document.getElementById('cancelConfirmationModal'));
+        const saveConfirmationModal = new bootstrap.Modal(document.getElementById('saveConfirmationModal'));
+        
         document.getElementById('addContact').addEventListener('click', ContactButton);
 
         document.getElementById('contact-numbers').addEventListener('click', function (event) {
@@ -235,42 +278,48 @@
 
         document.getElementById('contact-numbers').addEventListener('input', checkDuplicateContacts);
 
-        document.querySelector("form").addEventListener("submit", function (event) {
-    if (!checkDuplicateContacts()) {
-        event.preventDefault();
-        alert("Duplicate contact number found");
-        return;
-    }
+        const form = document.querySelector("form");
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            
+            if (!checkDuplicateContacts()) {
+                alert("Duplicate contact number found");
+                return;
+            }
 
-    const confirmSubmit = confirm("Are you sure you want to save changes to this profile?");
-    if (!confirmSubmit) {
-        event.preventDefault();
-    }
-});
+            // Show the save confirmation modal
+            saveConfirmationModal.show();
+        });
 
-    });
+        // Handle the OK button in the save confirmation modal
+        document.getElementById('confirmSaveButton').addEventListener('click', function() {
+            saveConfirmationModal.hide();
+            document.querySelector("form").submit();
+        });
 
-    function confirmCancel() {
-        return confirm("Cancel entry? The information will be lost.");
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize the delete confirmation modal
-        let deleteConfirmationModal;
+        // Handle the Cancel button in the save confirmation modal
+        document.getElementById('cancelSaveButton').addEventListener('click', function() {
+            saveConfirmationModal.hide();
+        });
         
         // Set up the click handler for the delete profile button
         document.getElementById('deleteProfileBtn').addEventListener('click', function() {
-            if (!deleteConfirmationModal) {
-                deleteConfirmationModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
-            }
             deleteConfirmationModal.show();
         });
         
         // Set up the click handler for the cancel delete button
         document.getElementById('cancelDeleteButton').addEventListener('click', function() {
-            if (deleteConfirmationModal) {
-                deleteConfirmationModal.hide();
-            }
+            deleteConfirmationModal.hide();
+        });
+        
+        // Set up the click handler for the cancel edit button
+        document.getElementById('cancelEditBtn').addEventListener('click', function() {
+            cancelConfirmationModal.show();
+        });
+        
+        // Set up the click handler for the "No" button in cancel confirmation
+        document.getElementById('cancelCancelButton').addEventListener('click', function() {
+            cancelConfirmationModal.hide();
         });
     });
 </script>

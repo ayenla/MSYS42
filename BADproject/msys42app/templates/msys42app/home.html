@@ -2,93 +2,180 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid pt-4 pb-3">
-    <div class="d-flex align-items-center">
-        <div class="search-container">
-            <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by code or name..." value="{{ search_query }}">
-            <div id="clearSearch" class="clear-search-btn {% if not search_query %}d-none{% endif %}">
-                <!-- X icon for clearing search -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+<div class="container-fluid pt-4 pb-1">
+    <div class="d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <div class="search-container">
+                <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by code or name..." value="{{ search_query }}">
+                <div id="clearSearch" class="clear-search-btn {% if not search_query %}d-none{% endif %}">
+                    <!-- X icon for clearing search -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- SVG Button Trigger -->
+            <button id="filterBtn" type="button" class="btn btn-light d-flex align-items-center justify-content-center p-2 {% if selected_sex or age_min or age_max or bmi_min or bmi_max or selected_condition %}filter-active{% endif %}" style="width: 45px; height: 45px; margin-left: 2px;">
+                <svg xmlns="http://www.w3.org/2000/svg" {% if selected_sex or age_min or age_max or bmi_min or bmi_max or selected_condition %}fill="#007bff"{% else %}fill="currentColor"{% endif %} class="bi bi-sliders" viewBox="0 0 16 16" width="24" height="24">
+                <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
                 </svg>
-            </div>
-        </div>
+            </button>
+            
+            <div id="customModal" class="card shadow-sm p-3 bg-white rounded-5 d-none position-absolute" 
+            style="width: 300px; height: fit-content; font-size: smaller; font-weight: 500; z-index: 9999;">
+                <!-- Modal Header -->
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-1">
+                <h6 class="mb-0">Filter Child Profiles</h6>
+                <button type="button" id="closeModal" aria-label="Close"
+                style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
 
-        <!-- SVG Button Trigger -->
-        <button id="filterBtn" type="button" class="btn btn-light d-flex align-items-center justify-content-center p-2" style="width: 40px; height: 40px; margin-left: 2px;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16" width="20" height="20">
-              <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
-            </svg>
-        </button>
-          
-  
-        
-        <div id="customModal" class="card shadow-sm p-3 bg-white rounded-5 d-none position-absolute" 
-        style="width: 300px; height: fit-content; font-size: smaller; font-weight: 500;">
-            <!-- Modal Header -->
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-1">
-              <h6 class="mb-0">Filter Child Profiles</h6>
-              <button type="button" id="closeModal" aria-label="Close"
-              style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
-
-            </div>
-          
-            <!-- Modal Body -->
-            <form id="filterForm">
-              <div class="modal-body p-1">
-                <!-- Sex -->
-                <div class="form-group d-flex align-items-center mb-2">
-                  <label class="me-2 mb-0" style="min-width: 60px;">Sex</label>
-                  <select class="form-control form-control-sm" name="sex" id="sex" style="flex: 1;">
-                    <option value="">Any</option>
-                    <option value="Male" {% if selected_sex == "Male" %}selected{% endif %}>Male</option>
-                    <option value="Female" {% if selected_sex == "Female" %}selected{% endif %}>Female</option>
-                  </select>
                 </div>
-          
-                <!-- Age Range -->
-                <div class="form-group d-flex align-items-center mb-2">
-                  <label class="me-2 mb-0 text-end" style="min-width: 90px;">Age Range</label>
-                  <input type="number" name="age_min" class="form-control form-control-sm me-1 mr-2" style="width:75px" placeholder="Min" min="0" value="{{ age_min }}">
-                  <input type="number" name="age_max" class="form-control form-control-sm ml-2" style="width:75px" placeholder="Max" min="0" value="{{ age_max }}">
-                </div>
-          
-                <!-- Condition -->
-                <div class="form-group d-flex align-items-center mb-2">
-                  <label class="me-2 mb-0" style="min-width: 90px;">Condition</label>
-                  <select class="form-control form-control-sm" name="condition" id="condition" style="flex: 1;">
-                    <option value="">Select</option>
-                    {% for val, label in allergies_conditions %}
-                      <option value="{{ val }}" {% if val == selected_condition %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-          
-                <!-- BMI -->
-                <div class="form-group d-flex justify-content-between align-items-center mb-1">
-                    <label class="mb-0 text-end" style="min-width: 60px;">BMI</label>
-                    <div class="d-flex">
-                      <input type="number" name="bmi_min" class="form-control form-control-sm me-2 mr-2" style="width:75px;" placeholder="Min" min="0" value="{{ bmi_min }}">
-                      <input type="number" name="bmi_max" class="form-control form-control-sm ml-2" style="width:75px;" placeholder="Max" min="0" value="{{ bmi_max }}">
+            
+                <!-- Modal Body -->
+                <form id="filterForm">
+                <div class="modal-body p-1">
+                    <!-- Hidden field to preserve rows per page -->
+                    <input type="hidden" name="per_page" value="{{ per_page }}">
+                    
+                    <!-- Sex -->
+                    <div class="form-group d-flex align-items-center mb-2">
+                    <label class="me-2 mb-0" style="min-width: 60px;">Sex</label>
+                    <select class="form-control form-control-sm" name="sex" id="sex" style="flex: 1;">
+                        <option value="">Any</option>
+                        <option value="Male" {% if selected_sex == "Male" %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if selected_sex == "Female" %}selected{% endif %}>Female</option>
+                    </select>
+                    </div>
+            
+                    <!-- Age Range -->
+                    <div class="form-group d-flex align-items-center mb-2">
+                    <label class="me-2 mb-0 text-end" style="min-width: 90px;">Age Range</label>
+                    <input type="number" name="age_min" class="form-control form-control-sm me-1 mr-2" style="width:75px" placeholder="Min" min="0" value="{{ age_min }}">
+                    <input type="number" name="age_max" class="form-control form-control-sm ml-2" style="width:75px" placeholder="Max" min="0" value="{{ age_max }}">
+                    </div>
+            
+                    <!-- Condition -->
+                    <div class="form-group d-flex align-items-center mb-2">
+                    <label class="me-2 mb-0" style="min-width: 90px;">Condition</label>
+                    <select class="form-control form-control-sm" name="condition" id="condition" style="flex: 1;">
+                        <option value="">Select</option>
+                        {% for val, label in allergies_conditions %}
+                        <option value="{{ val }}" {% if val == selected_condition %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    </div>
+            
+                    <!-- BMI -->
+                    <div class="form-group d-flex justify-content-between align-items-center mb-1">
+                        <label class="mb-0 text-end" style="min-width: 60px;">BMI</label>
+                        <div class="d-flex">
+                        <input type="number" name="bmi_min" class="form-control form-control-sm me-2 mr-2" style="width:75px;" placeholder="Min" min="0" value="{{ bmi_min }}">
+                        <input type="number" name="bmi_max" class="form-control form-control-sm ml-2" style="width:75px;" placeholder="Max" min="0" value="{{ bmi_max }}">
+                        </div>
                     </div>
                 </div>
+            
+                <!-- Modal Footer -->
+                <div class="modal-footer pb-0 pt-2 pr-0 d-flex justify-content-end gap-2" >
+                    <a href="?{% if per_page %}per_page={{ per_page }}{% endif %}" class="btn btn-outline-danger btn-sm">Clear</a>
+                    <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                </div>
+                </form>
             </div>
-          
-              <!-- Modal Footer -->
-              <div class="modal-footer pb-0 pt-2 pr-0 d-flex justify-content-end gap-2" >
-                <a href="{% url 'home' %}" class="btn btn-outline-danger btn-sm">Clear</a>
-                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
-              </div>
-            </form>
-          </div>
-          
-          
 
-        {% if perms.can_create %}
-        <a class="btn btn-success create-btn" href="{% url 'create_child_profile' %}">Create Child Profile</a>
-        {% endif %}
+            {% if perms.can_create %}
+            <a class="btn btn-success create-btn" href="{% url 'create_child_profile' %}">Create Child Profile</a>
+            {% endif %}
+        </div>
+        
+        <!-- Pagination Controls at Top - Moved here for alignment -->
+        <div class="pagination-container">
+            <div class="mui-pagination">
+                <div class="rows-select">
+                    <span>Rows per page:</span>
+                    <select id="rowsPerPage" onchange="changeRowsPerPage(this.value)">
+                        <option value="100" {% if children.paginator.per_page == 100 %}selected{% endif %}>100</option>
+                        <option value="50" {% if children.paginator.per_page == 50 %}selected{% endif %}>50</option>
+                        <option value="25" {% if children.paginator.per_page == 25 %}selected{% endif %}>25</option>
+                        <option value="10" {% if children.paginator.per_page == 10 %}selected{% endif %}>10</option>
+                    </select>
+                </div>
+                <div class="pages-display">
+                    {{ children.start_index }}–{{ children.end_index }} of {{ total_records }}
+                </div>
+                <div class="pagination-arrows">
+                    <a href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_sex %}&sex={{ selected_sex }}{% endif %}{% if age_min %}&age_min={{ age_min }}{% endif %}{% if age_max %}&age_max={{ age_max }}{% endif %}{% if bmi_min %}&bmi_min={{ bmi_min }}{% endif %}{% if bmi_max %}&bmi_max={{ bmi_max }}{% endif %}{% if selected_condition %}&condition={{ selected_condition }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" {% if not children.has_previous %}class="disabled"{% endif %}>
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                    <a href="?page={% if children.has_previous %}{{ children.previous_page_number }}{% else %}1{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_sex %}&sex={{ selected_sex }}{% endif %}{% if age_min %}&age_min={{ age_min }}{% endif %}{% if age_max %}&age_max={{ age_max }}{% endif %}{% if bmi_min %}&bmi_min={{ bmi_min }}{% endif %}{% if bmi_max %}&bmi_max={{ bmi_max }}{% endif %}{% if selected_condition %}&condition={{ selected_condition }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" {% if not children.has_previous %}class="disabled"{% endif %}>
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                    <a href="?page={% if children.has_next %}{{ children.next_page_number }}{% else %}{{ children.paginator.num_pages }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_sex %}&sex={{ selected_sex }}{% endif %}{% if age_min %}&age_min={{ age_min }}{% endif %}{% if age_max %}&age_max={{ age_max }}{% endif %}{% if bmi_min %}&bmi_min={{ bmi_min }}{% endif %}{% if bmi_max %}&bmi_max={{ bmi_max }}{% endif %}{% if selected_condition %}&condition={{ selected_condition }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" {% if not children.has_next %}class="disabled"{% endif %}>
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                    <a href="?page={{ children.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_sex %}&sex={{ selected_sex }}{% endif %}{% if age_min %}&age_min={{ age_min }}{% endif %}{% if age_max %}&age_max={{ age_max }}{% endif %}{% if bmi_min %}&bmi_min={{ bmi_min }}{% endif %}{% if bmi_max %}&bmi_max={{ bmi_max }}{% endif %}{% if selected_condition %}&condition={{ selected_condition }}{% endif %}{% if per_page %}&per_page={{ per_page }}{% endif %}" {% if not children.has_next %}class="disabled"{% endif %}>
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <!-- Active Filters Display Box - Aligned with pagination -->
+    {% if selected_sex or age_min or age_max or bmi_min or bmi_max or selected_condition %}
+    <div class="d-flex justify-content-between align-items-center mt-2 mb-1">
+        <div class="active-filters-box">
+            <div class="filters-header">Active Filters:</div>
+            <div class="filter-tags">
+                {% if selected_sex %}
+                <span class="filter-tag">
+                    Sex: {{ selected_sex }}
+                    <a href="?{% if children.number %}page={{ children.number }}&{% endif %}{% if search_query %}q={{ search_query }}&{% endif %}{% if age_min %}age_min={{ age_min }}&{% endif %}{% if age_max %}age_max={{ age_max }}&{% endif %}{% if bmi_min %}bmi_min={{ bmi_min }}&{% endif %}{% if bmi_max %}bmi_max={{ bmi_max }}&{% endif %}{% if selected_condition %}condition={{ selected_condition }}&{% endif %}{% if per_page %}per_page={{ per_page }}{% endif %}" class="remove-filter" title="Remove sex filter">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                </span>
+                {% endif %}
+                
+                {% if age_min or age_max %}
+                <span class="filter-tag">
+                    Age: 
+                    {% if age_min %}{{ age_min }}{% else %}0{% endif %}
+                    {% if age_max %} to {{ age_max }}{% else %}+{% endif %}
+                    <a href="?{% if children.number %}page={{ children.number }}&{% endif %}{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_sex %}sex={{ selected_sex }}&{% endif %}{% if bmi_min %}bmi_min={{ bmi_min }}&{% endif %}{% if bmi_max %}bmi_max={{ bmi_max }}&{% endif %}{% if selected_condition %}condition={{ selected_condition }}&{% endif %}{% if per_page %}per_page={{ per_page }}{% endif %}" class="remove-filter" title="Remove age filter">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                </span>
+                {% endif %}
+                
+                {% if bmi_min or bmi_max %}
+                <span class="filter-tag">
+                    BMI: 
+                    {% if bmi_min %}{{ bmi_min }}{% else %}0{% endif %}
+                    {% if bmi_max %} to {{ bmi_max }}{% else %}+{% endif %}
+                    <a href="?{% if children.number %}page={{ children.number }}&{% endif %}{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_sex %}sex={{ selected_sex }}&{% endif %}{% if age_min %}age_min={{ age_min }}&{% endif %}{% if age_max %}age_max={{ age_max }}&{% endif %}{% if selected_condition %}condition={{ selected_condition }}&{% endif %}{% if per_page %}per_page={{ per_page }}{% endif %}" class="remove-filter" title="Remove BMI filter">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                </span>
+                {% endif %}
+                
+                {% if selected_condition %}
+                <span class="filter-tag">
+                    Condition: {{ selected_condition }}
+                    <a href="?{% if children.number %}page={{ children.number }}&{% endif %}{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_sex %}sex={{ selected_sex }}&{% endif %}{% if age_min %}age_min={{ age_min }}&{% endif %}{% if age_max %}age_max={{ age_max }}&{% endif %}{% if bmi_min %}bmi_min={{ bmi_min }}&{% endif %}{% if bmi_max %}bmi_max={{ bmi_max }}&{% endif %}{% if per_page %}per_page={{ per_page }}{% endif %}" class="remove-filter" title="Remove condition filter">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </a>
+                </span>
+                {% endif %}
+            </div>
+            <a href="?{% if per_page %}per_page={{ per_page }}{% endif %}" class="clear-filters" title="Clear all filters">
+                <i class="bi bi-x" style="color: #007bff; font-size: 1.3rem;"></i>
+            </a>
+        </div>
+        <div class="flex-grow-1"></div> <!-- Spacer to push items to edges -->
+    </div>
+    {% endif %}
 </div>
 
 <style>
@@ -120,7 +207,7 @@
     .create-btn {
         width: 200px;
         border-radius: 10px;
-        margin-left: 20px;
+        margin-left: 10px;
     }
 
     .btn-active {
@@ -132,9 +219,127 @@
         cursor: pointer;
     }
 
+    /* Filter active state */
+    .filter-active {
+        background-color: #e6f2ff !important;
+        border-color: #007bff !important;
+    }
+    
+    /* Active Filters Box */
+    .active-filters-box {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #007bff;
+        border-radius: 5px;
+        padding: 3px 8px;
+        background-color: #f8f9fa;
+        width: auto;
+        font-size: 0.85rem;
+    }
+    
+    .filters-header {
+        font-weight: 600;
+        margin-right: 10px;
+        color: #007bff;
+        white-space: nowrap;
+    }
+    
+    .filter-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        max-width: fit-content;
+    }
+    
+    .filter-tag {
+        background-color: #e6f2ff;
+        border: 1px solid #c8e1ff;
+        border-radius: 4px;
+        padding: 2px 8px;
+        padding-right: 4px;
+        color: #0366d6;
+        display: flex;
+        align-items: center;
+    }
+    
+    .remove-filter {
+        color: #6c757d;
+        margin-left: 4px;
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .remove-filter:hover {
+        color: #dc3545;
+        text-decoration: none;
+    }
+    
+    .clear-filters {
+        margin-left: auto;
+        color: #007bff;
+        font-size: 1.3rem;
+        line-height: 1;
+        padding: 0 5px;
+    }
+    
+    .clear-filters:hover {
+        color: #0056b3;
+        text-decoration: none;
+    }
+    
+    /* New pagination styles */
+    .mui-pagination {
+        display: flex;
+        align-items: center;
+        background-color: #202428;
+        color: white;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .mui-pagination .rows-select {
+        margin-right: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .mui-pagination select {
+        background-color: #202428;
+        color: white;
+        border: none;
+        margin-left: 0.5rem;
+        cursor: pointer;
+    }
+    
+    .mui-pagination .pages-display {
+        margin-right: 1.5rem;
+    }
+    
+    .mui-pagination .pagination-arrows a {
+        color: white;
+        padding: 0 0.3rem;
+        display: inline-block;
+        text-decoration: none;
+    }
+    
+    .mui-pagination .pagination-arrows a:hover:not(.disabled) {
+        color: #90caf9;
+    }
+    
+    .mui-pagination .pagination-arrows a.disabled {
+        color: #777;
+        cursor: not-allowed;
+    }
+    
+    .pagination-container {
+        display: flex;
+        justify-content: flex-end;
+    }
 </style>
 
-<div class="container-fluid mt-2">
+<div class="container-fluid mt-0">
     <table class="table table-bordered table-striped text-left">
         <thead class="table-dark">
             <tr>
@@ -197,75 +402,85 @@
             } else {
                 clearSearch.classList.add('d-none');
             }
-            
-            // Perform instant search
-            performSearch(this.value);
         });
         
         // Clear search when X is clicked
         clearSearch.addEventListener('click', function() {
             searchInput.value = '';
             clearSearch.classList.add('d-none');
-            performSearch('');
+            let url = new URL(window.location.href);
+            url.searchParams.delete('q');
+            
+            // Keep per_page parameter if it exists
+            const perPage = url.searchParams.get('per_page');
+            
+            // Create new URL with only per_page parameter if it exists
+            let newUrl = new URL('{% url "home" %}', window.location.origin);
+            if (perPage) {
+                newUrl.searchParams.set('per_page', perPage);
+            }
+            
+            window.location.href = newUrl.toString();
         });
         
-        // Function to perform AJAX search
-        function performSearch(query) {
-            // Create AJAX request
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', `?q=${encodeURIComponent(query)}`, true);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    // Extract the table body from the response
-                    const responseHtml = xhr.responseText;
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(responseHtml, 'text/html');
-                    const newTableBody = doc.getElementById('childrenTableBody');
-                    
-                    if (newTableBody) {
-                        document.getElementById('childrenTableBody').innerHTML = newTableBody.innerHTML;
-                    }
-                }
-            };
-            
-            xhr.send();
-        }
+        // Submit search on Enter key press
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                let searchUrl = new URL(window.location.href);
+                searchUrl.searchParams.set('q', this.value);
+                searchUrl.searchParams.set('page', '1');
+                window.location.href = searchUrl.toString();
+            }
+        });
+
+        // Submit search when clicking enter or when leaving the input field
+        searchInput.addEventListener('blur', function() {
+            if (this.value !== '{{ search_query }}') {
+                let searchUrl = new URL(window.location.href);
+                searchUrl.searchParams.set('q', this.value);
+                searchUrl.searchParams.set('page', '1');
+                window.location.href = searchUrl.toString();
+            }
+        });
     });
 
+    // Function to change rows per page
+    function changeRowsPerPage(value) {
+        let url = new URL(window.location.href);
+        url.searchParams.set('per_page', value);
+        url.searchParams.set('page', '1'); // Reset to first page when changing rows per page
+        window.location.href = url.toString();
+    }
+
     const filterBtn = document.getElementById('filterBtn');
-const modal = document.getElementById('customModal');
-const closeBtn = document.getElementById('closeModal');
+    const modal = document.getElementById('customModal');
+    const closeBtn = document.getElementById('closeModal');
 
-filterBtn.addEventListener('click', (e) => {
-  const rect = filterBtn.getBoundingClientRect();
+    filterBtn.addEventListener('click', (e) => {
+      const rect = filterBtn.getBoundingClientRect();
 
-  // Adjust these to control placement
-  const offsetX = -10; // pixels to the right of button
-  const offsetY = -40;  // vertically aligned
+      // Position the modal closer to the button
+      modal.style.position = 'fixed';
+      modal.style.top = `${rect.bottom + 2}px`;
+      modal.style.left = `${rect.left}px`;
 
-  // Position the modal right next to the button
-  modal.style.top = `${rect.top + offsetY}px`;
-  modal.style.left = `${rect.right + offsetX}px`;
+      modal.classList.toggle('d-none');
+      e.stopPropagation();
+    });
 
-  modal.classList.toggle('d-none');
-});
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('d-none');
+    });
 
-closeBtn.addEventListener('click', () => {
-  modal.classList.add('d-none');
-});
-
-document.addEventListener('click', (e) => {
-  if (!modal.contains(e.target) && !filterBtn.contains(e.target)) {
-    modal.classList.add('d-none');
-  }
-});
+    document.addEventListener('click', (e) => {
+      if (!modal.contains(e.target) && !filterBtn.contains(e.target)) {
+        modal.classList.add('d-none');
+      }
+    });
 
     document.getElementById('filterBtn').addEventListener('click', function () {
-    this.classList.toggle('btn-active');
-  });
-
-
+        this.classList.toggle('btn-active');
+    });
 </script>
 {% endblock %}

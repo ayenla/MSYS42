@@ -6,6 +6,7 @@ from .forms import *
 from datetime import date, datetime
 from django.db.models import Q, OuterRef, Subquery, DecimalField
 import re
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from django.forms import inlineformset_factory
 
@@ -84,6 +85,16 @@ def home(request):
     bmi_min = request.GET.get('bmi_min')
     bmi_max = request.GET.get('bmi_max')
     selected_condition = request.GET.get('condition')
+    page = request.GET.get('page', 1)
+    per_page = request.GET.get('per_page', 100)  # Default to 100 per page
+    
+    try:
+        per_page = int(per_page)
+        # Limit per_page to valid options
+        if per_page not in [10, 25, 50, 100]:
+            per_page = 100
+    except (ValueError, TypeError):
+        per_page = 100
 
     # Start with base queryset
     children = Child.objects.all()
@@ -194,25 +205,38 @@ def home(request):
     numbers = ContactNumber.objects.all()
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
-    if bmi_max and bmi_min and age_max and age_min and selected_condition and selected_sex:
-        messages.success(request, f"{len(children)} matching profiles")
-    else:
-        pass
+    # Pagination
+    total_children = children.count()
+    paginator = Paginator(children, per_page)  # Show per_page children per page
 
+    try:
+        paginated_children = paginator.page(page)
+    except PageNotAnInteger:
+        paginated_children = paginator.page(1)
+    except EmptyPage:
+        paginated_children = paginator.page(paginator.num_pages)
+
+    if bmi_max and bmi_min and age_max and age_min and selected_condition and selected_sex:
+        messages.success(request, f"{total_children} matching profiles")
+    
     context = {
-        'children': children,
-        'contacts': numbers,
+        'children': paginated_children,
         'search_query': query,
         'selected_sex': selected_sex,
         'age_min': age_min,
         'age_max': age_max,
         'bmi_min': bmi_min,
         'bmi_max': bmi_max,
-        'allergies_conditions': allergies_conditions,
         'selected_condition': selected_condition,
-        'is_ajax': is_ajax,
-        'perms': get_user_permissions(request.user)
+        'allergies_conditions': allergies_conditions,
+        'total_records': total_children,
+        'perms': get_user_permissions(request.user),
+        'per_page': per_page,
     }
+    
+    if is_ajax:
+        return render(request, 'msys42app/home_table_partial.html', context)
+    
     return render(request, 'msys42app/home.html', context)
 
 @login_required
