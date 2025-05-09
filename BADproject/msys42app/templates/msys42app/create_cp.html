@@ -132,13 +132,47 @@
 
             <div class="text-left">
                 <button type="submit" class="btn btn-success">Create Profile</button>
-                <a href="{% url 'home' %}" class="btn btn-secondary" onclick="return confirmCancel();">Cancel</a>
+                <button type="button"  class="btn btn-secondary" id="cancelBtn" >Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
+<!-- Cancel Confirmation Modal -->
+<div class="modal fade" id="cancelConfirmationModal" tabindex="-1" aria-labelledby="cancelConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelConfirmationModalLabel">Cancel Confirmation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            Cancel entry? The information will be lost.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelCancelButton"> No </button>
+          <a href="{% url 'home' %}" class="btn btn-danger" id="confirmCancel"> Yes </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the modals
+        const cancelConfirmationModal = new bootstrap.Modal(document.getElementById('cancelConfirmationModal'));
+        
+        // Handle the Delete Record button
+        document.getElementById('cancelBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            cancelConfirmationModal.show();
+        });
+
+        // Set up the click handler for the cancel cancel button
+        document.getElementById('cancelCancelButton').addEventListener('click', function() {
+            cancelConfirmationModal.hide();
+        });})
+
     function ContactButton() {
         let contactDiv = document.createElement('div');
         contactDiv.classList.add('d-flex', 'mb-2');
