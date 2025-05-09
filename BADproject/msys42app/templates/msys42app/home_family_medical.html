@@ -34,15 +34,61 @@
 
 
 {% block content %}
+<style>
+    .counter-badge {
+        font-size: 0.8rem;
+        background-color: #f8f9fa;
+        border-left: 0;
+        min-width: 56px;
+        text-align: center;
+    }
+    .input-group-text {
+        transition: background-color 0.2s ease;
+    }
+    .invalid-feedback {
+        display: none;
+        width: 100%;
+        margin-top: 0.25rem;
+        font-size: 80%;
+        color: #dc3545;
+        background-color: #fff8f8;
+        padding: 5px 10px;
+        border-radius: 4px;
+        border-left: 3px solid #dc3545;
+        margin-bottom: 10px;
+    }
+    .is-invalid + .invalid-feedback {
+        display: block;
+    }
+    .is-invalid input {
+        border-color: #dc3545;
+    }
+    .input-group.is-invalid .form-control {
+        border-color: #dc3545;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
 <div class="container-fluid" style="padding: 20px;">
     <div class="card shadow-sm" style="max-width: 1200px; margin: 0 auto;">
         <div class="card-body">
-            <div class="text-center mb-4">
-                <h2 class="mb-3" style="font-weight: 1000;"> Family Medical Records</h2>
-                <button class="btn btn-success" data-toggle="modal" data-target="#exampleModalCenter">Add Family Member</button>                  
+            <div class="text-center mb-1">
+                <h2 class="mb-2" style="font-weight: 1000;"> Family Medical Records</h2>
+                {% if perms.can_create %}
+                <button class="btn btn-success" data-toggle="modal" data-target="#exampleModalCenter">Add Family Member</button>
+                {% endif %}
+                     
+                {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
                 
-                <form method="POST" action="{% url 'view_family_medicals' child.id %}" class="form-container">
+                {% if perms.can_create %}
+                <form method="POST" action="{% url 'view_family_medicals' child.id %}" class="form-container" id="familyMemberForm" onsubmit="return validateForm()">
                 {% csrf_token %}
+                <!-- Hidden input to indicate if there's an error -->
+                <input type="hidden" id="hasError" value="{% if error %}true{% else %}false{% endif %}">
                     <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="EditInfo" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered" role="form">
                         <div class="modal-content">
@@ -54,19 +100,47 @@
                             <div class="modal-body">
                                 <div class="form-group">
                                     <label> First Name<span class="required" style="color: red;">*</span> </label>
-                                    <input class="form-control" type="text" id="firstname" name="firstname" required>
+                                    <div class="input-group mb-2">
+                                        <input class="form-control char-input validate-special" type="text" id="firstname" name="firstname" maxlength="50" required data-max="50" pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text counter-badge"><span id="firstname-counter">0</span>/50</span>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback">Invalid input/s. Please try again.</div>
+                                    
                                     <label> Middle Name </label>
-                                    <input class="form-control" type="text" id="middlename" name="middlename">
+                                    <div class="input-group mb-2">
+                                        <input class="form-control char-input validate-special" type="text" id="middlename" name="middlename" maxlength="25" data-max="25" pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text counter-badge"><span id="middlename-counter">0</span>/25</span>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback">Invalid input/s. Please try again.</div>
+                                    
                                     <label> Last Name<span class="required" style="color: red;">*</span> </label>
-                                    <input class="form-control" type="text" id="lastname" name="lastname" required>                      
+                                    <div class="input-group mb-2">
+                                        <input class="form-control char-input validate-special" type="text" id="lastname" name="lastname" maxlength="25" required data-max="25" pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text counter-badge"><span id="lastname-counter">0</span>/25</span>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback">Invalid input/s. Please try again.</div>
+                                    
                                     <label>Sex<span class="required" style="color: red;">*</span> </label>
-                                    <select class="form-control" id="sex" name="sex"  required>
+                                    <select class="form-control mb-2" id="sex" name="sex" required>
                                         <option value="">Select</option>
                                         <option value="Female">Female</option>
                                         <option value="Male">Male</option>
                                     </select>
+                                    
                                     <label>Relation with Child<span class="required" style="color: red;">*</span></label>
-                                    <input class="form-control" type="text" id="relationship" name="relationship" required>
+                                    <div class="input-group mb-2">
+                                        <input class="form-control char-input validate-special" type="text" id="relationship" name="relationship" maxlength="25" required data-max="25" pattern="[A-Za-z0-9\s.-]+" title="Only letters, numbers, spaces, periods, and hyphens are allowed">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text counter-badge"><span id="relationship-counter">0</span>/25</span>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback">Invalid input/s. Please try again.</div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -77,7 +151,7 @@
                         </div>
                     </div>
                 </form>
-                
+                {% endif %}
                   
             </div>
 
@@ -119,4 +193,131 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extrascripts %}
+<script>
+// Add form validation function to prevent issues with max-length fields
+function validateForm() {
+    // Get all character input fields
+    const charInputs = document.querySelectorAll('.char-input');
+    let isValid = true;
+    
+    // Check each field to ensure it's within limits
+    charInputs.forEach(function(input) {
+        const maxLength = parseInt(input.getAttribute('data-max'), 10);
+        const currentLength = input.value.length;
+        
+        // Only prevent submission if length EXCEEDS max (not equal to max)
+        if (currentLength > maxLength) {
+            isValid = false;
+            alert(`${input.id} field exceeds maximum allowed length of ${maxLength} characters.`);
+        }
+        
+        // Add visual indication if we're at exact max length
+        if (currentLength === maxLength) {
+            const counterId = `${input.id}-counter`;
+            const counterElement = document.getElementById(counterId);
+            if (counterElement) {
+                counterElement.style.fontWeight = 'bold';
+            }
+        }
+    });
+    
+    // Check for special characters in fields that have the validate-special class
+    const specialFields = document.querySelectorAll('.validate-special');
+    specialFields.forEach(function(input) {
+        // Regular expression that only allows letters, numbers, spaces, periods, and hyphens
+        const validPattern = /^[A-Za-z0-9\s.-]*$/;
+        
+        if (!validPattern.test(input.value)) {
+            isValid = false;
+            input.parentElement.classList.add('is-invalid');
+            input.classList.add('is-invalid');
+        } else {
+            input.parentElement.classList.remove('is-invalid');
+            input.classList.remove('is-invalid');
+        }
+    });
+    
+    // If form is valid, try to avoid duplicate modals on submission
+    if (isValid) {
+        sessionStorage.setItem('formSubmitted', 'true');
+    }
+    
+    return isValid;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all character input fields
+    const charInputs = document.querySelectorAll('.char-input');
+    
+    // Add event listeners to each character input field
+    charInputs.forEach(function(input) {
+        const fieldId = input.id;
+        const counterId = `${fieldId}-counter`;
+        const counterElement = document.getElementById(counterId);
+        const badgeElement = counterElement.closest('.input-group-text');
+        const maxLength = input.getAttribute('data-max');
+        
+        // Update counter on input
+        input.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            counterElement.textContent = currentLength;
+            
+            // Reset styles
+            counterElement.style.color = '';
+            badgeElement.style.backgroundColor = '';
+            
+            // Change color as characters approach limit
+            if (currentLength >= maxLength * 0.8) {
+                counterElement.style.color = '#ff7700'; // Orange at 80%
+                badgeElement.style.backgroundColor = '#fff9f0';
+            }
+            if (currentLength >= maxLength * 0.95) {
+                counterElement.style.color = '#ff0000'; // Red at 95%
+                badgeElement.style.backgroundColor = '#fff0f0';
+            }
+        });
+        
+        // If the field has the validate-special class, add validation for special characters
+        if (input.classList.contains('validate-special')) {
+            input.addEventListener('input', function() {
+                // Regular expression that only allows letters, numbers, spaces, periods, and hyphens
+                const validPattern = /^[A-Za-z0-9\s.-]*$/;
+                
+                if (!validPattern.test(this.value)) {
+                    input.parentElement.classList.add('is-invalid');
+                    input.classList.add('is-invalid');
+                } else {
+                    input.parentElement.classList.remove('is-invalid');
+                    input.classList.remove('is-invalid');
+                }
+            });
+        }
+        
+        // Set initial counter value (useful if form is redisplayed with data)
+        const initialLength = input.value.length;
+        counterElement.textContent = initialLength;
+    });
+    
+    // Show the modal if hasError is true AND we're not coming back from a form submission
+    const hasErrorElem = document.getElementById('hasError');
+    if (hasErrorElem && hasErrorElem.value === 'true' && !sessionStorage.getItem('formSubmitted')) {
+        $(document).ready(function() {
+            $('#exampleModalCenter').modal('show');
+        });
+    }
+    
+    // When the form is submitted, set a flag
+    document.getElementById('familyMemberForm').addEventListener('submit', function() {
+        sessionStorage.setItem('formSubmitted', 'true');
+    });
+    
+    // Clear the flag when the page loads (but after checking it)
+    setTimeout(function() {
+        sessionStorage.removeItem('formSubmitted');
+    }, 1000);
+});
+</script>
 {% endblock %}

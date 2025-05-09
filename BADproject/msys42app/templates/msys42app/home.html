@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid pt-100 pb-20">
+<div class="container-fluid pt-4 pb-3">
     <div class="d-flex align-items-center">
         <div class="search-container">
             <input type="text" id="searchInput" class="form-control search-input" placeholder="Search by code or name..." value="{{ search_query }}">
@@ -15,20 +15,88 @@
             </div>
         </div>
 
-        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders slider-icon" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
-        </svg>
+        <!-- SVG Button Trigger -->
+        <button id="filterBtn" type="button" class="btn btn-light d-flex align-items-center justify-content-center p-2" style="width: 40px; height: 40px; margin-left: 2px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16" width="20" height="20">
+              <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
+            </svg>
+        </button>
+          
+  
+        
+        <div id="customModal" class="card shadow-sm p-3 bg-white rounded-5 d-none position-absolute" 
+        style="width: 300px; height: fit-content; font-size: smaller; font-weight: 500;">
+            <!-- Modal Header -->
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-1 mb-1">
+              <h6 class="mb-0">Filter Child Profiles</h6>
+              <button type="button" id="closeModal" aria-label="Close"
+              style="background: transparent; border: none; font-size: 1.2rem; cursor: pointer;">&times;</button>
 
+            </div>
+          
+            <!-- Modal Body -->
+            <form id="filterForm">
+              <div class="modal-body p-1">
+                <!-- Sex -->
+                <div class="form-group d-flex align-items-center mb-2">
+                  <label class="me-2 mb-0" style="min-width: 60px;">Sex</label>
+                  <select class="form-control form-control-sm" name="sex" id="sex" style="flex: 1;">
+                    <option value="">Any</option>
+                    <option value="Male" {% if selected_sex == "Male" %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if selected_sex == "Female" %}selected{% endif %}>Female</option>
+                  </select>
+                </div>
+          
+                <!-- Age Range -->
+                <div class="form-group d-flex align-items-center mb-2">
+                  <label class="me-2 mb-0 text-end" style="min-width: 90px;">Age Range</label>
+                  <input type="number" name="age_min" class="form-control form-control-sm me-1 mr-2" style="width:75px" placeholder="Min" min="0" value="{{ age_min }}">
+                  <input type="number" name="age_max" class="form-control form-control-sm ml-2" style="width:75px" placeholder="Max" min="0" value="{{ age_max }}">
+                </div>
+          
+                <!-- Condition -->
+                <div class="form-group d-flex align-items-center mb-2">
+                  <label class="me-2 mb-0" style="min-width: 90px;">Condition</label>
+                  <select class="form-control form-control-sm" name="condition" id="condition" style="flex: 1;">
+                    <option value="">Select</option>
+                    {% for val, label in allergies_conditions %}
+                      <option value="{{ val }}" {% if val == selected_condition %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+          
+                <!-- BMI -->
+                <div class="form-group d-flex justify-content-between align-items-center mb-1">
+                    <label class="mb-0 text-end" style="min-width: 60px;">BMI</label>
+                    <div class="d-flex">
+                      <input type="number" name="bmi_min" class="form-control form-control-sm me-2 mr-2" style="width:75px;" placeholder="Min" min="0" value="{{ bmi_min }}">
+                      <input type="number" name="bmi_max" class="form-control form-control-sm ml-2" style="width:75px;" placeholder="Max" min="0" value="{{ bmi_max }}">
+                    </div>
+                </div>
+            </div>
+          
+              <!-- Modal Footer -->
+              <div class="modal-footer pb-0 pt-2 pr-0 d-flex justify-content-end gap-2" >
+                <a href="{% url 'home' %}" class="btn btn-outline-danger btn-sm">Clear</a>
+                <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+              </div>
+            </form>
+          </div>
+          
+          
+
+        {% if perms.can_create %}
         <a class="btn btn-success create-btn" href="{% url 'create_child_profile' %}">Create Child Profile</a>
+        {% endif %}
     </div>
 </div>
 
 <style>
-    .pt-100 {
-        padding-top: 100px;
+    .pt-4 {
+        padding-top: 1.5rem;
     }
-    .pb-20 {
-        padding-bottom: 20px;
+    .pb-3 {
+        padding-bottom: 1rem;
     }
     .search-container {
         position: relative;
@@ -54,9 +122,19 @@
         border-radius: 10px;
         margin-left: 20px;
     }
+
+    .btn-active {
+        background-color: #d6d6d6 !important; /* Darker shade */
+        border-color: #ccc !important;
+    }
+
+    #filterBtn:hover {
+        cursor: pointer;
+    }
+
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid mt-2">
     <table class="table table-bordered table-striped text-left">
         <thead class="table-dark">
             <tr>
@@ -81,7 +159,7 @@
                 <td>{{ child.middle_name }}</td>
                 <td>{{ child.sex }}</td>
                 <td>{{ child.age }}</td>
-                <td>{{ child.guardian_lastname }}, {{ child.guardian_firstname }}</td>
+                <td>{{ child.guardian_firstname }} {{ child.guardian_lastname }} </td>
                 <td>{{ child.comm_address }}</td>
                 <td>
                     {% for number in child.phone_numbers.all %}
@@ -155,5 +233,39 @@
             xhr.send();
         }
     });
+
+    const filterBtn = document.getElementById('filterBtn');
+const modal = document.getElementById('customModal');
+const closeBtn = document.getElementById('closeModal');
+
+filterBtn.addEventListener('click', (e) => {
+  const rect = filterBtn.getBoundingClientRect();
+
+  // Adjust these to control placement
+  const offsetX = -10; // pixels to the right of button
+  const offsetY = -40;  // vertically aligned
+
+  // Position the modal right next to the button
+  modal.style.top = `${rect.top + offsetY}px`;
+  modal.style.left = `${rect.right + offsetX}px`;
+
+  modal.classList.toggle('d-none');
+});
+
+closeBtn.addEventListener('click', () => {
+  modal.classList.add('d-none');
+});
+
+document.addEventListener('click', (e) => {
+  if (!modal.contains(e.target) && !filterBtn.contains(e.target)) {
+    modal.classList.add('d-none');
+  }
+});
+
+    document.getElementById('filterBtn').addEventListener('click', function () {
+    this.classList.toggle('btn-active');
+  });
+
+
 </script>
 {% endblock %}

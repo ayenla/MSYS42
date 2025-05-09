@@ -1,12 +1,59 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from .models import *
 from .forms import *
 from datetime import date, datetime
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery, DecimalField
 import re
 
 from django.forms import inlineformset_factory
+
+# Add this function to get user permissions based on role
+def get_user_permissions(user):
+    """Get user permissions based on role"""
+    if not user.is_authenticated:
+        return {
+            'can_edit': False,
+            'can_delete': False,
+            'can_create': False,
+            'can_view': False,
+        }
+    
+    # Get user profile or default to program coordinator (view-only)
+    if hasattr(user, 'profile'):
+        profile = user.profile
+    else:
+        # Fallback if no profile exists
+        return {
+            'can_edit': False,
+            'can_delete': False,
+            'can_create': False,
+            'can_view': True,
+        }
+    
+    # Set permissions based on role
+    if profile.is_admin():
+        return {
+            'can_edit': True,
+            'can_delete': True,
+            'can_create': True,
+            'can_view': True,
+        }
+    elif profile.is_medical_staff():
+        return {
+            'can_edit': True,
+            'can_delete': True,
+            'can_create': True,
+            'can_view': True,
+        }
+    else:  # Program Coordinator
+        return {
+            'can_edit': False,
+            'can_delete': False,
+            'can_create': False,
+            'can_view': True,
+        }
 
 def parse_input(value, data_type):
     """
@@ -26,34 +73,149 @@ def parse_input(value, data_type):
     except (ValueError, TypeError):
         return None
 
+
+@login_required
 def home(request):
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     
+    selected_sex = request.GET.get('sex', '').strip()
+    age_min = request.GET.get('age_min')
+    age_max = request.GET.get('age_max')
+    bmi_min = request.GET.get('bmi_min')
+    bmi_max = request.GET.get('bmi_max')
+    selected_condition = request.GET.get('condition')
+
+    # Start with base queryset
+    children = Child.objects.all()
+
+    # Search
     if query:
-        # Search for child by code or name (case-insensitive, partial match)
-        children = Child.objects.filter(
+        children = children.filter(
             Q(spc_code__icontains=query) |
             Q(last_name__icontains=query) |
             Q(first_name__icontains=query) |
             Q(middle_name__icontains=query)
         )
-    else:
-        children = Child.objects.all()
+
+    # Filter: Sex
+    if selected_sex:
+        children = children.filter(sex__iexact=selected_sex)
+
+    # Filter: Age
+    try:
+        if age_min:
+            age_min = int(age_min)
+        if age_max:
+            age_max = int(age_max)
+        if age_min and age_max and age_min > age_max:
+            messages.error(request, "Minimum age cannot be greater than Maximum age.")
+        else:
+            if age_min:
+                children = children.filter(age__gte=age_min)
+            if age_max:
+                children = children.filter(age__lte=age_max)
+
+            children = children.order_by('age') # Order by age ascending
+    except ValueError:
+        messages.error(request, "Invalid age values.")
+
+    # Annotate with latest BMI
+    latest_check = AnnualMedicalCheck.objects.filter(
+        child=OuterRef('pk')
+    ).order_by('-date')
     
+    children = children.annotate(
+        latest_bmi=Subquery(latest_check.values('bmi')[:1], output_field=DecimalField())
+    )
+
+    # Filter: BMI
+    try:
+        if bmi_min:
+            bmi_min = float(bmi_min)
+        if bmi_max:
+            bmi_max = float(bmi_max)
+        if bmi_min and bmi_max and bmi_min > bmi_max:
+            messages.error(request, "Minimum BMI cannot be greater than Maximum BMI.")
+        else:
+            if bmi_min:
+                children = children.filter(latest_bmi__gte=bmi_min)
+            if bmi_max:
+                children = children.filter(latest_bmi__lte=bmi_max)
+                
+            children = children.order_by('latest_bmi')
+    except ValueError:
+        messages.error(request, "Invalid BMI values.")
+
+    # Filter: Condition
+    if selected_condition:
+        # Check if it's a predefined allergy
+        if AllergyCondition.objects.filter(name=selected_condition).exists():
+            children = children.filter(
+                medicalhistory__allergies_conditions__name=selected_condition
+            )
+        else:
+            # Otherwise, search in the 'other_condition' field (case-insensitive, comma-separated)
+            children = children.filter(
+                medicalhistory__other_condition__icontains=selected_condition
+            )
+
+
+    allergies_conditions = [
+        ("IRA Arthritic", "IRA Arthritic"),
+        ("Asthma", "Asthma"),
+        ("Behavioral Problem", "Behavioral Problem"),
+        ("Cancer", "Cancer"),
+        ("Chronic Cough/Wheezing", "Chronic Cough/Wheezing"),
+        ("Diabetes", "Diabetes"),
+        ("Hearing Problem", "Hearing Problem"),
+        ("Heart Disease", "Heart Disease"),
+        ("Hypertension", "Hypertension"),
+        ("Jaundice", "Jaundice"),
+        ("Malaria", "Malaria"),
+        ("Seizures", "Seizures"),
+        ("Sickle Cell Anemia", "Sickle Cell Anemia"),
+        ("Skin Problem", "Skin Problem"),
+        ("Vision Problem", "Vision Problem"),
+        ("Others", "Others"),
+    ]
+    
+    med_histories = MedicalHistory.objects.exclude(other_condition__isnull=True).exclude(other_condition__exact='')
+
+    custom_allergies_set = set()
+
+    for med in med_histories:
+        allergies = [a.strip() for a in med.other_condition.split(',') if a.strip()]
+        custom_allergies_set.update(allergies)  # use a set to avoid duplicates
+
+    # Now append each custom allergy to the allergies_conditions list
+    for allergy in sorted(custom_allergies_set):
+        allergies_conditions.append((allergy, allergy))
+
     numbers = ContactNumber.objects.all()
-    
-    # Check if it's an AJAX request
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-    
-    return render(request, 'msys42app/home.html', {
-        'children': children, 
+
+    if bmi_max and bmi_min and age_max and age_min and selected_condition and selected_sex:
+        messages.success(request, f"{len(children)} matching profiles")
+    else:
+        pass
+
+    context = {
+        'children': children,
         'contacts': numbers,
         'search_query': query,
-        'is_ajax': is_ajax
-    })
+        'selected_sex': selected_sex,
+        'age_min': age_min,
+        'age_max': age_max,
+        'bmi_min': bmi_min,
+        'bmi_max': bmi_max,
+        'allergies_conditions': allergies_conditions,
+        'selected_condition': selected_condition,
+        'is_ajax': is_ajax,
+        'perms': get_user_permissions(request.user)
+    }
+    return render(request, 'msys42app/home.html', context)
 
-
-
+@login_required
 def view_child_profile(request, pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
@@ -79,8 +241,10 @@ def view_child_profile(request, pk):
         'form': form,
         'year_choices': year_choices,
         'grade_choices': grade_choices,
+        'perms': get_user_permissions(request.user),
     })
 
+@login_required
 def edit_education(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     education = get_object_or_404(Education, pk=id)
@@ -89,18 +253,21 @@ def edit_education(request, pk, id):
         education.year = request.POST.get('year')
         education.grade = request.POST.get('grade')
         education.save()
+        messages.success(request, "Education details updated successfully.")
     return redirect('view_child_profile', pk=child.pk)
 
+@login_required
 def delete_education(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     education = get_object_or_404(Education, pk=id)
 
     education.delete()
 
-    messages.success(request, "Education Record has been deleted.")
+    messages.success(request, "Education detail has been deleted successfully.")
     return redirect('view_child_profile', pk=pk) 
 
 
+@login_required
 def edit_child_profile(request,pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
@@ -109,6 +276,9 @@ def edit_child_profile(request,pk):
     if request.method == 'POST':
         # Check if this is a delete request
         if 'delete_profile' in request.POST:
+            # Get child name before deletion
+            child_name = f"{child.first_name} {child.last_name}"
+            
             # Delete related records first to maintain database integrity
             ContactNumber.objects.filter(child=child).delete()
             
@@ -133,6 +303,7 @@ def edit_child_profile(request,pk):
             # Finally delete the child
             child.delete()
             
+            messages.success(request, f"Child profile for {child_name} was successfully deleted.")
             return redirect('home')
         
         # Otherwise, proceed with the regular edit functionality
@@ -189,13 +360,15 @@ def edit_child_profile(request,pk):
         )
 
         print("YEAAAHHH")
-
+        
+        messages.success(request, f"Profile for {firstname} {lastname} has been updated successfully.")
         return redirect('view_child_profile', pk=pk)
 
     print("awwww")
     return render(request, 'msys42app/edit_cp.html', {'child': child, 'contacts':numbers })
 
 
+@login_required
 def create_child_profile(request):
     numbers = ContactNumber.objects.all()
 
@@ -365,6 +538,7 @@ def create_child_profile(request):
         )
         member.save() 
 
+        messages.success(request, f"New child profile for {first_name} {last_name} created successfully.")
         return redirect('view_child_profile', pk=childnum.pk)
 
     else:
@@ -389,28 +563,62 @@ def create_child_profile(request):
         })
 
 #Family Medical Records
+@login_required
 def view_family_medicals(request, pk): 
     child = get_object_or_404(Child, pk=pk)
     members = FamilyMember.objects.filter(child=child)
+    error = None
     
     if request.method == "POST":
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        middlename = request.POST.get('middlename')
-        relationship = request.POST.get('relationship')
-        sex = request.POST.get('sex')
+        firstname = request.POST.get('firstname', '')
+        lastname = request.POST.get('lastname', '')
+        middlename = request.POST.get('middlename', '')
+        relationship = request.POST.get('relationship', '')
+        sex = request.POST.get('sex', '')
+        
+        # Regular expression to validate allowed characters (letters, numbers, spaces, periods, hyphens)
+        import re
+        pattern = re.compile(r'^[A-Za-z0-9\s.-]*$')
+        
+        # Validate field content for special characters
+        if not pattern.match(firstname):
+            error = "First name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        elif not pattern.match(lastname):
+            error = "Last name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        elif middlename and not pattern.match(middlename):
+            error = "Middle name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        elif not pattern.match(relationship):
+            error = "Relationship contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed."
+        # Validate field lengths
+        elif len(firstname) > 50:  # First name can be up to 50 characters
+            error = "First name cannot exceed 50 characters."
+        elif len(lastname) > 25:  # Last name can be up to 25 characters
+            error = "Last name cannot exceed 25 characters."
+        elif middlename and len(middlename) > 25:  # Middle name can be up to 25 characters
+            error = "Middle name cannot exceed 25 characters."
+        elif len(relationship) > 25:  # Relationship can be up to 25 characters
+            error = "Relationship cannot exceed 25 characters."
+        else:
+            try:
+                member = FamilyMember.objects.create(
+                    child=child, first_name=firstname, last_name=lastname, 
+                    middle_name=middlename, relationship_w_spc=relationship,
+                    sex=sex
+                )
+                member.save() 
+                messages.success(request, "New family member has been added.")
+                return redirect('view_family_medicals', pk=child.id)
+            except Exception as e:
+                error = f"An error occurred: {str(e)}"
     
-        member = FamilyMember.objects.create(
-            child=child, first_name=firstname, last_name=lastname, 
-            middle_name=middlename, relationship_w_spc=relationship,
-            sex=sex
-        )
-        member.save() 
-        messages.success(request, "Entry added successfully.")
-        return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
-    
-    return render(request, 'msys42app/home_family_medical.html', {'child': child, 'members': members})
+    return render(request, 'msys42app/home_family_medical.html', {
+        'child': child, 
+        'members': members,
+        'perms': get_user_permissions(request.user),
+        'error': error,
+    })
 
+@login_required
 def delete_family_member(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -424,17 +632,26 @@ def delete_family_member(request, pk, id):
     
     FamilyMedicalRecord.objects.filter(member=member).delete()
 
+    member_name = f"{member.first_name} {member.last_name}"
     member.delete()
 
-    messages.success(request, "Family member and their records were successfully deleted.")
+    messages.success(request, f"Family member {member_name} and their records were successfully deleted.")
     return redirect('view_family_medicals', pk=pk) 
 
+@login_required
 def view_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
     records = FamilyMedicalRecord.objects.filter(member=member)
 
-    return render(request, 'msys42app/view_family_medical_records.html', {'child': child, 'member':member, 'records':records})
+    return render(request, 'msys42app/view_family_medical_records.html', {
+        'child': child, 
+        'member': member, 
+        'records': records,
+        'perms': get_user_permissions(request.user),
+    })
+
+@login_required
 def edit_family_info(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -446,6 +663,38 @@ def edit_family_info(request, pk, id):
         middlename = request.POST.get('middlename')
         relationship = request.POST.get('relationship')
         sex = request.POST.get('sex')
+        
+        # Regular expression to validate allowed characters (letters, numbers, spaces, periods, hyphens)
+        import re
+        pattern = re.compile(r'^[A-Za-z0-9\s.-]*$')
+        
+        # Validate field content for special characters
+        if not pattern.match(firstname):
+            messages.error(request, "First name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif not pattern.match(lastname):
+            messages.error(request, "Last name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif middlename and not pattern.match(middlename):
+            messages.error(request, "Middle name contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif not pattern.match(relationship):
+            messages.error(request, "Relationship contains invalid characters. Only letters, numbers, spaces, periods, and hyphens are allowed.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        
+        # Validate field lengths
+        if len(firstname) > 50:
+            messages.error(request, "First name cannot exceed 50 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif len(lastname) > 25:
+            messages.error(request, "Last name cannot exceed 25 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif middlename and len(middlename) > 25:
+            messages.error(request, "Middle name cannot exceed 25 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
+        elif len(relationship) > 25:
+            messages.error(request, "Relationship cannot exceed 25 characters.")
+            return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
 
         member.first_name = firstname
         member.last_name = lastname
@@ -455,11 +704,12 @@ def edit_family_info(request, pk, id):
         member.child = child
         member.save()
 
-        print(f"{firstname} {lastname} {middlename} {relationship} {sex}")
+        messages.success(request, f"Family member information for {firstname} {lastname} updated successfully.")
         return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
     
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member': member, 'records': records})
 
+@login_required
 def edit_family_medical_record(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -512,10 +762,12 @@ def edit_family_medical_record(request, pk, id):
                 medication=meds[i],
                 remarks=remarks[i]
                 )
+        messages.success(request, f"Medical records for {member.first_name} {member.last_name} updated successfully.")
         return redirect('view_family_medical_record', pk=pk, id=id)   
         
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
 
+@login_required
 def delete_family_medical_record(request, pk, id, rec):
     child = get_object_or_404(Child, pk=pk)
     member = get_object_or_404(FamilyMember, pk=id)
@@ -525,6 +777,7 @@ def delete_family_medical_record(request, pk, id, rec):
     FamilyMedicalRecord.objects.filter(pk=rec).delete()
     record.delete()
 
+    messages.success(request, "Medical record entry was successfully deleted.")
     return render(request, 'msys42app/edit_family_medical.html', {'child': child, 'member':member, 'records':records})
 
 # START OF MEDICAL HISTORY
@@ -540,6 +793,7 @@ ImmunizationFormSet = inlineformset_factory(
 )
 
 
+@login_required
 def add_medical_history(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     medical_history, created = MedicalHistory.objects.get_or_create(child=child)
@@ -547,34 +801,79 @@ def add_medical_history(request, child_id):
         form = MedicalHistoryForm(request.POST, instance=medical_history)
         immunization_formset = ImmunizationFormSet(request.POST, instance=medical_history, prefix='immunization')
         if form.is_valid() and immunization_formset.is_valid():
-            medical_history = form.save(commit=False)
-            other_condition = form.cleaned_data.get('other_condition', '')
-            selected_allergies = form.cleaned_data.get('allergies_conditions', [])
-            if 'other' in selected_allergies and other_condition:
-                medical_history.other_condition = other_condition
-            else:
-                medical_history.other_condition = ''
-            medical_history.save()
-            medical_history.allergies_conditions.clear()
-            for allergy_code in selected_allergies:
-                if allergy_code != 'other':
-                    allergy, _ = AllergyCondition.objects.get_or_create(name=dict(ALLERGY_CHOICES)[allergy_code])
+            try:
+                # Save the main form
+                medical_history = form.save(commit=False)
+                medical_history.child = child
+                
+                # Map form fields to model fields
+                medical_history.med_stat = form.cleaned_data.get('medical_status', '')
+                medical_history.med_history = form.cleaned_data.get('medical_status_history', '')
+                print(f"medical_status_history value: '{medical_history.med_history}' length: {len(medical_history.med_history)}")
+                medical_history.dis_stat = form.cleaned_data.get('disability_status', '')
+                medical_history.dis_history = form.cleaned_data.get('disability_status_history', '')
+                medical_history.allergies_history = form.cleaned_data.get('allergies_history', '')
+                
+                # Handle other_condition field
+                other_condition = form.cleaned_data.get('other_condition', '')
+                selected_allergies = form.cleaned_data.get('allergies_conditions', [])
+                if 'other' in selected_allergies and other_condition:
+                    medical_history.other_condition = other_condition
+                elif 'other' not in selected_allergies:
+                    medical_history.other_condition = ''
+                
+                # Save the model
+                medical_history.save()
+                print(f"After save - medical_status_history value: '{medical_history.med_history}' length: {len(medical_history.med_history)}")
+
+                # Handle allergies
+                medical_history.allergies_conditions.clear()  # Clear existing allergies
+                
+                # First add all allergies except "other"
+                for allergy_code in selected_allergies:
+                    if allergy_code != 'other':
+                        allergy, _ = AllergyCondition.objects.get_or_create(name=dict(ALLERGY_CHOICES)[allergy_code])
+                        medical_history.allergies_conditions.add(allergy)
+                
+                # Then add "other" if it exists (so it's at the end)
+                if 'other' in selected_allergies:
+                    allergy, _ = AllergyCondition.objects.get_or_create(name="Others")
                     medical_history.allergies_conditions.add(allergy)
-            if 'other' in selected_allergies:
-                allergy, _ = AllergyCondition.objects.get_or_create(name='Others')
-                medical_history.allergies_conditions.add(allergy)
-            immunizations = immunization_formset.save(commit=False)
-            for obj in immunization_formset.deleted_objects:
-                obj.delete()
-            for immunization in immunizations:
-                if immunization.date or immunization.immunization_given:
-                    immunization.medical_history = medical_history
-                    immunization.save()
-            return redirect('view_medical_history', child_id=child_id)
+                
+                # Handle immunizations
+                # Instead of deleting all immunizations, let the formset handle deletions
+                immunization_formset.save(commit=False)
+                
+                # Process deletions from the formset
+                for obj in immunization_formset.deleted_objects:
+                    obj.delete()
+                    
+                # Save new/modified immunizations
+                for form in immunization_formset:
+                    if form.is_valid() and not form.cleaned_data.get('DELETE', False):
+                        if form.cleaned_data.get('date') and form.cleaned_data.get('immunization_given'):
+                            immunization = form.save(commit=False)
+                            immunization.medical_history = medical_history
+                            immunization.save()
+                
+                messages.success(request, f"Medical history for {child.first_name} {child.last_name} saved successfully.")
+                return redirect('view_medical_history', child_id=child.id)
+            except Exception as e:
+                print(f"Error saving data: {str(e)}")
+                messages.error(request, f"Error saving data: {str(e)}")
         else:
-            messages.error(request, 'Form validation failed. Please correct the errors.')
-    else:
-        existing_allergies = [next(code for code, name in ALLERGY_CHOICES if name == allergy.name) for allergy in medical_history.allergies_conditions.all()]
+            # Don't add individual error messages - the form will display them
+            print("Form validation errors:", form.errors)
+            print("Formset errors:", immunization_formset.errors)
+
+    else:  # GET request
+        # Get existing allergies and convert them to choice codes
+        existing_allergies = [
+            next(code for code, name in ALLERGY_CHOICES if name == allergy.name)
+            for allergy in medical_history.allergies_conditions.all()
+        ]
+        
+        # Initialize form with existing data including allergies
         initial_data = {
             'medical_status': medical_history.med_stat,
             'medical_status_history': medical_history.med_history,
@@ -594,6 +893,7 @@ def add_medical_history(request, child_id):
         })
 
 
+@login_required
 def view_medical_history(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     medical_history, created = MedicalHistory.objects.get_or_create(child=child)
@@ -604,30 +904,44 @@ def view_medical_history(request, child_id):
         'immunizations': immunizations,
         'child': child,
         'today': date.today().isoformat(),
+        'perms': get_user_permissions(request.user),
     })
 # END OF MEDICAL HISTORY
 
 #Start of Physician's Exams
+@login_required
 def home_physicians_exam(request, pk):
     child = get_object_or_404(Child, pk=pk)
     exams = PhysiciansExam.objects.filter(child=child).order_by('-year')
-    return render(request, 'msys42app/home_pe.html', {'child': child, 'exams':exams})
+    return render(request, 'msys42app/home_pe.html', {
+        'child': child, 
+        'exams': exams,
+        'perms': get_user_permissions(request.user),
+    })
 
+@login_required
 def view_physicians_exam(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     exam = get_object_or_404(PhysiciansExam, pk=id)
-    return render(request, 'msys42app/view_phyexam.html', {'child': child, 'exam':exam })
+    others = PhysiciansExamOther.objects.filter(child=child, year=exam.year)
+    return render(request, 'msys42app/view_phyexam.html', {
+        'child': child, 
+        'exam': exam,
+        'others': others,
+        'perms': get_user_permissions(request.user)
+    })
 
+@login_required
 def create_physicians_exam(request, pk):
     child = get_object_or_404(Child, pk=pk)
     exams = PhysiciansExam.objects.filter(child=child)
+    others = PhysiciansExamOther.objects.filter(child=child)
     all_years = list(range(datetime.now().year, 1899, -1))
     used_years = exams.values_list('year', flat=True)
     available_years = [y for y in all_years if y not in used_years]
 
     if request.method == "POST":
         year = request.POST.get('year')
-        grade = request.POST.get('grade')
         height = request.POST.get('height')
         weight = request.POST.get('weight')
         bp = request.POST.get('bp')
@@ -646,9 +960,8 @@ def create_physicians_exam(request, pk):
         nervous_system = request.POST.get('nervous_system')
         skin = request.POST.get('skin')
         nutrition = request.POST.get('nutrition')
-        other_label = request.POST.get('other_label', '')
-        other = request.POST.get('other', 'NE')
-        clear_other = request.POST.get('clear_other', 'false')
+        attributes = request.POST.getlist('attribute_[]')
+        conditions = request.POST.getlist('condition_[]')
 
         # Only set other and other_label if they are provided
         exam_data = {
@@ -671,124 +984,30 @@ def create_physicians_exam(request, pk):
             'abdomen': abdomen,
             'nervous_system': nervous_system,
             'skin': skin,
-            'nutrition': nutrition,
-            'other_label': None,
-            'other': None
+            'nutrition': nutrition
         }
 
         # Set other fields if provided and not empty
-        if clear_other != 'true' and other_label and other_label.strip():
-            exam_data['other_label'] = other_label
-            exam_data['other'] = other
+        if attributes and conditions:
+            for attribute, condition in zip(attributes, conditions):
+                PhysiciansExamOther.objects.create(child=child, year=year, attribute=attribute, condition=condition)
+
 
         # Create the main exam record
         exam = PhysiciansExam.objects.create(**exam_data)
         
-        # Process any additional fields (this would require model changes to support)
-        # For now, we'll just handle the main "other" field
-        
+        messages.success(request, f"Physician's exam for {year} created successfully.")
         return redirect('home_physicians_exam', pk=child.pk)
 
-    return render(request, "msys42app/create_phyexam.html", {"child": child, "years": available_years, "exams":exams})
+    return render(request, "msys42app/create_phyexam.html", {"child": child, "years": available_years, "exams":exams, "others":others})
 
 
-def annual_medical_check_list(request, child_id):
-    child = get_object_or_404(Child, id=child_id)
-    medical_checks = AnnualMedicalCheck.objects.filter(child=child)
-    return render(request, 'msys42app/annual_medical_check_list.html', {
-        'child': child,
-        'medical_checks': medical_checks
-    })
-
-def create_annual_medical_check(request, child_id):
-    child = get_object_or_404(Child, id=child_id)
-    
-    # Get existing years for this child
-    existing_years = list(AnnualMedicalCheck.objects.filter(child=child)
-                         .values_list('date__year', flat=True))
-    
-    if request.method == 'POST':
-        form = AnnualMedicalCheckForm(request.POST, child=child)
-        if form.is_valid():
-            try:
-                medical_check = form.save(commit=False)
-                medical_check.child = child
-                medical_check.save()
-                return redirect('annual_medical_check_list', child_id=child_id)
-            except Exception as e:
-                print(f"Error saving medical check: {str(e)}")
-                messages.error(request, f"Error saving medical check: {str(e)}")
-        else:
-            print("Form validation errors:", form.errors)
-            for field, errors in form.errors.items():
-                messages.error(request, f"{field}: {', '.join(errors)}")
-    else:
-        form = AnnualMedicalCheckForm(child=child)
-    
-    return render(request, 'msys42app/create_annual_medical_check.html', {
-        'form': form,
-        'child': child,
-        'existing_years': existing_years,
-        'today': date.today().isoformat(),
-    })
-
-def view_annual_medical_check(request, child_id, year):
-    child = get_object_or_404(Child, id=child_id)
-    medical_checks = AnnualMedicalCheck.objects.filter(
-        child=child,
-        date__year=year
-    ).order_by('date')
-    
-    return render(request, 'msys42app/view_annual_medical_check.html', {
-        'child': child,
-        'year': year,
-        'medical_checks': medical_checks,
-        'today': date.today().isoformat(),
-    })
-
-def edit_annual_medical_check(request, child_id, check_id):
-    child = get_object_or_404(Child, id=child_id)
-    medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
-    
-    if request.method == 'POST':
-        form = AnnualMedicalCheckForm(request.POST, instance=medical_check)
-        if form.is_valid():
-            try:
-                form.save()
-                return redirect('view_annual_medical_check', child_id=child_id, year=medical_check.date.year)
-            except Exception as e:
-                print(f"Error updating medical check: {str(e)}")
-                messages.error(request, f"Error updating medical check: {str(e)}")
-        else:
-            print("Form validation errors:", form.errors)
-            for field, errors in form.errors.items():
-                messages.error(request, f"{field}: {', '.join(errors)}")
-    else:
-        form = AnnualMedicalCheckForm(instance=medical_check)
-    
-    return render(request, 'msys42app/edit_annual_medical_check.html', {
-        'form': form,
-        'child': child,
-        'medical_check': medical_check,
-        'today': date.today().isoformat(),
-    })
-
-def delete_annual_medical_check(request, child_id, check_id):
-    child = get_object_or_404(Child, id=child_id)
-    medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
-    
-    try:
-        medical_check.delete()
-    except Exception as e:
-        print(f"Error deleting medical check: {str(e)}")
-        messages.error(request, f"Error deleting medical check: {str(e)}")
-        
-    return redirect('annual_medical_check_list', child_id=child_id)
-
+@login_required
 def edit_physicians_exam(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     exam = get_object_or_404(PhysiciansExam, pk=id)
     exams = PhysiciansExam.objects.filter(child=child).exclude(pk=id)
+    others = PhysiciansExamOther.objects.filter(child=child, year=exam.year)
     
     # Get all years from 1900 to current year
     current_year = datetime.now().year
@@ -809,6 +1028,7 @@ def edit_physicians_exam(request, pk, id):
                 'child': child, 
                 'exam': exam, 
                 'available_years': available_years,
+                'others': others,
                 'error': f"A physician's exam for year {year} already exists for this child."
             })
         
@@ -818,11 +1038,12 @@ def edit_physicians_exam(request, pk, id):
             return render(request, 'msys42app/edit_phyexam.html', {
                 'child': child, 
                 'exam': exam, 
+                'others': others,
                 'available_years': available_years,
                 'error': "Year cannot be in the future."
             })
             
-        grade = request.POST.get('grade')
+        # grade = request.POST.get('grade')
         height = request.POST.get('height')
         weight = request.POST.get('weight')
         bp = request.POST.get('bp')
@@ -841,19 +1062,18 @@ def edit_physicians_exam(request, pk, id):
         nervous_system = request.POST.get('nervous_system')
         skin = request.POST.get('skin')
         nutrition = request.POST.get('nutrition')
-        other_label = request.POST.get('other_label', '')
-        other = request.POST.get('other', 'NE')
-        clear_other = request.POST.get('clear_other', 'false')
+        attributes = request.POST.getlist('attribute_[]')
+        conditions = request.POST.getlist('condition_[]')
+
 
         exam.year = year
-        exam.grade = grade
         exam.height = height
         exam.weight = weight
         exam.bp = bp
-        exam.vision_right = vision_right
-        exam.vision_left = vision_left
-        exam.hearing_right = hearing_right
-        exam.hearing_left = hearing_left
+        exam.vision_r = vision_right
+        exam.vision_l = vision_left
+        exam.hearing_r = hearing_right
+        exam.hearing_l = hearing_left
         exam.eyes = eyes
         exam.ears = ears
         exam.nose = nose
@@ -867,25 +1087,231 @@ def edit_physicians_exam(request, pk, id):
         exam.nutrition = nutrition
 
         # Set other fields to None by default if explicitly cleared
-        if clear_other == 'true':
-            exam.other_label = None
-            exam.other = None
-        # Only update other fields if they are provided and not empty
-        elif other_label and other_label.strip():
-            exam.other_label = other_label
-            exam.other = other
+        if attributes and conditions:
+            PhysiciansExamOther.objects.filter(child=child, year=year).delete()
+            for attribute, condition in zip(attributes, conditions):
+                PhysiciansExamOther.objects.create(child=child, year=year, attribute=attribute, condition=condition)
 
         exam.save()
+        messages.success(request, f"Physician's exam for {year} updated successfully.")
         return redirect('view_physicians_exam', pk=child.pk, id=exam.pk)
 
-    return render(request, 'msys42app/edit_phyexam.html', {'child': child, 'exam': exam, 'available_years': available_years})
+    return render(request, 'msys42app/edit_phyexam.html', {'child': child, 'exam': exam, 'others':others, 'available_years': available_years})
 
+@login_required
 def delete_physicians_exam(request, pk, id):
     child = get_object_or_404(Child, pk=pk)
     exam = get_object_or_404(PhysiciansExam, pk=id)
+    others = PhysiciansExamOther.objects.filter(child=child, year=exam.year)
     
     if request.method == 'POST':
+        exam_year = exam.year
         exam.delete()
+        others.delete()
+        messages.success(request, f"Physician's exam for {exam_year} was successfully deleted.")
         return redirect('home_physicians_exam', pk=child.pk)
     
     return render(request, 'msys42app/delete_phyexam.html', {'child': child, 'exam': exam})
+
+@login_required
+def annual_medical_check_list(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    medical_checks = AnnualMedicalCheck.objects.filter(child=child)
+    return render(request, 'msys42app/annual_medical_check_list.html', {
+        'child': child,
+        'medical_checks': medical_checks,
+        'perms': get_user_permissions(request.user),
+    })
+
+@login_required
+def create_annual_medical_check(request, child_id):
+    child = get_object_or_404(Child, id=child_id)
+    
+    # Get existing years for this child
+    existing_years = list(AnnualMedicalCheck.objects.filter(child=child)
+                         .values_list('date__year', flat=True))
+    
+    if request.method == 'POST':
+        form = AnnualMedicalCheckForm(request.POST, child=child)
+        if form.is_valid():
+            try:
+                medical_check = form.save(commit=False)
+                medical_check.child = child
+                medical_check.save()
+                messages.success(request, f"Annual medical check for {medical_check.date.year} created successfully.")
+                return redirect('annual_medical_check_list', child_id=child_id)
+            except Exception as e:
+                print(f"Error saving medical check: {str(e)}")
+                messages.error(request, f"Error saving medical check: {str(e)}")
+        else:
+            print("Form validation errors:", form.errors)
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {', '.join(errors)}")
+    else:
+        form = AnnualMedicalCheckForm(child=child)
+    
+    return render(request, 'msys42app/create_annual_medical_check.html', {
+        'form': form,
+        'child': child,
+        'existing_years': existing_years,
+        'today': date.today().isoformat(),
+    })
+
+@login_required
+def view_annual_medical_check(request, child_id, year):
+    child = get_object_or_404(Child, id=child_id)
+    medical_checks = AnnualMedicalCheck.objects.filter(
+        child=child,
+        date__year=year
+    ).order_by('date')
+    
+    return render(request, 'msys42app/view_annual_medical_check.html', {
+        'child': child,
+        'year': year,
+        'medical_checks': medical_checks,
+        'today': date.today().isoformat(),
+    })
+
+@login_required
+def edit_annual_medical_check(request, child_id, check_id):
+    child = get_object_or_404(Child, id=child_id)
+    medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
+    
+    if request.method == 'POST':
+        form = AnnualMedicalCheckForm(request.POST, instance=medical_check)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, f"Annual medical check for {medical_check.date.year} updated successfully.")
+                return redirect('view_annual_medical_check', child_id=child_id, year=medical_check.date.year)
+            except Exception as e:
+                print(f"Error updating medical check: {str(e)}")
+                messages.error(request, f"Error updating medical check: {str(e)}")
+        else:
+            print("Form validation errors:", form.errors)
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {', '.join(errors)}")
+    else:
+        form = AnnualMedicalCheckForm(instance=medical_check)
+    
+    return render(request, 'msys42app/edit_annual_medical_check.html', {
+        'form': form,
+        'child': child,
+        'medical_check': medical_check,
+        'today': date.today().isoformat(),
+    })
+
+@login_required
+def delete_annual_medical_check(request, child_id, check_id):
+    child = get_object_or_404(Child, id=child_id)
+    medical_check = get_object_or_404(AnnualMedicalCheck, id=check_id, child=child)
+    
+    check_year = medical_check.date.year
+    try:
+        medical_check.delete()
+        messages.success(request, f"Annual medical check for {check_year} was successfully deleted.")
+    except Exception as e:
+        print(f"Error deleting medical check: {str(e)}")
+        messages.error(request, f"Error deleting medical check: {str(e)}")
+        
+    return redirect('annual_medical_check_list', child_id=child_id)
+
+@login_required
+def summary_report_page(request):
+    """
+    Displays the summary report launch page.
+    """
+    return render(request, 'msys42app/summary_report_page.html')
+
+@login_required
+def generate_summary_report(request):
+    """
+    Generates a summary report of all child profiles highlighting health concerns.
+    """
+    # Count total number of child profiles
+    total_profiles = Child.objects.count()
+    
+    # Initialize counters for BMI categories
+    overweight_count = 0
+    underweight_count = 0
+    obese_count = 0
+    
+    # Process each child to get their latest BMI data
+    for child in Child.objects.all():
+        # Get the most recent annual medical check
+        latest_check = AnnualMedicalCheck.objects.filter(child=child).order_by('-date').first()
+        
+        if latest_check and latest_check.bmi:
+            bmi = float(latest_check.bmi)
+            if bmi < 18.5:
+                underweight_count += 1
+            elif 25 <= bmi < 30:
+                overweight_count += 1
+            elif bmi >= 30:
+                obese_count += 1
+    
+    # Initialize counters for health conditions
+    condition_counts = {
+        'arthritis': 0,
+        'asthma': 0,
+        'behavioral_problem': 0,
+        'cancer': 0,
+        'chronic_cough': 0,
+        'diabetes': 0,
+        'hearing_problem': 0,
+        'heart_disease': 0,
+        'hypertension': 0,
+        'jaundice': 0,
+        'malaria': 0,
+        'seizures': 0,
+        'sickle_cell_anemia': 0,
+        'skin_problem': 0,
+        'vision_problem': 0,
+    }
+    
+    # Dictionary to store other conditions
+    other_conditions = {}
+    
+    # Create a reverse mapping of condition names to their codes for easier lookup
+    condition_name_to_code = {name: code for code, name in ALLERGY_CHOICES}
+    
+    # Get all medical histories
+    medical_histories = MedicalHistory.objects.all()
+    
+    # Count conditions from allergies/conditions
+    for med_hist in medical_histories:
+        allergies_conditions = med_hist.allergies_conditions.all()
+        
+        # Check for "Others" condition first
+        has_other = False
+        for condition in allergies_conditions:
+            if condition.name == "Others":
+                has_other = True
+                if med_hist.other_condition and med_hist.other_condition.strip():
+                    other_condition_name = med_hist.other_condition.strip()
+                    if other_condition_name in other_conditions:
+                        other_conditions[other_condition_name] += 1
+                    else:
+                        other_conditions[other_condition_name] = 1
+        
+        # Then process standard conditions
+        for condition in allergies_conditions:
+            if condition.name in condition_name_to_code:
+                condition_code = condition_name_to_code[condition.name]
+                if condition_code in condition_counts:
+                    condition_counts[condition_code] += 1
+    
+    # Get current date and time
+    report_datetime = datetime.now()
+    
+    context = {
+        'total_profiles': total_profiles,
+        'overweight_count': overweight_count,
+        'underweight_count': underweight_count,
+        'obese_count': obese_count,
+        'condition_counts': condition_counts,
+        'other_conditions': other_conditions,
+        'report_datetime': report_datetime,
+    }
+    
+    return render(request, 'msys42app/summary_report.html', context)

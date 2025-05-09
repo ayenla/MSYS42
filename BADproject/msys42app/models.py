@@ -2,6 +2,29 @@ from django.db import models
 from django.core.validators import MinLengthValidator, RegexValidator 
 from django.utils import timezone
 import datetime
+from django.contrib.auth.models import User
+
+# User Profile model to extend the default User model
+class UserProfile(models.Model):
+    ROLE_CHOICES = (
+        ('admin', 'Admin'),
+        ('medical_staff', 'Medical Staff'),
+        ('program_coordinator', 'Program Coordinator'),
+    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='program_coordinator')
+    
+    def is_medical_staff(self):
+        return self.role == 'medical_staff' or self.role == 'admin'
+    
+    def is_program_coordinator(self):
+        return self.role == 'program_coordinator'
+    
+    def is_admin(self):
+        return self.role == 'admin' or self.user.is_superuser
+        
+    class Meta:
+        db_table = 'user_profiles'
 
 class Child(models.Model):
     spc_code = models.CharField(max_length=7, validators=[RegexValidator(regex=r'^[A-Za-z]{3}\d{4}$')], unique=True, null=False, blank=False)
@@ -70,7 +93,7 @@ class ContactNumber(models.Model):
 class FamilyMember(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
     last_name = models.CharField(max_length=25, null=False, blank=False)
-    first_name = models.CharField(max_length=25, null=False, blank=False)
+    first_name = models.CharField(max_length=50, null=False, blank=False)
     middle_name = models.CharField(max_length=25, null=True, blank=False)
     relationship_w_spc = models.CharField(max_length=25, null=False, blank=False)
     sex = models.CharField(max_length=6, choices=[('Male', 'Male'), ('Female', 'Female')], null=False, blank=False)
@@ -124,11 +147,11 @@ ALLERGY_CHOICES = [
 class MedicalHistory(models.Model):
     child = models.OneToOneField(Child, on_delete=models.CASCADE)
     med_stat = models.CharField(max_length=255)
-    med_history = models.TextField()
+    med_history = models.CharField(max_length=255)
     dis_stat = models.CharField(max_length=255)
-    dis_history = models.TextField()
+    dis_history = models.CharField(max_length=255)
     allergies_conditions = models.ManyToManyField('AllergyCondition', blank=True)
-    allergies_history = models.TextField()
+    allergies_history = models.CharField(max_length=255)
     other_condition = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
@@ -146,7 +169,7 @@ class AllergyCondition(models.Model):
 class Immunization(models.Model):
     medical_history = models.ForeignKey(MedicalHistory, on_delete=models.CASCADE, related_name='immunizations')
     date = models.DateField()
-    immunization_given = models.CharField(max_length=255)
+    immunization_given = models.CharField(max_length=50)
 
     class Meta:
         db_table = 'spc_im'
@@ -178,14 +201,25 @@ class PhysiciansExam(models.Model):
     nervous_system = models.CharField(max_length=2, choices=conditions, default= "NE")
     skin = models.CharField(max_length=2, choices=conditions, default= "NE")
     nutrition = models.CharField(max_length=2, choices=conditions, default= "NE")
-    other = models.CharField(max_length=2, choices=conditions, default= "NE", null=True, blank=True)
-    other_label = models.CharField(max_length=20, default="other", null=True, blank=True)
 
     def __str__(self):
         return f"{self.child.spc_code}: {self.year}"
     
     class Meta:
         db_table = 'phys_exam'
+
+class PhysiciansExamOther(models.Model):
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    conditions = [("N", "N"), ("A", "A"), ("C", "C"), ("R", "R"), ("NE", "NE")]
+    year = models.IntegerField(default=datetime.datetime.now().year)
+    condition = models.CharField(max_length=2, choices=conditions, default= "NE", null=False, blank=False)
+    attribute = models.CharField(max_length=20, default="other", null=False, blank=False)
+
+    def __str__(self):
+        return f"{self.child.spc_code}: {self.year} {self.attribute}"
+    
+    class Meta:
+        db_table = 'phys_exam_other'
 
 #END PHYSICIAN'S EXAM
 
