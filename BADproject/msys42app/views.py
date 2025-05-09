@@ -148,9 +148,17 @@ def home(request):
 
     # Filter: Condition
     if selected_condition:
-        children = children.filter(
-            medicalhistory__allergies_conditions__name=selected_condition
-        )
+        # Check if it's a predefined allergy
+        if AllergyCondition.objects.filter(name=selected_condition).exists():
+            children = children.filter(
+                medicalhistory__allergies_conditions__name=selected_condition
+            )
+        else:
+            # Otherwise, search in the 'other_condition' field (case-insensitive, comma-separated)
+            children = children.filter(
+                medicalhistory__other_condition__icontains=selected_condition
+            )
+
 
     allergies_conditions = [
         ("IRA Arthritic", "IRA Arthritic"),
@@ -170,6 +178,18 @@ def home(request):
         ("Vision Problem", "Vision Problem"),
         ("Others", "Others"),
     ]
+    
+    med_histories = MedicalHistory.objects.exclude(other_condition__isnull=True).exclude(other_condition__exact='')
+
+    custom_allergies_set = set()
+
+    for med in med_histories:
+        allergies = [a.strip() for a in med.other_condition.split(',') if a.strip()]
+        custom_allergies_set.update(allergies)  # use a set to avoid duplicates
+
+    # Now append each custom allergy to the allergies_conditions list
+    for allergy in sorted(custom_allergies_set):
+        allergies_conditions.append((allergy, allergy))
 
     numbers = ContactNumber.objects.all()
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
