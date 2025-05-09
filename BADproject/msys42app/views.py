@@ -73,12 +73,22 @@ def parse_input(value, data_type):
     except (ValueError, TypeError):
         return None
 
-@login_required
 
+@login_required
 def home(request):
     query = request.GET.get('q', '').strip()
     
-    # Search Child Profile
+    selected_sex = request.GET.get('sex', '').strip()
+    age_min = request.GET.get('age_min')
+    age_max = request.GET.get('age_max')
+    bmi_min = request.GET.get('bmi_min')
+    bmi_max = request.GET.get('bmi_max')
+    selected_condition = request.GET.get('condition')
+
+    # Start with base queryset
+    children = Child.objects.all()
+
+    # Search
     if query:
         children = children.filter(
             Q(spc_code__icontains=query) |
@@ -87,71 +97,87 @@ def home(request):
             Q(middle_name__icontains=query)
         )
 
-    # Filter Child Profile
-
-    selected_sex = request.GET.get('sex', '').strip()
-    age_min = request.GET.get('age_min')
-    age_max = request.GET.get('age_max')
-    bmi_min = request.GET.get('bmi_min')
-    bmi_max = request.GET.get('bmi_max')
-    selected_condition = request.GET.get('condition')
-    
-    allergies_conditions = [
-    ("IRA Arthritic", "IRA Arthritic"),
-    ("Asthma", "Asthma"),
-    ("Behavioral Problem", "Behavioral Problem"),
-    ("Cancer", "Cancer"),
-    ("Chronic Cough/Wheezing", "Chronic Cough/Wheezing"),
-    ("Diabetes", "Diabetes"),
-    ("Hearing Problem", "Hearing Problem"),
-    ("Heart Disease", "Heart Disease"),
-    ("Hypertension", "Hypertension"),
-    ("Jaundice", "Jaundice"),
-    ("Malaria", "Malaria"),
-    ("Seizures", "Seizures"),
-    ("Sickle Cell Anemia", "Sickle Cell Anemia"),
-    ("Skin Problem", "Skin Problem"),
-    ("Vision Problem", "Vision Problem"),
-    ("Others", "Others"),
-    ]
-    
-    # Subquery to get the latest BMI for each child
-    latest_check = AnnualMedicalCheck.objects.filter(
-        child=OuterRef('pk')
-    ).order_by('-date')
-
-    # Annotate each Child with latest BMI
-    children = Child.objects.annotate(
-        latest_bmi=Subquery(latest_check.values('bmi')[:1], output_field=DecimalField())
-    )
-
-    # Actual Filtering
+    # Filter: Sex
     if selected_sex:
         children = children.filter(sex__iexact=selected_sex)
 
-    if age_min or age_max:
+    # Filter: Age
+    try:
         if age_min:
-            children = children.filter(age__gte=int(age_min))
+            age_min = int(age_min)
         if age_max:
-            children = children.filter(age__lte=int(age_max))
+            age_max = int(age_max)
+        if age_min and age_max and age_min > age_max:
+            messages.error(request, "Minimum age cannot be greater than Maximum age.")
+        else:
+            if age_min:
+                children = children.filter(age__gte=age_min)
+            if age_max:
+                children = children.filter(age__lte=age_max)
 
-    if bmi_min or bmi_max:
+            children = children.order_by('age') # Order by age ascending
+    except ValueError:
+        messages.error(request, "Invalid age values.")
+
+    # Annotate with latest BMI
+    latest_check = AnnualMedicalCheck.objects.filter(
+        child=OuterRef('pk')
+    ).order_by('-date')
+    
+    children = children.annotate(
+        latest_bmi=Subquery(latest_check.values('bmi')[:1], output_field=DecimalField())
+    )
+
+    # Filter: BMI
+    try:
         if bmi_min:
-            children = children.filter(latest_bmi__gte=float(bmi_min))
+            bmi_min = float(bmi_min)
         if bmi_max:
-            children = children.filter(latest_bmi__lte=float(bmi_max))
+            bmi_max = float(bmi_max)
+        if bmi_min and bmi_max and bmi_min > bmi_max:
+            messages.error(request, "Minimum BMI cannot be greater than Maximum BMI.")
+        else:
+            if bmi_min:
+                children = children.filter(latest_bmi__gte=bmi_min)
+            if bmi_max:
+                children = children.filter(latest_bmi__lte=bmi_max)
+                
+            children = children.order_by('latest_bmi')
+    except ValueError:
+        messages.error(request, "Invalid BMI values.")
 
+    # Filter: Condition
     if selected_condition:
         children = children.filter(
             medicalhistory__allergies_conditions__name=selected_condition
         )
-        print(selected_condition)
-        print(children)
 
+    allergies_conditions = [
+        ("IRA Arthritic", "IRA Arthritic"),
+        ("Asthma", "Asthma"),
+        ("Behavioral Problem", "Behavioral Problem"),
+        ("Cancer", "Cancer"),
+        ("Chronic Cough/Wheezing", "Chronic Cough/Wheezing"),
+        ("Diabetes", "Diabetes"),
+        ("Hearing Problem", "Hearing Problem"),
+        ("Heart Disease", "Heart Disease"),
+        ("Hypertension", "Hypertension"),
+        ("Jaundice", "Jaundice"),
+        ("Malaria", "Malaria"),
+        ("Seizures", "Seizures"),
+        ("Sickle Cell Anemia", "Sickle Cell Anemia"),
+        ("Skin Problem", "Skin Problem"),
+        ("Vision Problem", "Vision Problem"),
+        ("Others", "Others"),
+    ]
 
-    # Processing
     numbers = ContactNumber.objects.all()
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if bmi_max and bmi_min and age_max and age_min and selected_condition and selected_sex:
+        messages.success(request, f"{len(children)} matching profiles")
+    else:
+        pass
 
     context = {
         'children': children,
@@ -162,13 +188,12 @@ def home(request):
         'age_max': age_max,
         'bmi_min': bmi_min,
         'bmi_max': bmi_max,
-        'allergies_conditions': allergies_conditions,  # Pass available allergy conditions to the template
-        'selected_condition': selected_condition,  # Pass selected condition
+        'allergies_conditions': allergies_conditions,
+        'selected_condition': selected_condition,
         'is_ajax': is_ajax,
         'perms': get_user_permissions(request.user)
     }
     return render(request, 'msys42app/home.html', context)
-
 
 @login_required
 def view_child_profile(request, pk):
