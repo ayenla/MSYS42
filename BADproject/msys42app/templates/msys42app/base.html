@@ -28,24 +28,44 @@
         font-size: 3.2rem;
         margin-left: 10px;
         margin-right: 20px;
+        display: inline-block;
+        position: relative;
+        z-index: 1050;
       }
       
-      .home-icon, .profile-icon {
+      .home-icon, .profile-icon, .report-icon {
         position: relative;
       }
       
-      .home-icon:hover, .profile-icon:hover {
-        transform: scale(1.2);
+      .home-icon:hover, .profile-icon:hover, .report-icon:hover {
+        transform: scale(1.2) !important;
         color: #007bff;
       }
       
-      .home-icon:active, .profile-icon:active {
+      /* Add specific style for the profile dropdown to ensure it enlarges on hover */
+      .dropdown .profile-icon:hover {
+        transform: scale(1.2) !important;
+        color: #007bff;
+      }
+      
+      /* Add specific style for the icon inside the profile icon */
+      .dropdown .profile-icon:hover i {
+        transform: scale(1.05);
+        color: #007bff;
+      }
+      
+      /* Add specific active style for the profile dropdown */
+      .dropdown .profile-icon:active {
+        transform: scale(0.9) !important;
+      }
+      
+      .home-icon:active, .profile-icon:active, .report-icon:active {
         transform: scale(0.9);
       }
       
       @keyframes pulse {
         0% { transform: scale(1); }
-        50% { transform: scale(1.2); }
+        50% { transform: scale(1.0); }
         100% { transform: scale(1); }
       }
       
@@ -66,11 +86,11 @@
       
       /* Logo styling */
       .navbar-brand {
-        transition: transform 0.3s ease;
+        transition: none; /* Removed transition effect */
       }
       
       .navbar-brand:hover {
-        transform: scale(1.05);
+        transform: none; /* Removed transform effect */
       }
       
       /* Dropdown styling */
@@ -164,11 +184,14 @@
       </a>
     
       <div class="d-flex align-items-center">
+        <a href="{% url 'summary_report_page' %}" id="reportIcon" class="me-3 report-icon nav-icon" style="font-size: 2.8rem; margin-right: 8px;">
+          <i class="bi bi-file-earmark-bar-graph"></i>
+        </a>
         <a href="{% url 'home' %}" id="homeIcon" class="me-3 home-icon nav-icon">
           <i class="bi bi-house-door-fill"></i>
         </a>
         <div class="dropdown">
-          <a href="#" class="nav-icon profile-icon" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a href="#" class="nav-icon profile-icon" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="z-index: 1050; position: relative; display: inline-block;">
             <i class="bi bi-person-circle"></i>
           </a>
           <div class="dropdown-menu dropdown-menu-left shadow" aria-labelledby="profileDropdown" style="min-width: 220px; padding: 10px; right: auto; left: auto; position: absolute; transform: translateX(-80%); z-index: 9999; pointer-events: auto;">
@@ -250,12 +273,49 @@
         
         const homeIcon = document.getElementById('homeIcon');
         const profileIcon = document.getElementById('profileDropdown');
+        const reportIcon = document.getElementById('reportIcon');
         
-        // Profile icon click animation
+        // Add hover effect to profile icon with JavaScript
+        profileIcon.addEventListener('mouseenter', function() {
+          this.style.transform = 'scale(1.05)';
+          this.style.color = '#007bff';
+        });
+        
+        profileIcon.addEventListener('mouseleave', function() {
+          // Only reset the transform and color if not in active state
+          if (!this.classList.contains('active-profile')) {
+            this.style.transform = 'scale(1)';
+            this.style.color = '#4D4D4D';
+          }
+        });
+        
+        // Profile icon click animation - changed to pulse instead of wiggle
         profileIcon.addEventListener('click', function() {
+          // Toggle the active class
+          this.classList.toggle('active-profile');
+          
+          // Keep blue color if active
+          if (this.classList.contains('active-profile')) {
+            this.style.color = '#007bff';
+          } else {
+            this.style.color = '#4D4D4D';
+          }
+          
           // Don't add the animation if we're already animating
-          if (!this.classList.contains('wiggle')) {
-            this.classList.add('wiggle');
+          if (!this.classList.contains('pulse')) {
+            this.classList.add('pulse');
+          }
+        });
+        
+        // Add click listener to document to reset active profile state when clicking elsewhere
+        document.addEventListener('click', function(event) {
+          // If the clicked element is not the profile icon or its children
+          if (!event.target.closest('#profileDropdown')) {
+            // Remove active state from profile icon
+            if (profileIcon.classList.contains('active-profile')) {
+              profileIcon.classList.remove('active-profile');
+              profileIcon.style.color = '#4D4D4D';
+            }
           }
         });
         
@@ -265,9 +325,9 @@
           // Temporarily reduce z-index of card elements
           $('.card').css('z-index', '5');
           
-          // Add wiggle animation to profile icon when dropdown is shown
-          if (!profileIcon.classList.contains('wiggle')) {
-            profileIcon.classList.add('wiggle');
+          // Add pulse animation to profile icon when dropdown is shown
+          if (!profileIcon.classList.contains('pulse')) {
+            profileIcon.classList.add('pulse');
           }
         });
         
@@ -278,9 +338,10 @@
         
         // Remove animation class when animation ends
         profileIcon.addEventListener('animationend', function() {
-          this.classList.remove('wiggle');
+          this.classList.remove('pulse');
         });
         
+        // Add pulse animation to home icon
         homeIcon.addEventListener('click', function(e) {
           // Don't add the animation if we're already animating
           if (!this.classList.contains('pulse')) {
@@ -297,8 +358,30 @@
           }
         });
         
+        // Add pulse animation to report icon
+        reportIcon.addEventListener('click', function(e) {
+          // Don't add the animation if we're already animating
+          if (!this.classList.contains('pulse')) {
+            // Prevent the immediate navigation to allow animation to complete
+            e.preventDefault();
+            
+            // Add the pulse animation
+            this.classList.add('pulse');
+            
+            // After animation completes, navigate to the summary report page
+            setTimeout(() => {
+              window.location.href = this.getAttribute('href');
+            }, 400);
+          }
+        });
+        
         // Remove the animation class when animation ends
         homeIcon.addEventListener('animationend', function() {
+          this.classList.remove('pulse');
+        });
+        
+        // Remove the animation class when animation ends for report icon
+        reportIcon.addEventListener('animationend', function() {
           this.classList.remove('pulse');
         });
         
@@ -311,5 +394,7 @@
         });
       });
     </script>
+    
+    {% block extrascripts %}{% endblock %}
   </body>
 </html>
