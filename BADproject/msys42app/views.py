@@ -268,10 +268,20 @@ def delete_education(request, pk, id):
 
 
 @login_required
-def edit_child_profile(request,pk):
+def edit_child_profile(request, pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
-    fam_member = get_object_or_404(FamilyMember, child=child, first_name=child.guardian_firstname, last_name=child.guardian_lastname)
+    try:
+        fam_member = FamilyMember.objects.get(child=child, first_name=child.guardian_firstname, last_name=child.guardian_lastname)
+    except FamilyMember.DoesNotExist:
+        fam_member = FamilyMember.objects.create(
+            child=child,
+            first_name=child.guardian_firstname,
+            last_name=child.guardian_lastname,
+            middle_name=child.guardian_middlename,  # assuming guardian_middlename exists based on context
+            relationship_w_spc=child.guardian_relationship,
+            sex=child.guardian_sex
+        )
 
     if request.method == 'POST':
         # Check if this is a delete request
