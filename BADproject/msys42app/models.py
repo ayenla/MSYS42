@@ -216,7 +216,7 @@ class PhysiciansExamOther(models.Model):
     attribute = models.CharField(max_length=20, default="other", null=False, blank=False)
 
     def __str__(self):
-        return f"{self.child.spc_code}: {self.year}"
+        return f"{self.child.spc_code}: {self.year} {self.attribute}"
     
     class Meta:
         db_table = 'phys_exam_other'
