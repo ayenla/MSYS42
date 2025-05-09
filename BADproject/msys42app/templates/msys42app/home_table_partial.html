@@ -1,0 +1,30 @@
+{% for child in children %}
+<tr>
+    <td>{{ child.spc_code }}</td>
+    <td>{{ child.last_name }}</td>
+    <td>{{ child.first_name }}</td>
+    <td>{{ child.middle_name }}</td>
+    <td>{{ child.sex }}</td>
+    <td>{{ child.age }}</td>
+    <td>{{ child.guardian_firstname }} {{ child.guardian_lastname }} </td>
+    <td>{{ child.comm_address }}</td>
+    <td>
+        {% for number in child.phone_numbers.all %}
+            {{ number.number }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    </td>
+    <td>
+        <a class="btn btn-primary btn-sm" href="{% url 'view_child_profile' pk=child.pk%}">View</a>
+    </td>
+</tr>
+{% empty %}
+<tr id="noResultsRow">
+    <td colspan="10" class="text-center">
+        {% if search_query %}
+            No child profiles match for "{{ search_query }}"
+        {% else %}
+            No child profiles available.
+        {% endif %}
+    </td>
+</tr>
+{% endfor %} 

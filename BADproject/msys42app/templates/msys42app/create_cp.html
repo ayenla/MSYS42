@@ -23,17 +23,17 @@
 
                 <div class="col-md-3">
                     <label for="lastname">Last Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="lastname" name="lastname" maxlength="25" value="{{ last_name }}" required>
+                    <input type="text" class="form-control" id="lastname" name="lastname" maxlength="25" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ last_name }}" required>
                 </div>
 
                 <div class="col-md-3">
                     <label for="firstname">First Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="firstname" name="firstname" maxlength="50" value="{{ first_name }}" required>
+                    <input type="text" class="form-control" id="firstname" name="firstname" maxlength="50" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ first_name }}" required>
                 </div>
 
                 <div class="col-md-3">
                     <label for="middlename">Middle Name</label>
-                    <input type="text" class="form-control" id="middlename" name="middlename" maxlength="25" value="{{ middle_name }}">
+                    <input type="text" class="form-control" id="middlename" name="middlename" maxlength="25" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ middle_name }}">
                 </div>
             </div>
 
@@ -87,15 +87,15 @@
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="guardian_lastname">Guardian's Last Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="guardian_lastname" name="guardian_lastname" value="{{ guardian_lastname }}" required>
+                    <input type="text" class="form-control" id="guardian_lastname" name="guardian_lastname" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ guardian_lastname }}" required>
                 </div>
                 <div class="col-md-4">
                     <label for="guardian_firstname">Guardian's First Name <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="guardian_firstname" name="guardian_firstname" value="{{ guardian_firstname }}" required>
+                    <input type="text" class="form-control" id="guardian_firstname" name="guardian_firstname" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ guardian_firstname }}" required>
                 </div>
                 <div class="col-md-4">
                     <label for="guardian_middlename">Guardian's Middle Name</label>
-                    <input type="text" class="form-control" id="guardian_middlename" name="guardian_middlename" value="{{ guardian_middlename }}">
+                    <input type="text" class="form-control" id="guardian_middlename" name="guardian_middlename" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ guardian_middlename }}">
                 </div>
                 <div class="col-md-4">
                     <label for="guardian_sex">Guardian's Sex <span class="required" style="color: red;">*</span></label>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="col-md-4">
                     <label for="relationship">Guardian's Relationship to SPC <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="relationship" name="relationship" value="{{ relationship }}" required>
+                    <input type="text" class="form-control" id="relationship" name="relationship" pattern="[A-Za-z\s\.\-]+" title="Only letters, spaces, hyphens (-) and periods (.) are allowed" value="{{ relationship }}" required>
                 </div>
             </div>
 
