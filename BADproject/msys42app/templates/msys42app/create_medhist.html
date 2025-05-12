@@ -123,23 +123,23 @@
                 <table class="table table-striped" style="border: 1px solid black; border-radius: 10px; overflow: hidden;">
                     <thead style="background-color: #1B1B1B; color: white;">
                         <tr>
-                            <th style="border: none; border-right: 1px solid #dee2e6; width: 20%;">Date</th>
-                            <th style="border: none; border-right: 1px solid #dee2e6; width: 65%;">Immunization Given</th>
-                            <th style="border: none; width: 15%;">Action</th>
+                            <th style="border: none; border-right: 1px solid #dee2e6; width: 20%; padding: 12px;">Date</th>
+                            <th style="border: none; border-right: 1px solid #dee2e6; width: 65%; padding: 12px;">Immunization Given</th>
+                            <th style="border: none; width: 15%; padding: 12px;">Action</th>
                         </tr>
                     </thead>
                     <tbody id="immunization-table-body">
                         {{ immunization_formset.management_form }}
                         {% for form in immunization_formset %}
                             <tr class="immunization-entry">
-                                <td style="border: none; border-right: 1px solid #dee2e6;">
+                                <td style="border: none; border-right: 1px solid #dee2e6; padding: 8px;">
                                     {{ form.id }}
                                     {{ form.date }}
                                 </td>
-                                <td style="border: none; border-right: 1px solid #dee2e6;">{{ form.immunization_given }}</td>
-                                <td style="border: none;">
+                                <td style="border: none; border-right: 1px solid #dee2e6; padding: 8px;">{{ form.immunization_given }}</td>
+                                <td style="border: none; vertical-align: middle; padding: 8px;">
                                     {{ form.DELETE.as_hidden }}
-                                    <button type="button" class="btn btn-danger btn-sm delete-immunization">Delete</button>
+                                    <button type="button" class="btn btn-danger delete-immunization">Delete</button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -186,7 +186,9 @@
     #id_disability_status,
     #id_medical_status_history,
     #id_disability_status_history,
-    #id_allergies_history {
+    #id_allergies_history,
+    input[name*="-immunization_given"],
+    input[name*="-date"] {
         width: 100% !important;
         display: block !important;
         box-sizing: border-box !important;
@@ -205,6 +207,22 @@
     
     .immunization-entry input {
         width: 100% !important;
+    }
+    
+    /* Immunization table styling */
+    .immunization-entry td {
+        padding: 8px !important;
+        vertical-align: middle !important;
+    }
+
+    /* Delete button styling */
+    .delete-immunization {
+        width: 100% !important;
+        height: 42px !important;
+        font-size: 1rem !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
 
     .card {
@@ -285,16 +303,16 @@
         newRow.className = 'immunization-entry';
         
         newRow.innerHTML = `
-            <td style="border: none; border-right: 1px solid #dee2e6;">
+            <td style="border: none; border-right: 1px solid #dee2e6; padding: 8px;">
                 <input type="hidden" name="${formPrefix}-${newIndex}-id" id="id_${formPrefix}-${newIndex}-id">
-                <input type="date" name="${formPrefix}-${newIndex}-date" id="id_${formPrefix}-${newIndex}-date" class="form-control w-100" max="${new Date().toISOString().split('T')[0]}">
+                <input type="date" name="${formPrefix}-${newIndex}-date" id="id_${formPrefix}-${newIndex}-date" class="form-control" max="${new Date().toISOString().split('T')[0]}">
             </td>
-            <td style="border: none; border-right: 1px solid #dee2e6;">
-                <input type="text" name="${formPrefix}-${newIndex}-immunization_given" id="id_${formPrefix}-${newIndex}-immunization_given" class="form-control w-100">
+            <td style="border: none; border-right: 1px solid #dee2e6; padding: 8px;">
+                <input type="text" name="${formPrefix}-${newIndex}-immunization_given" id="id_${formPrefix}-${newIndex}-immunization_given" class="form-control">
             </td>
-            <td style="border: none;">
+            <td style="border: none; vertical-align: middle; padding: 8px;">
                 <input type="hidden" name="${formPrefix}-${newIndex}-DELETE" id="id_${formPrefix}-${newIndex}-DELETE">
-                <button type="button" class="btn btn-danger btn-sm delete-immunization">Delete</button>
+                <button type="button" class="btn btn-danger delete-immunization">Delete</button>
             </td>
         `;
         
