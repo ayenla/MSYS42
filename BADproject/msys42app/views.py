@@ -292,10 +292,20 @@ def delete_education(request, pk, id):
 
 
 @login_required
-def edit_child_profile(request,pk):
+def edit_child_profile(request, pk):
     child = get_object_or_404(Child, pk=pk)
     numbers = ContactNumber.objects.filter(child=child)
-    fam_member = get_object_or_404(FamilyMember, child=child, first_name=child.guardian_firstname, last_name=child.guardian_lastname)
+    try:
+        fam_member = FamilyMember.objects.get(child=child, first_name=child.guardian_firstname, last_name=child.guardian_lastname)
+    except FamilyMember.DoesNotExist:
+        fam_member = FamilyMember.objects.create(
+            child=child,
+            first_name=child.guardian_firstname,
+            last_name=child.guardian_lastname,
+            middle_name=child.guardian_middlename,  # assuming guardian_middlename exists based on context
+            relationship_w_spc=child.guardian_relationship,
+            sex=child.guardian_sex
+        )
 
     if request.method == 'POST':
         # Check if this is a delete request
@@ -821,11 +831,9 @@ ImmunizationFormSet = inlineformset_factory(
 def add_medical_history(request, child_id):
     child = get_object_or_404(Child, id=child_id)
     medical_history, created = MedicalHistory.objects.get_or_create(child=child)
-
     if request.method == 'POST':
         form = MedicalHistoryForm(request.POST, instance=medical_history)
         immunization_formset = ImmunizationFormSet(request.POST, instance=medical_history, prefix='immunization')
-
         if form.is_valid() and immunization_formset.is_valid():
             try:
                 # Save the main form
@@ -911,13 +919,12 @@ def add_medical_history(request, child_id):
         }
         form = MedicalHistoryForm(instance=medical_history, initial=initial_data)
         immunization_formset = ImmunizationFormSet(instance=medical_history, prefix='immunization')
-
-    return render(request, 'msys42app/create_medhist.html', {
-        'form': form,
-        'immunization_formset': immunization_formset,
-        'child': child,
-        'today': date.today().isoformat(),
-    })
+        return render(request, 'msys42app/create_medhist.html', {
+            'form': form,
+            'immunization_formset': immunization_formset,
+            'child': child,
+            'today': date.today().isoformat(),
+        })
 
 
 @login_required
