@@ -27,7 +27,7 @@ class UserProfile(models.Model):
         db_table = 'user_profiles'
 
 class Child(models.Model):
-    spc_code = models.CharField(max_length=7, validators=[RegexValidator(regex=r'^[A-Za-z]{3}\d{4}$')], unique=True, null=False, blank=False)
+    spc_code = models.CharField(max_length=8, validators=[RegexValidator(regex=r'^[A-Za-z]{3,4}\d{4}$')], unique=True, null=False, blank=False)
     last_name = models.CharField(max_length=25, null=False, blank=False)
     first_name = models.CharField(max_length=50, null=False, blank=False)
     middle_name = models.CharField(max_length=25, null=True)
