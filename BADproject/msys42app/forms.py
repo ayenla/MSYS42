@@ -5,13 +5,14 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, User
 from django.core.validators import MaxLengthValidator
 
 # Education
+#
 
-def get_school_year_choices(start=2000):
+def get_school_year_choices(start=2000, used_years=None):
     current_year = datetime.datetime.now().year
     end_year = current_year + 1
 
-    # Get used year strings from the database (e.g., "2024–2025")
-    used_years = set(Education.objects.values_list('year', flat=True))
+    # Defer DB access to caller; default to empty during import
+    used_years = set(used_years or [])
 
     choices = []
     for y in range(start, end_year):
@@ -24,7 +25,7 @@ def get_school_year_choices(start=2000):
 
 class EducationForm(forms.ModelForm):
     year = forms.ChoiceField(
-        choices=get_school_year_choices(),
+        choices=[],
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=True
     )
@@ -35,6 +36,17 @@ class EducationForm(forms.ModelForm):
         widgets = {
             'grade': forms.Select(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Safely populate year choices at runtime to avoid import-time DB hits
+        used_years = []
+        try:
+            used_years = Education.objects.values_list('year', flat=True)
+        except Exception:
+            # During migrations or before tables exist, silently fall back
+            used_years = []
+        self.fields['year'].choices = get_school_year_choices(used_years=used_years)
 
 # Medical History
 ALLERGY_CHOICES = [
@@ -233,7 +245,7 @@ year_choices = [(year, year) for year in range(2000, datetime.datetime.now().yea
 conditions = [("N", "N"), ("A", "A"), ("C", "C"), ("R", "R")]
 
 class PhysiciansExamForm(forms.ModelForm):
-    child = forms.ModelChoiceField(queryset=Child.objects.all(), required=True)
+    child = forms.ModelChoiceField(queryset=Child.objects.none(), required=True)
     year = forms.ChoiceField(choices=year_choices, required=True)
     grade = forms.ChoiceField(choices=conditions, required=True)
     height = forms.ChoiceField(choices=conditions, required=True)
@@ -260,6 +272,13 @@ class PhysiciansExamForm(forms.ModelForm):
     class Meta:
         model = PhysiciansExam
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            self.fields['child'].queryset = Child.objects.all()
+        except Exception:
+            self.fields['child'].queryset = Child.objects.none()
 
 class AnnualMedicalCheckForm(forms.ModelForm):
     height = forms.DecimalField(

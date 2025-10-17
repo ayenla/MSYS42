@@ -18,7 +18,7 @@
                
                 <div class="col-md-2">
                     <label for="spc_code">SPC Code <span class="required" style="color: red;">*</span></label>
-                    <input type="text" class="form-control" id="spc_code" name="code" maxlength="7" minlength="7" pattern="[A-Z]{3}[0-9]{4}" value="{{ code }}" placeholder="AAA1234" required>
+                    <input type="text" class="form-control" id="spc_code" name="code" maxlength="8" minlength="7" pattern="[A-Z]{3,4}[0-9]{4}" value="{{ code }}" placeholder="AAA1234 or AAAA1234" required>
                 </div>
 
                 <div class="col-md-3">
